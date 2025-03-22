@@ -1,10 +1,10 @@
 <?php
-use App\Http\Controllers\ProductController;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-
+ 
+Route::post('/admin/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/products', [ProductController::class, 'index']);
-    Route::post('/logout', [AuthController::class, 'logout']);
-});
+
+// Route::get('/ping', function () {
+//     return response()->json(['message' => 'API working!']);
+// });
