@@ -1,0 +1,178 @@
+{
+    "clientName": "Thunder Client",
+    "collectionName": "Brands",
+    "collectionId": "9bf76c12-fa97-498d-a540-3ca8009817b2",
+    "dateExported": "2025-03-23T16:59:09.422Z",
+    "version": "1.2",
+    "folders": [],
+    "requests": [
+        {
+            "_id": "30ea9b7f-41f1-4e92-9f64-9c464168d199",
+            "colId": "9bf76c12-fa97-498d-a540-3ca8009817b2",
+            "containerId": "",
+            "name": "http://localhost:8000/api/brands",
+            "url": "http://localhost:8000/api/brands",
+            "method": "POST",
+            "sortNum": 10000,
+            "created": "2025-03-23T16:48:07.850Z",
+            "modified": "2025-03-23T16:48:07.850Z",
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \n  \"name\": \"Levis\",\n  \"status\": 1\n  \n}",
+                "form": []
+            },
+            "auth": {
+                "type": "bearer",
+                "bearer": "19|Tu8KyjtIE08GTnWd6gS5QOTTQzaf7EY0XJn0qJOJ5aed355b"
+            }
+        },
+        {
+            "_id": "0e729c75-cc1c-455f-89db-a7d65977ad40",
+            "colId": "9bf76c12-fa97-498d-a540-3ca8009817b2",
+            "containerId": "",
+            "name": "http://localhost:8000/api/brands",
+            "url": "http://localhost:8000/api/brands",
+            "method": "GET",
+            "sortNum": 20000,
+            "created": "2025-03-23T16:53:32.052Z",
+            "modified": "2025-03-23T16:53:32.052Z",
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "auth": {
+                "type": "bearer",
+                "bearer": "19|Tu8KyjtIE08GTnWd6gS5QOTTQzaf7EY0XJn0qJOJ5aed355b"
+            }
+        },
+        {
+            "_id": "fc08084f-7c26-4b9e-871d-5811271d15dd",
+            "colId": "9bf76c12-fa97-498d-a540-3ca8009817b2",
+            "containerId": "",
+            "name": "http://localhost:8000/api/brands",
+            "url": "http://localhost:8000/api/brands",
+            "method": "POST",
+            "sortNum": 30000,
+            "created": "2025-03-23T16:55:35.833Z",
+            "modified": "2025-03-23T16:55:35.833Z",
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \n  \"name\": \"Levis\",\n  \"status\": 1\n  \n}",
+                "form": []
+            },
+            "auth": {
+                "type": "bearer",
+                "bearer": "19|Tu8KyjtIE08GTnWd6gS5QOTTQzaf7EY0XJn0qJOJ5aed355b"
+            }
+        },
+        {
+            "_id": "c2884d4e-2b01-49af-bd74-5f1f7270112e",
+            "colId": "9bf76c12-fa97-498d-a540-3ca8009817b2",
+            "containerId": "",
+            "name": "http://localhost:8000/api/brands/4",
+            "url": "http://localhost:8000/api/brands/2",
+            "method": "PUT",
+            "sortNum": 40000,
+            "created": "2025-03-23T16:56:54.862Z",
+            "modified": "2025-03-23T16:56:54.862Z",
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \n  \"name\": \"FM\",\n  \"status\": 1\n  \n}",
+                "form": []
+            },
+            "auth": {
+                "type": "bearer",
+                "bearer": "19|Tu8KyjtIE08GTnWd6gS5QOTTQzaf7EY0XJn0qJOJ5aed355b"
+            }
+        },
+        {
+            "_id": "bdaac7a1-96a7-417d-bae2-d3ee632c39f9",
+            "colId": "9bf76c12-fa97-498d-a540-3ca8009817b2",
+            "containerId": "",
+            "name": "http://localhost:8000/api/brands",
+            "url": "http://localhost:8000/api/brands",
+            "method": "POST",
+            "sortNum": 50000,
+            "created": "2025-03-23T16:57:52.320Z",
+            "modified": "2025-03-23T16:57:52.320Z",
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \n  \"name\": \"Levis\",\n  \"status\": 1\n  \n}",
+                "form": []
+            },
+            "auth": {
+                "type": "bearer",
+                "bearer": "19|Tu8KyjtIE08GTnWd6gS5QOTTQzaf7EY0XJn0qJOJ5aed355b"
+            }
+        },
+        {
+            "_id": "da576c25-cec2-449a-aeb0-db8d88668f83",
+            "colId": "9bf76c12-fa97-498d-a540-3ca8009817b2",
+            "containerId": "",
+            "name": "http://localhost:8000/api/brands/2",
+            "url": "http://localhost:8000/api/brands/2",
+            "method": "GET",
+            "sortNum": 60000,
+            "created": "2025-03-23T16:58:11.594Z",
+            "modified": "2025-03-23T16:58:11.594Z",
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "auth": {
+                "type": "bearer",
+                "bearer": "19|Tu8KyjtIE08GTnWd6gS5QOTTQzaf7EY0XJn0qJOJ5aed355b"
+            }
+        },
+        {
+            "_id": "2bbf9d69-7c4e-412d-8c5d-1e2ccd9d1c4f",
+            "colId": "9bf76c12-fa97-498d-a540-3ca8009817b2",
+            "containerId": "",
+            "name": "http://localhost:8000/api/brands",
+            "url": "http://localhost:8000/api/brands",
+            "method": "GET",
+            "sortNum": 70000,
+            "created": "2025-03-23T16:58:27.165Z",
+            "modified": "2025-03-23T16:58:27.165Z",
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "auth": {
+                "type": "bearer",
+                "bearer": "19|Tu8KyjtIE08GTnWd6gS5QOTTQzaf7EY0XJn0qJOJ5aed355b"
+            }
+        }
+    ],
+    "ref": "ZKdnSweixBD8RM9e51fC2u9Xcbftw16iCjpLYFBoZN71oSytlDf2ncOgdEGJTDUgGGSp3qeb40z88aX8EmBavQ"
+}

@@ -20,7 +20,7 @@ const Dashboard = () => {
           <div className="col-md-4">
             <div className="card shadow-sm">
               <div className="card-body">
-                <h5 className="card-title">Total Users</h5>
+                <h5 className="card-title">Total Users (100)</h5>
                 <p className="card-text">Manage all registered users.</p>
                 <a href="/manage-users" className="btn btn-primary">
                   View Users
@@ -33,7 +33,7 @@ const Dashboard = () => {
           <div className="col-md-4">
             <div className="card shadow-sm">
               <div className="card-body">
-                <h5 className="card-title">Total Products</h5>
+                <h5 className="card-title">Total Products (500)</h5>
                 <p className="card-text">Manage all products in the shop.</p>
                 <a href="/manage-products" className="btn btn-secondary">
                   View Products
@@ -46,10 +46,10 @@ const Dashboard = () => {
           <div className="col-md-4">
             <div className="card shadow-sm">
               <div className="card-body">
-                <h5 className="card-title">Reports</h5>
-                <p className="card-text">View detailed reports and analytics.</p>
+                <h5 className="card-title">Orders (10)</h5>
+                <p className="card-text">View detailed orders and respective details.</p>
                 <a href="/view-reports" className="btn btn-success">
-                  View Reports
+                  View Orders
                 </a>
               </div>
             </div>
