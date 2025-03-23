@@ -2,10 +2,18 @@ import React from 'react'
 import Layout from '../common/Layout'
 import { useForm } from "react-hook-form";
 import { apiUrl } from '../common/http';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from 'react-router-dom';
+import { useContext } from 'react';
+import { AdminAuthContext } from '../context/AdminAuth';
+
 
 const Login = () => {
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm();
+  const navigate = useNavigate();
+  const {login} = useContext(AdminAuthContext);
   const onSubmit = async (data) => {
     
     const res =  await fetch(`http://127.0.0.1:8000/api/admin/login`, {
@@ -15,7 +23,15 @@ const Login = () => {
       },
       body: JSON.stringify(data)
     }).then(res => res.json()).then(result => {
-      console.log(result)
+      // console.log(result)
+      if(result.status === 200){
+        localStorage.setItem('admin', JSON.stringify(result))
+        login(result)
+        navigate('/admin/dashboard');
+      } else {
+        toast.error(result.message)
+      }
+
     });
   
     }

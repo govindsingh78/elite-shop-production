@@ -22,22 +22,35 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 422);
+            return response()->json(
+                ['error' => $validator->errors(),
+                'status' => 422
+                ], 422);
         }
 
         // Authenticate user
         if (!Auth::attempt($request->only('email', 'password'))) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+            return response()->json(
+                [
+                    'message' => 'Invalid credentials',
+                    'status' => 401
+                ], 401);
         }
 
         $user = Auth::user();
         $token = $user->createToken('auth_token')->plainTextToken;
 
         if ($user->role !== 'admin') {
-            return response()->json(['message' => 'Access denied. Admins only.'], 403);
+            return response()->json(
+                [
+                    'message' => 'Access denied. Admins only.',
+                    'status' => 403
+            
+            ], 403);
         }
 
         return response()->json([
+            'status' => 200,
             'message' => 'Login successful',
             'token' => $token,
             'user' => $user,
