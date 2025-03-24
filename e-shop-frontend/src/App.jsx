@@ -13,6 +13,9 @@ import { ToastContainer } from 'react-toastify';
 import Show from './components/admin/category/Show';
 import Create from './components/admin/category/Create';
 import Edit from './components/admin/category/Edit';
+import ShowBrands from './components/admin/brands/ShowBrands';
+import CreateBrands from './components/admin/brands/CreateBrands';
+import EditBrands from './components/admin/brands/EditBrands';
 
 function App() {
   return (
@@ -54,6 +57,31 @@ function App() {
             element={
               <AdminRequireAuth>
                 <Edit />
+              </AdminRequireAuth>
+            }
+          />
+
+<Route
+            path="/admin/manage-brands"
+            element={
+              <AdminRequireAuth>
+                <ShowBrands />
+              </AdminRequireAuth>
+            }
+          />
+          <Route
+            path="/admin/create-brand"
+            element={
+              <AdminRequireAuth>
+                <CreateBrands />
+              </AdminRequireAuth>
+            }
+          />
+          <Route
+            path="/admin/edit-brand/:id"
+            element={
+              <AdminRequireAuth>
+                <EditBrands />
               </AdminRequireAuth>
             }
           />
