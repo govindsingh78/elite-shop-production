@@ -26,6 +26,7 @@ const Login = () => {
       // console.log(result)
       if(result.status === 200){
         localStorage.setItem('admin', JSON.stringify(result))
+        localStorage.setItem("adminToken", result.token);
         login(result)
         navigate('/admin/dashboard');
       } else {
