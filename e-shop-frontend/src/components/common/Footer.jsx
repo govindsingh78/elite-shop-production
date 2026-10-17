@@ -1,88 +1,66 @@
-import React from 'react'
-import LogoBlack from '../../assets/images/logo-white.png'
+import React from "react";
+import { Link } from "react-router-dom";
+import LogoWhite from "../../assets/images/logo-white.png";
+import { useStorefrontCategories } from "./useStorefrontCategories";
 
 const Footer = () => {
-  return (
-    <footer className='py-5 text-white'>
-            <div className='container'>
-                <div className='row'>
-                    <div className='col-md-3'>
-                        <img src={LogoBlack} alt="" width={150}/>
-                        <div className='pt-3'>Loream ipsum</div>
+    const { categories } = useStorefrontCategories();
+    const year = new Date().getFullYear();
 
+    return (
+        <footer className="store-footer">
+            <div className="store-footer-main">
+                <div className="container">
+                    <div className="store-footer-topline">
+                        <span>THE GOOD-FIND EDIT</span>
+                        <span>Good things, chosen well.</span>
                     </div>
-                    <div className='col-md-3'>
-                        <h3>Categories</h3>
-                        <ul>
-                            <li>
-                                <a href='#'>Mens</a>
-                            </li>
-                            <li>
-                                <a href='#'>Womens</a>
-                            </li>
-                            <li>
-                                <a href='#'>Kids</a>
-                            </li>
-                        </ul>
-                        
+                    <div className="row g-5 py-5">
+                        <div className="col-lg-4 col-md-6">
+                            <Link to="/" className="store-footer-brand" aria-label="E-Shop home">
+                                <img src={LogoWhite} alt="E-Shop" width={154} />
+                            </Link>
+                            <p className="store-footer-description">A considered collection for everyday living. Find your next favourite, and make it yours.</p>
+                            <Link className="store-footer-cta" to="/shop">Discover the collection <span aria-hidden="true">↗</span></Link>
+                        </div>
+                        <div className="col-lg-2 col-6">
+                            <h2 className="store-footer-heading">Explore</h2>
+                            <ul className="store-footer-links">
+                                <li><Link to="/shop">All products</Link></li>
+                                {categories.slice(0, 6).map((category) => (
+                                    <li key={category.id}><Link to={`/shop/${category.slug}`}>{category.name}</Link></li>
+                                ))}
+                                {!categories.length && <li><span className="store-footer-muted">Collections coming soon</span></li>}
+                            </ul>
+                        </div>
+                        <div className="col-lg-2 col-6">
+                            <h2 className="store-footer-heading">Your account</h2>
+                            <ul className="store-footer-links">
+                                <li><Link to="/admin/login">Sign in</Link></li>
+                                <li><Link to="/cart">Shopping bag</Link></li>
+                                <li><Link to="/shop">New arrivals</Link></li>
+                                <li><Link to="/vendor/register">Become a vendor</Link></li>
+                            </ul>
+                        </div>
+                        <div className="col-lg-4 col-md-6">
+                            <h2 className="store-footer-heading">A little note from us</h2>
+                            <p className="store-footer-description">New finds, thoughtful details, and a fresh perspective—every now and then.</p>
+                            <a className="store-footer-email" href="mailto:hello@eshop.example">hello@eshop.example <span aria-hidden="true">↗</span></a>
+                        </div>
                     </div>
-                    <div className='col-md-3'>
-                    <h3>Quick Links</h3>
-                        <ul>
-                            <li>
-                                <a href='#'>Login</a>
-                            </li>
-                            <li>
-                                <a href='#'>Register</a>
-                            </li>
-                        </ul>
-                        
+                    <div className="store-footer-perks row g-3">
+                        <div className="col-md-4"><div className="store-perk"><span className="store-perk-icon">01</span><span><strong>Delivery, made easy</strong><small>Carefully packed, right to your door.</small></span></div></div>
+                        <div className="col-md-4"><div className="store-perk"><span className="store-perk-icon">02</span><span><strong>Shopping with confidence</strong><small>Thoughtful service at every step.</small></span></div></div>
+                        <div className="col-md-4"><div className="store-perk"><span className="store-perk-icon">03</span><span><strong>Checkout securely</strong><small>Your details stay protected.</small></span></div></div>
                     </div>
-                    <div className='col-md-3'>
-                    <h3>Get in Touch</h3>
-                        <ul>
-                            <li>
-                                <a href='#'>+91-8769970222</a>
-                            </li>
-                            <li>
-                                <a href='#'>govindsingh78@gmail.com</a>
-                            </li>
-                        </ul>
+                    <div className="store-footer-bottom">
+                        <span>© {year} E-Shop. Made for everyday.</span>
+                        <Link to="/shop">Keep exploring <span aria-hidden="true">↑</span></Link>
                     </div>
                 </div>
-
-                <div className='row spotlight py-5'>
-                    <div className='col-md-4'>
-
-                    <div className='d-flex justify-content-center'>
-                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-truck" viewBox="0 0 16 16"><path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h9A1.5 1.5 0 0 1 12 3.5V5h1.02a1.5 1.5 0 0 1 1.17.563l1.481 1.85a1.5 1.5 0 0 1 .329.938V10.5a1.5 1.5 0 0 1-1.5 1.5H14a2 2 0 1 1-4 0H5a2 2 0 1 1-3.998-.085A1.5 1.5 0 0 1 0 10.5zm1.294 7.456A2 2 0 0 1 4.732 11h5.536a2 2 0 0 1 .732-.732V3.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .294.456M12 10a2 2 0 0 1 1.732 1h.768a.5.5 0 0 0 .5-.5V8.35a.5.5 0 0 0-.11-.312l-1.48-1.85A.5.5 0 0 0 13.02 6H12zm-9 1a1 1 0 1 0 0 2 1 1 0 0 0 0-2m9 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2"></path></svg>
-                     <h3 className='ps-2'>Free Delivery</h3>
-                    </div>
-
-                    </div>
-                    <div className='col-md-4'>
-                    <div className='d-flex justify-content-center'>
-                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-cash" viewBox="0 0 16 16"><path d="M8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4"></path><path d="M0 4a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V6a2 2 0 0 1-2-2z"></path></svg>
-                     <h3 className='ps-2'>Money Back Guarantee</h3>
-                    </div>
-                    </div>
-                    <div className='col-md-4'>
-                    <div className='d-flex justify-content-center'>
-                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-credit-card-2-back" viewBox="0 0 16 16"><path d="M11 5.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5z"></path><path d="M2 2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm13 2v5H1V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1m-1 9H2a1 1 0 0 1-1-1v-1h14v1a1 1 0 0 1-1 1"></path></svg>
-                     <h3 className='ps-2'>Secure Payment</h3>
-                    </div>
-                    </div>
-                </div>
-
-                <div className='row'>
-                <div className='col-md-12 text-center pt-3'>
-                <p>&copy; 2025 All Rights Reseved.</p>    
-                </div>               
-                </div>
-
             </div>
         </footer>
-  )
-}
+    );
+};
 
-export default Footer
+export default Footer;

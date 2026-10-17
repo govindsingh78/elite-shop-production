@@ -1,43 +1,67 @@
-import React from 'react'
-import Nav from 'react-bootstrap/Nav'
-import Navbar from 'react-bootstrap/Navbar'
-import Logo from '../../assets/images/logo.png'
-import { Link } from 'react-router-dom'
+import React, { useContext, useState } from "react";
+import { Link, NavLink } from "react-router-dom";
+import Navbar from "react-bootstrap/Navbar";
+import Logo from "../../assets/images/logo.png";
+import { useStorefrontCategories } from "./useStorefrontCategories";
+import { AdminAuthContext } from "../context/AdminAuth";
+import { useCart } from "../context/CartContext";
 
 const Header = () => {
+  const { categories, loading } = useStorefrontCategories();
+  const { user } = useContext(AdminAuthContext);
+  const { count } = useCart();
+  const [expanded, setExpanded] = useState(false);
+
+  const closeMenu = () => setExpanded(false);
+
   return (
-    <header className='shadow'>
-    <div className='container'>
-    <Navbar expand="lg" className="">
-        <Navbar.Brand href="/">
-             <img src={Logo} alt='e-Shop Logo' width={170}/>
-        </Navbar.Brand>
-        <Navbar.Toggle aria-controls="navbarScroll" />
-        <Navbar.Collapse id="navbarScroll">
-            <Nav
-            className="ms-auto my-2 my-lg-0"
-            style={{ }}
-            navbarScroll
-            >
-            <Nav.Link href="#action1">Mens</Nav.Link>
-            <Nav.Link href="#action2">Women</Nav.Link>
-            <Nav.Link href="#action2">Kids</Nav.Link>  
-
-            <div className='nav-right d-flex'>
-                <Link to='/' className='mt-2 ms-3'>
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" className="bi bi-person" viewBox="0 0 16 16"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z"></path></svg>
+    <>
+      <div className="store-announcement">
+        <div className="container d-flex justify-content-between align-items-center">
+          <span>Thoughtfully picked. Made to be worn on repeat.</span>
+          <Link to="/shop" className="store-announcement-link">Explore the edit <span aria-hidden="true">↗</span></Link>
+        </div>
+      </div>
+      <header className="store-header sticky-top">
+        <div className="container">
+          <Navbar expand="lg" expanded={expanded} onToggle={setExpanded} className="store-navbar">
+            <Navbar.Brand as={Link} to="/" onClick={closeMenu} className="store-brand" aria-label="E-Shop home">
+              <img src={Logo} alt="E-Shop" width={142} />
+              <span className="store-brand-caption">EVERYDAY, ELEVATED</span>
+            </Navbar.Brand>
+            <Navbar.Toggle aria-controls="store-nav" aria-label="Toggle navigation" />
+            <Navbar.Collapse id="store-nav">
+              <nav className="store-category-nav" aria-label="Shop categories">
+                <NavLink to="/shop" end onClick={closeMenu} className={({ isActive }) => `store-nav-link${isActive ? " active" : ""}`}>
+                  Discover
+                </NavLink>
+                {categories.map((category) => (
+                  <NavLink
+                    key={category.id}
+                    to={`/shop/${category.slug}`}
+                    onClick={closeMenu}
+                    className={({ isActive }) => `store-nav-link${isActive ? " active" : ""}`}
+                  >
+                    {category.name}
+                  </NavLink>
+                ))}
+                {!categories.length && loading && <span className="store-nav-loading">Loading collections…</span>}
+              </nav>
+              <div className="store-header-actions">
+                <Link to={user?.portal === "vendor" ? "/vendor/dashboard" : user ? "/admin/dashboard" : "/admin/login"} className="store-icon-link" aria-label="Account" title="Account">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5" /><path d="M4.5 20c.5-4 3-6 7.5-6s7 2 7.5 6" /></svg>
                 </Link>
-
-                <Link to='/cart' className='mt-2 ms-3'>
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="22" fill="currentColor" className="bi bi-bag" viewBox="0 0 16 16"><path d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4h-5v-.5A2.5 2.5 0 0 1 8 1m3.5 3v-.5a3.5 3.5 0 1 0-7 0V4H1v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4zM2 5h12v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"></path></svg>
+                <Link to="/cart" className="store-icon-link store-bag-link position-relative" aria-label={`Shopping bag, ${count} items`} title="Shopping bag">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 13H6L5 8Z" /><path d="M9 9V6a3 3 0 0 1 6 0v3" /></svg>
+                  {count > 0 && <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{count}</span>}
                 </Link>
-            </div>
-            </Nav>  
-         </Navbar.Collapse>
-    </Navbar>
-    </div>
-</header>
-  )
-}
+              </div>
+            </Navbar.Collapse>
+          </Navbar>
+        </div>
+      </header>
+    </>
+  );
+};
 
-export default Header
+export default Header;

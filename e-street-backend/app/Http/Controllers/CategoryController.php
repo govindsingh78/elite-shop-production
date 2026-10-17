@@ -8,6 +8,22 @@ use App\Models\Category;
 class CategoryController extends Controller
 {
     /**
+     * Public active categories used by storefront navigation.
+     */
+    public function navigation()
+    {
+        return response()->json(Category::query()
+            ->where('status', 1)
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug'])
+            ->map(fn (Category $category) => [
+                'id' => $category->id,
+                'name' => $category->name,
+                'slug' => $category->slug,
+            ]), 200);
+    }
+
+    /**
      * Display a listing of the resource.
      */
     public function index()

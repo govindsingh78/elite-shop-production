@@ -1,78 +1,65 @@
-import React from 'react'
-import Layout from '../common/Layout'
-import { useForm } from "react-hook-form";
-import { apiUrl } from '../common/http';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { useNavigate } from 'react-router-dom';
-import { useContext } from 'react';
-import { AdminAuthContext } from '../context/AdminAuth';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import Layout from "../common/Layout";
+import { apiUrl } from "../common/http";
+import { useContext } from "react";
+import { AdminAuthContext } from "../context/AdminAuth";
 
-
-const Login = () => {
-
-  const { register, handleSubmit, watch, formState: { errors } } = useForm();
+const Login = ({ portal = "admin" }) => {
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const {login} = useContext(AdminAuthContext);
-  const onSubmit = async (data) => {
-    
-    const res =  await fetch(`http://127.0.0.1:8000/api/admin/login`, {
-      method: 'POST',
-      headers: {
-        'Content-type' : 'application/json'
-      },
-      body: JSON.stringify(data)
-    }).then(res => res.json()).then(result => {
-      // console.log(result)
-      if(result.status === 200){
-        localStorage.setItem('admin', JSON.stringify(result))
-        localStorage.setItem("adminToken", result.token);
-        login(result)
-        navigate('/admin/dashboard');
-      } else {
-        toast.error(result.message)
-      }
+  const { login } = useContext(AdminAuthContext);
+  const isVendor = portal === "vendor";
 
-    });
-  
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch(`${apiUrl}/${isVendor ? "vendor/login" : "admin/login"}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(form),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || "Unable to sign in.");
+      login(result);
+      navigate(isVendor ? "/vendor/dashboard" : "/admin/dashboard", { replace: true });
+    } catch (requestError) {
+      setError(requestError.message || "Unable to sign in. Check the API server and try again.");
+    } finally {
+      setLoading(false);
     }
-  
+  };
+
   return (
-   <Layout>
-    <div className='container d-flex justify-content-center my-5 p-5'>
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <div className='card shadow border-0 login p-4'>
-        <h3><strong>Admin Login</strong></h3>
-        <div className='mb-3'>
-          <label htmlFor='' className='form-label'>Email</label>
-          <input 
-          {
-            ...register('email',{
-                required: "The email field is required",
-                pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: "Invalid email address"
-                } 
-            })
-          }
- type='text' className={`form-control ${errors.email && 'is-invalid'}`} placeholder='Email'/>
-          {errors.email && <span className='invalid-feedback'>{errors.email?.message}</span>}
-
-          {/* <p className='invalid-feedback'>{errors.email?.message}</p> */}
-        </div>
-        <div className='mb-3'>
-          <label htmlFor='' className='form-label'>Password</label>
-          <input {...register("password", { required: true })} type='password' className={`form-control ${errors.password && 'is-invalid'}`} placeholder='Password'/>
-          {errors.password && <span className='invalid-feedback'>Password field is required</span>}
-        </div>
-
-        <button className='btn btn-secondary'>Login</button>
+    <Layout>
+      <div className="container d-flex justify-content-center my-5 py-4">
+        <form onSubmit={handleSubmit} className="card shadow-sm border-0 p-4" style={{ width: "min(100%, 500px)" }}>
+          <p className="text-uppercase text-muted small mb-1">{isVendor ? "Partner portal" : "Store management"}</p>
+          <h1 className="h3 mb-4"><strong>{isVendor ? "Vendor Login" : "Admin Login"}</strong></h1>
+          {error && <div className="alert alert-danger" role="alert">{error}</div>}
+          <div className="mb-3">
+            <label htmlFor="email" className="form-label">Email</label>
+            <input id="email" type="email" className="form-control" autoComplete="email" value={form.email} onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))} required />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="password" className="form-label">Password</label>
+            <input id="password" type="password" className="form-control" autoComplete="current-password" value={form.password} onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))} required />
+          </div>
+          <div className="text-end mb-3"><Link to="/forgot-password">Forgot password?</Link></div>
+          <button type="submit" className="btn btn-secondary w-100" disabled={loading}>{loading ? "Signing in..." : "Sign in"}</button>
+          {isVendor ? (
+            <p className="text-center mt-3 mb-0">New to the marketplace? <Link to="/vendor/register">Create a vendor account</Link></p>
+          ) : (
+            <p className="text-center mt-3 mb-0"><Link to="/vendor/login">Vendor portal</Link></p>
+          )}
+        </form>
       </div>
-      </form>
-    </div>
+    </Layout>
+  );
+};
 
-   </Layout>
-  )
-}
-
-export default Login
+export default Login;

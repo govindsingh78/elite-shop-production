@@ -1,6 +1,6 @@
 import React from 'react'
 
-import LatestProducts from './latestProducts'
+import LatestProducts from './LatestProducts'
 import FeaturedProducts from './FeaturedProducts'
  
 import Hero from './Hero'
