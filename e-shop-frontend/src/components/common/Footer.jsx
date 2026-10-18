@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import LogoWhite from "../../assets/images/logo-white.png";
+import BrandLogo from "./BrandLogo";
 import { useStorefrontCategories } from "./useStorefrontCategories";
 
 const Footer = () => {
@@ -17,8 +17,8 @@ const Footer = () => {
                     </div>
                     <div className="row g-5 py-5">
                         <div className="col-lg-4 col-md-6">
-                            <Link to="/" className="store-footer-brand" aria-label="E-Shop home">
-                                <img src={LogoWhite} alt="E-Shop" width={154} />
+                            <Link to="/" className="store-footer-brand" aria-label="Street Shop home">
+                                <BrandLogo tone="light" size={46} />
                             </Link>
                             <p className="store-footer-description">A considered collection for everyday living. Find your next favourite, and make it yours.</p>
                             <Link className="store-footer-cta" to="/shop">Discover the collection <span aria-hidden="true">↗</span></Link>
@@ -36,16 +36,18 @@ const Footer = () => {
                         <div className="col-lg-2 col-6">
                             <h2 className="store-footer-heading">Your account</h2>
                             <ul className="store-footer-links">
-                                <li><Link to="/admin/login">Sign in</Link></li>
+                                <li><Link to="/customer/login">Customer sign in</Link></li>
+                                <li><Link to="/customer/register">Create an account</Link></li>
                                 <li><Link to="/cart">Shopping bag</Link></li>
-                                <li><Link to="/shop">New arrivals</Link></li>
+                                <li><Link to="/vendor/login">Vendor login</Link></li>
                                 <li><Link to="/vendor/register">Become a vendor</Link></li>
+                                <li><Link to="/admin/login">Admin login</Link></li>
                             </ul>
                         </div>
                         <div className="col-lg-4 col-md-6">
                             <h2 className="store-footer-heading">A little note from us</h2>
                             <p className="store-footer-description">New finds, thoughtful details, and a fresh perspective—every now and then.</p>
-                            <a className="store-footer-email" href="mailto:hello@eshop.example">hello@eshop.example <span aria-hidden="true">↗</span></a>
+                            <a className="store-footer-email" href="mailto:support@streetshop.com">support@streetshop.com <span aria-hidden="true">↗</span></a>
                         </div>
                     </div>
                     <div className="store-footer-perks row g-3">
@@ -54,7 +56,7 @@ const Footer = () => {
                         <div className="col-md-4"><div className="store-perk"><span className="store-perk-icon">03</span><span><strong>Checkout securely</strong><small>Your details stay protected.</small></span></div></div>
                     </div>
                     <div className="store-footer-bottom">
-                        <span>© {year} E-Shop. Made for everyday.</span>
+                        <span>© {year} Street Shop · Everyday, elevated.</span>
                         <Link to="/shop">Keep exploring <span aria-hidden="true">↑</span></Link>
                     </div>
                 </div>

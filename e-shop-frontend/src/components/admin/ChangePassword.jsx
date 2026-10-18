@@ -3,6 +3,7 @@ import Layout from "../common/Layout";
 import Sidebar from "../common/Sidebar";
 import { apiUrl } from "../common/http";
 import { toast } from "react-toastify";
+import { portalConfig, portalToken } from "./portal";
 import "react-toastify/dist/ReactToastify.css";
 
 const initialForm = {
@@ -11,7 +12,7 @@ const initialForm = {
   password_confirmation: "",
 };
 
-const ChangePassword = () => {
+const ChangePassword = ({ portal = "admin" }) => {
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -51,7 +52,7 @@ const ChangePassword = () => {
 
     setLoading(true);
     try {
-      const token = localStorage.getItem("adminToken");
+      const token = portalToken(portal);
       const response = await fetch(`${apiUrl}/change-password`, {
         method: "POST",
         headers: {
@@ -113,7 +114,7 @@ const ChangePassword = () => {
           <div className="col-md-12">
             <div className="d-flex">
               {/* Left Navigation Bar */}
-              <Sidebar />
+              <Sidebar variant={portalConfig(portal).sidebar} />
 
               {/* Right Content Area */}
               <div className="container-fluid p-4">

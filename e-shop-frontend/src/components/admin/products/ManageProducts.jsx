@@ -4,8 +4,11 @@ import Layout from "../../common/Layout";
 import Sidebar from "../../common/Sidebar";
 import { apiUrl } from "../../common/http";
 import { toast } from "react-toastify";
+import { portalConfig, portalToken } from "../portal";
 
-const ManageProducts = () => {
+const ManageProducts = ({ portal = "admin" }) => {
+  const config = portalConfig(portal);
+  const isVendor = portal === "vendor";
   const [products, setProducts] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [searchInput, setSearchInput] = useState("");
@@ -18,12 +21,12 @@ const ManageProducts = () => {
     setLoading(true);
     setError("");
     try {
-      const token = localStorage.getItem("adminToken");
-      if (!token) throw new Error("Your admin session has expired. Sign in again.");
+      const token = portalToken(portal);
+      if (!token) throw new Error(config.sessionExpired);
       const params = new URLSearchParams({ page: String(filters.page) });
       if (filters.search) params.set("search", filters.search);
       if (filters.status !== "") params.set("status", filters.status);
-      const response = await fetch(`${apiUrl}/admin/products?${params}`, {
+      const response = await fetch(`${apiUrl}/${config.api}/products?${params}`, {
         headers: { Accept: "application/json", Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
@@ -35,17 +38,16 @@ const ManageProducts = () => {
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [filters, portal, config]);
 
   useEffect(() => { fetchProducts(); }, [fetchProducts]);
 
   const handleDelete = async (product) => {
     if (!window.confirm(`Delete “${product.title}”? This cannot be undone.`)) return;
     try {
-      const token = localStorage.getItem("adminToken");
-      const response = await fetch(`${apiUrl}/admin/products/${product.id}`, {
+      const response = await fetch(`${apiUrl}/${config.api}/products/${product.id}`, {
         method: "DELETE",
-        headers: { Accept: "application/json", Authorization: `Bearer ${token || ""}` },
+        headers: { Accept: "application/json", Authorization: `Bearer ${portalToken(portal) || ""}` },
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || "Unable to delete product.");
@@ -65,18 +67,20 @@ const ManageProducts = () => {
     setFilters((current) => ({ ...current, search: searchInput.trim(), page: 1 }));
   };
 
+  const columns = isVendor ? 9 : 10;
+
   return (
     <Layout>
       <div className="container py-5">
         <div className="d-flex">
-          <Sidebar />
+          <Sidebar variant={config.sidebar} />
           <main className="container-fluid p-4">
             <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
               <div>
-                <h2 className="mb-1">Manage Products</h2>
-                <p className="text-muted mb-0">Create and maintain your product catalog.</p>
+                <h2 className="mb-1">{isVendor ? "My Products" : "Manage Products"}</h2>
+                <p className="text-muted mb-0">{isVendor ? "Create and maintain the products you sell on Street Shop." : "Create and maintain your product catalog."}</p>
               </div>
-              <button className="btn btn-primary" onClick={() => navigate("/admin/create-product")}>Add product</button>
+              <button className="btn btn-primary" onClick={() => navigate(config.createProductPath)}>Add product</button>
             </div>
 
             <form className="row g-2 mb-3" onSubmit={submitSearch}>
@@ -100,24 +104,25 @@ const ManageProducts = () => {
               <>
                 <div className="table-responsive">
                   <table className="table table-bordered table-hover align-middle">
-                    <thead className="table-light"><tr><th>#</th><th>Product</th><th>SKU</th><th>Category</th><th>Brand</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead>
+                    <thead className="table-light"><tr><th>#</th><th>Product</th><th>SKU</th>{!isVendor && <th>Seller</th>}<th>Category</th><th>Brand</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead>
                     <tbody>
                       {products.length ? products.map((product, index) => (
                         <tr key={product.id}>
                           <td>{(pagination?.from || 1) + index}</td>
                           <td>{product.title}</td>
                           <td>{product.sku}</td>
+                          {!isVendor && <td>{product.vendor?.name || <span className="text-muted">Store</span>}</td>}
                           <td>{product.category?.name || "—"}</td>
                           <td>{product.brand?.name || "—"}</td>
                           <td>{Number(product.price).toFixed(2)}</td>
-                          <td>{product.qty ?? 0}</td>
+                          <td>{product.qty ?? 0}{product.qty != null && product.qty <= 5 && <span className="badge bg-warning text-dark ms-2">Low</span>}</td>
                           <td>{Number(product.status) === 1 ? <span className="badge bg-success">Active</span> : <span className="badge bg-secondary">Inactive</span>}</td>
                           <td className="text-nowrap">
-                            <button className="btn btn-outline-primary btn-sm me-2" onClick={() => navigate(`/admin/edit-product/${product.id}`)}>Edit</button>
+                            <button className="btn btn-outline-primary btn-sm me-2" onClick={() => navigate(config.editProductPath(product.id))}>Edit</button>
                             <button className="btn btn-outline-danger btn-sm" onClick={() => handleDelete(product)}>Delete</button>
                           </td>
                         </tr>
-                      )) : <tr><td colSpan="9" className="text-center text-muted py-4">No products found.</td></tr>}
+                      )) : <tr><td colSpan={columns} className="text-center text-muted py-4">{isVendor && !filters.search && filters.status === "" ? "You haven’t listed any products yet. Use “Add product” to create your first listing." : "No products found."}</td></tr>}
                     </tbody>
                   </table>
                 </div>

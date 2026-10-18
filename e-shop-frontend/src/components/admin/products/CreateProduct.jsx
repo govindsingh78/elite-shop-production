@@ -5,6 +5,7 @@ import Sidebar from "../../common/Sidebar";
 import { apiUrl } from "../../common/http";
 import { toast } from "react-toastify";
 import ProductForm from "./ProductForm";
+import { portalConfig, portalToken } from "../portal";
 
 const initialValues = {
   title: "", price: "", compare_price: "", description: "", short_description: "",
@@ -12,7 +13,8 @@ const initialValues = {
   is_featured: "no", gallery: [],
 };
 
-const CreateProduct = () => {
+const CreateProduct = ({ portal = "admin" }) => {
+  const config = portalConfig(portal);
   const [values, setValues] = useState(initialValues);
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
@@ -24,9 +26,8 @@ const CreateProduct = () => {
   useEffect(() => {
     const fetchOptions = async () => {
       try {
-        const token = localStorage.getItem("adminToken");
-        const response = await fetch(`${apiUrl}/admin/product-options`, {
-          headers: { Accept: "application/json", Authorization: `Bearer ${token || ""}` },
+        const response = await fetch(`${apiUrl}/${config.api}/product-options`, {
+          headers: { Accept: "application/json", Authorization: `Bearer ${portalToken(portal) || ""}` },
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || "Unable to load categories and brands.");
@@ -39,15 +40,15 @@ const CreateProduct = () => {
       }
     };
     fetchOptions();
-  }, []);
+  }, [portal, config]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
     setErrors({});
     try {
-      const token = localStorage.getItem("adminToken");
-      if (!token) throw new Error("Your admin session has expired. Sign in again.");
+      const token = portalToken(portal);
+      if (!token) throw new Error(config.sessionExpired);
       const payload = {
         ...values,
         price: Number(values.price),
@@ -58,7 +59,7 @@ const CreateProduct = () => {
         status: Number(values.status),
         gallery: values.gallery.map((image) => image.id),
       };
-      const response = await fetch(`${apiUrl}/admin/products`, {
+      const response = await fetch(`${apiUrl}/${config.api}/products`, {
         method: "POST",
         headers: { Accept: "application/json", "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload),
@@ -72,7 +73,7 @@ const CreateProduct = () => {
       }
       if (!response.ok) throw new Error(data.message || "Unable to create product.");
       toast.success(data.message || "Product created.");
-      navigate("/admin/manage-products");
+      navigate(config.productsPath);
     } catch (error) {
       setErrors({ general: error.message || "Unable to create product." });
     } finally {
@@ -82,11 +83,11 @@ const CreateProduct = () => {
 
   return (
     <Layout>
-      <div className="container py-5"><div className="d-flex"><Sidebar /><main className="container-fluid p-4">
-        <h2 className="mb-4">Create Product</h2>
+      <div className="container py-5"><div className="d-flex"><Sidebar variant={config.sidebar} /><main className="container-fluid p-4">
+        <h2 className="mb-4">{portal === "vendor" ? "List a new product" : "Create Product"}</h2>
         {loadingOptions ? <p role="status">Loading categories and brands...</p> : (
           <div className="card shadow-sm"><div className="card-body">
-            <ProductForm values={values} setValues={setValues} categories={categories} brands={brands} onSubmit={handleSubmit} errors={errors} loading={loading} submitLabel="Create product" />
+            <ProductForm portal={portal} values={values} setValues={setValues} categories={categories} brands={brands} onSubmit={handleSubmit} errors={errors} loading={loading} submitLabel="Create product" />
           </div></div>
         )}
       </main></div></div>

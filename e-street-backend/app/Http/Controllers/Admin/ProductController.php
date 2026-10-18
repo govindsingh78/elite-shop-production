@@ -15,8 +15,8 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $products = Product::query()
-            ->with(['category:id,name', 'brand:id,name'])
+        $products = $this->productQuery($request)
+            ->with(['category:id,name', 'brand:id,name', 'vendor:id,name'])
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->string('search')->trim()->toString();
                 $query->where(function ($query) use ($search) {
@@ -40,8 +40,10 @@ class ProductController extends Controller
         ], 200);
     }
 
-    public function show(Product $product)
+    public function show(Request $request, Product $product)
     {
+        $this->authorizeProduct($request, $product);
+
         return response()->json($product->load(['category:id,name', 'brand:id,name', 'images']), 200);
     }
 
@@ -53,6 +55,7 @@ class ProductController extends Controller
         unset($validated['gallery']);
         // The existing products schema stores barcode as a non-null string.
         $validated['barcode'] ??= '';
+        $validated = $this->prepareAttributes($request, $validated, null);
 
         $product = DB::transaction(function () use ($validated, $galleryIds) {
             $product = Product::create($validated);
@@ -68,9 +71,11 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
+        $this->authorizeProduct($request, $product);
         $validated = $request->validate($this->rules($product));
         $galleryIds = $validated['gallery'] ?? [];
         unset($validated['gallery']);
+        $validated = $this->prepareAttributes($request, $validated, $product);
 
         DB::transaction(function () use ($product, $validated, $galleryIds) {
             $product->update($validated);
@@ -85,8 +90,10 @@ class ProductController extends Controller
         ], 200);
     }
 
-    public function destroy(Product $product)
+    public function destroy(Request $request, Product $product)
     {
+        $this->authorizeProduct($request, $product);
+
         DB::transaction(function () use ($product) {
             $product->images()->delete();
             $product->delete();
@@ -95,7 +102,24 @@ class ProductController extends Controller
         return response()->json(['message' => 'Product deleted successfully.'], 200);
     }
 
-    private function rules(?Product $product = null): array
+    /** Products this user may manage. Admins see the whole catalog. */
+    protected function productQuery(Request $request)
+    {
+        return Product::query();
+    }
+
+    /** Stops a user from touching a product outside productQuery(). Admins may manage any product. */
+    protected function authorizeProduct(Request $request, Product $product): void
+    {
+    }
+
+    /** Final adjustments to validated attributes before saving. */
+    protected function prepareAttributes(Request $request, array $validated, ?Product $product): array
+    {
+        return $validated;
+    }
+
+    protected function rules(?Product $product = null): array
     {
         return [
             'title' => ['required', 'string', 'max:255'],

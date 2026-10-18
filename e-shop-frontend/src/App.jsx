@@ -34,6 +34,13 @@ import VendorRegister from './components/common/VendorRegister';
 import VendorDashboard from './components/admin/VendorDashboard';
 import { CartProvider } from './components/context/CartContext';
 import OrderConfirmation from './components/common/OrderConfirmation';
+import CustomerLogin from './components/customer/CustomerLogin';
+import CustomerRegister from './components/customer/CustomerRegister';
+import CustomerDashboard from './components/customer/CustomerDashboard';
+import CustomerOrders from './components/customer/CustomerOrders';
+import CustomerOrderDetails from './components/customer/CustomerOrderDetails';
+import CustomerAddresses from './components/customer/CustomerAddresses';
+import CustomerProfile from './components/customer/CustomerProfile';
 
 function App() {
   return (
@@ -54,6 +61,48 @@ function App() {
           <Route path="/vendor/register" element={<VendorRegister />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/customer/login" element={<CustomerLogin />} />
+          <Route path="/customer/register" element={<CustomerRegister />} />
+          <Route
+            path="/customer/dashboard"
+            element={
+              <AdminRequireAuth role="customer">
+                <CustomerDashboard />
+              </AdminRequireAuth>
+            }
+          />
+          <Route
+            path="/customer/orders"
+            element={
+              <AdminRequireAuth role="customer">
+                <CustomerOrders />
+              </AdminRequireAuth>
+            }
+          />
+          <Route
+            path="/customer/orders/:id"
+            element={
+              <AdminRequireAuth role="customer">
+                <CustomerOrderDetails />
+              </AdminRequireAuth>
+            }
+          />
+          <Route
+            path="/customer/addresses"
+            element={
+              <AdminRequireAuth role="customer">
+                <CustomerAddresses />
+              </AdminRequireAuth>
+            }
+          />
+          <Route
+            path="/customer/profile"
+            element={
+              <AdminRequireAuth role="customer">
+                <CustomerProfile />
+              </AdminRequireAuth>
+            }
+          />
           <Route
             path="/vendor/dashboard"
             element={
@@ -62,6 +111,12 @@ function App() {
               </AdminRequireAuth>
             }
           />
+          <Route path="/vendor/products" element={<AdminRequireAuth role="vendor"><ManageProducts portal="vendor" /></AdminRequireAuth>} />
+          <Route path="/vendor/products/create" element={<AdminRequireAuth role="vendor"><CreateProduct portal="vendor" /></AdminRequireAuth>} />
+          <Route path="/vendor/products/:id/edit" element={<AdminRequireAuth role="vendor"><EditProduct portal="vendor" /></AdminRequireAuth>} />
+          <Route path="/vendor/orders" element={<AdminRequireAuth role="vendor"><ManageOrders portal="vendor" /></AdminRequireAuth>} />
+          <Route path="/vendor/orders/:id" element={<AdminRequireAuth role="vendor"><OrderDetails portal="vendor" /></AdminRequireAuth>} />
+          <Route path="/vendor/change-password" element={<AdminRequireAuth role="vendor"><ChangePassword portal="vendor" /></AdminRequireAuth>} />
           <Route
             path="/admin/dashboard"
             element={
@@ -216,8 +271,9 @@ function App() {
             }
           />
         </Routes>
+        {/* Inside the router so toast messages can contain <Link>s. */}
+        <ToastContainer />
       </BrowserRouter>
-      <ToastContainer />
       </CartProvider>
     </AdminAuthProvider>
   );

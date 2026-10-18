@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    // Online payments (UPI, net banking, cards). Online checkout is hidden until both keys are set.
+    'razorpay' => [
+        'key_id' => env('RAZORPAY_KEY_ID'),
+        'key_secret' => env('RAZORPAY_KEY_SECRET'),
+        'webhook_secret' => env('RAZORPAY_WEBHOOK_SECRET'),
+    ],
+
 ];

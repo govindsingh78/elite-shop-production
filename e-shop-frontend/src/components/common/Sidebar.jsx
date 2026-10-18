@@ -1,6 +1,7 @@
 import React, { useContext, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { AdminAuthContext } from "../context/AdminAuth";
+import { BrandMark } from "./BrandLogo";
 
 const adminLinks = [
   { label: "Overview", to: "/admin/dashboard", icon: <><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></> },
@@ -14,37 +15,53 @@ const adminLinks = [
 
 const vendorLinks = [
   { label: "Overview", to: "/vendor/dashboard", icon: <><rect x="3" y="3" width="8" height="8" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="13" y="13" width="8" height="8" rx="1.5" /></> },
+  { label: "My products", to: "/vendor/products", icon: <><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z" /><path d="m4.4 7.7 7.6 4.4 7.6-4.4M12 12v9" /></> },
+  { label: "My orders", to: "/vendor/orders", icon: <><path d="M5 3h14v18l-2.5-1.7L14 21l-2-1.7L9.5 21 7 19.3 5 21V3Z" /><path d="M8 8h8M8 12h8M8 16h4" /></> },
   { label: "Visit storefront", to: "/shop", icon: <><path d="M3 10V5h18v5M5 10v10h14V10M9 20v-6h6v6" /><path d="M3 10a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0" /></> },
 ];
 
-const NavIcon = ({ children }) => <svg className="admin-sidebar-icon" viewBox="0 0 24 24" aria-hidden="true">{children}</svg>;
+const customerLinks = [
+  { label: "Overview", to: "/customer/dashboard", icon: <><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></> },
+  { label: "My orders", to: "/customer/orders", icon: <><path d="M5 8h14l-1 13H6L5 8Z" /><path d="M9 9V6a3 3 0 0 1 6 0v3" /></> },
+  { label: "Addresses", to: "/customer/addresses", icon: <><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z" /><circle cx="12" cy="9.5" r="2.5" /></> },
+  { label: "Profile & security", to: "/customer/profile", icon: <><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 1 1 8 0v3M12 14v3" /></> },
+  { label: "Continue shopping", to: "/shop", icon: <><path d="M3 10V5h18v5M5 10v10h14V10M9 20v-6h6v6" /><path d="M3 10a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0" /></> },
+];
+
+const variants = {
+  admin: { links: adminLinks, home: "/admin/dashboard", login: "/admin/login", passwordPath: "/admin/change-password", role: "STORE CONTROL", menu: "Store menu", fallbackName: "Store administrator", fallbackEmail: "Administrator", label: "Admin navigation" },
+  vendor: { links: vendorLinks, home: "/vendor/dashboard", login: "/vendor/login", passwordPath: "/vendor/change-password", role: "PARTNER PORTAL", menu: "Vendor menu", fallbackName: "Vendor account", fallbackEmail: "Vendor", label: "Vendor navigation" },
+  customer: { links: customerLinks, home: "/customer/dashboard", login: "/customer/login", role: "MY ACCOUNT", menu: "Account menu", fallbackName: "My account", fallbackEmail: "Customer", label: "Account navigation" },
+};
+
+const NavIcon =({ children }) => <svg className="admin-sidebar-icon" viewBox="0 0 24 24" aria-hidden="true">{children}</svg>;
 
 const Sidebar = ({ variant = "admin" }) => {
   const { user, logout } = useContext(AdminAuthContext);
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const isVendor = variant === "vendor";
-  const links = isVendor ? vendorLinks : adminLinks;
+  const config = variants[variant] || variants.admin;
+  const links = config.links;
   const profile = user?.user || user;
-  const name = profile?.name || (isVendor ? "Vendor account" : "Store administrator");
-  const role = isVendor ? "PARTNER PORTAL" : "STORE CONTROL";
+  const name = profile?.name || config.fallbackName;
+  const role = config.role;
 
   const signOut = () => {
     logout();
-    navigate(isVendor ? "/vendor/login" : "/admin/login", { replace: true });
+    navigate(config.login, { replace: true });
   };
 
   return (
     <div className="admin-sidebar-shell">
       <button className="admin-sidebar-mobile-toggle" type="button" aria-expanded={mobileOpen} onClick={() => setMobileOpen((open) => !open)}>
-        <span className="admin-sidebar-toggle-mark">PW</span>
-        <span>{isVendor ? "Vendor menu" : "Store menu"}</span>
+        <BrandMark size={34} />
+        <span>{config.menu}</span>
         <span className={`admin-sidebar-chevron${mobileOpen ? " is-open" : ""}`} aria-hidden="true">⌄</span>
       </button>
-      <aside className={`admin-sidebar${mobileOpen ? " is-open" : ""}`} aria-label={isVendor ? "Vendor navigation" : "Admin navigation"}>
-        <Link to={isVendor ? "/vendor/dashboard" : "/admin/dashboard"} className="admin-sidebar-brand">
-          <span className="admin-sidebar-brand-mark">PW</span>
-          <span className="admin-sidebar-brand-copy"><strong>Pure Wear</strong><small>{role}</small></span>
+      <aside className={`admin-sidebar${mobileOpen ? " is-open" : ""}`} aria-label={config.label}>
+        <Link to={config.home} className="admin-sidebar-brand">
+          <BrandMark size={42} className="admin-sidebar-brand-logo" />
+          <span className="admin-sidebar-brand-copy"><strong>Street Shop</strong><small>{role}</small></span>
         </Link>
 
         <div className="admin-sidebar-section-label">WORKSPACE</div>
@@ -53,7 +70,7 @@ const Sidebar = ({ variant = "admin" }) => {
             <NavLink
               key={item.to}
               to={item.to}
-              end={item.to.endsWith("dashboard")}
+              end={item.to.endsWith("dashboard") || item.to === "/shop"}
               onClick={() => setMobileOpen(false)}
               className={({ isActive }) => `admin-sidebar-link${isActive ? " is-active" : ""}`}
             >
@@ -64,10 +81,10 @@ const Sidebar = ({ variant = "admin" }) => {
           ))}
         </nav>
 
-        {!isVendor && <>
+        {config.passwordPath && <>
           <div className="admin-sidebar-section-label admin-sidebar-preferences-label">PREFERENCES</div>
           <nav className="admin-sidebar-nav">
-            <NavLink to="/admin/change-password" onClick={() => setMobileOpen(false)} className={({ isActive }) => `admin-sidebar-link${isActive ? " is-active" : ""}`}>
+            <NavLink to={config.passwordPath} onClick={() => setMobileOpen(false)} className={({ isActive }) => `admin-sidebar-link${isActive ? " is-active" : ""}`}>
               <NavIcon><><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 1 1 8 0v3M12 14v3" /></></NavIcon>
               <span>Change password</span>
               <span className="admin-sidebar-link-arrow" aria-hidden="true">↗</span>
@@ -78,7 +95,7 @@ const Sidebar = ({ variant = "admin" }) => {
         <div className="admin-sidebar-spacer" />
         <div className="admin-sidebar-profile">
           <span className="admin-sidebar-avatar">{name.trim().charAt(0).toUpperCase()}</span>
-          <span className="admin-sidebar-profile-copy"><strong>{name}</strong><small>{profile?.email || (isVendor ? "Vendor" : "Administrator")}</small></span>
+          <span className="admin-sidebar-profile-copy"><strong>{name}</strong><small>{profile?.email || config.fallbackEmail}</small></span>
           <button className="admin-sidebar-logout" type="button" onClick={signOut} aria-label="Sign out" title="Sign out">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5M15 12H3M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6" /></svg>
           </button>

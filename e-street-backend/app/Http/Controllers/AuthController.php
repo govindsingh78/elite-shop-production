@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Str;
 use App\Models\User;
+use App\Http\Requests\CustomerAddressRequest;
 
 class AuthController extends Controller
 {
@@ -24,6 +26,11 @@ class AuthController extends Controller
     public function vendorLogin(Request $request)
     {
         return $this->authenticateForPortal($request, 'vendor');
+    }
+
+    public function customerLogin(Request $request)
+    {
+        return $this->authenticateForPortal($request, 'customer');
     }
 
     private function authenticateForPortal(Request $request, string $portal)
@@ -50,12 +57,14 @@ class AuthController extends Controller
                 ], 401);
         }
 
-        $allowedRoles = $portal === 'admin' ? ['admin', 'superadmin'] : ['seller'];
+        $allowedRoles = match ($portal) {
+            'admin' => ['admin', 'superadmin'],
+            'vendor' => ['seller'],
+            default => ['customer'],
+        };
         if (!in_array($user->role, $allowedRoles, true)) {
             return response()->json([
-                'message' => $portal === 'admin'
-                    ? 'This account cannot access the admin portal.'
-                    : 'This account cannot access the vendor portal.',
+                'message' => "This account cannot access the {$portal} portal.",
                 'status' => 403,
             ], 403);
         }
@@ -71,22 +80,50 @@ class AuthController extends Controller
         ]);
     }
 
+    /** Register a customer account. A delivery address is mandatory and becomes the default. */
     public function register(Request $request)
     {
+        $addressRules = CustomerAddressRequest::addressRules();
+        unset($addressRules['full_name'], $addressRules['is_default']);
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-        ]);
+            ...$addressRules,
+        ], CustomerAddressRequest::addressMessages());
 
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'role' => 'customer',
-        ]);
+        $user = DB::transaction(function () use ($validated) {
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone'],
+                'password' => Hash::make($validated['password']),
+                'role' => 'customer',
+            ]);
 
-        return response()->json(['message' => 'Account created successfully.', 'user' => $user], 201);
+            $user->addresses()->create([
+                'label' => $validated['label'] ?? 'Home',
+                'full_name' => $validated['name'],
+                'phone' => $validated['phone'],
+                'address' => $validated['address'],
+                'city' => $validated['city'],
+                'state' => $validated['state'],
+                'postal_code' => $validated['postal_code'],
+                'country' => $validated['country'] ?? 'India',
+                'is_default' => true,
+            ]);
+
+            return $user;
+        });
+
+        return response()->json([
+            'status' => 201,
+            'message' => 'Account created successfully.',
+            'token' => $user->createToken('customer_auth_token')->plainTextToken,
+            'user' => $user,
+            'portal' => 'customer',
+        ], 201);
     }
 
     /** Register a vendor account. New vendors are sellers and await review. */

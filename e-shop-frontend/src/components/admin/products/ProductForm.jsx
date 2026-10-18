@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { apiUrl } from "../../common/http";
+import { portalConfig, portalToken } from "../portal";
 
 const apiOrigin = apiUrl.replace(/\/api\/?$/, "");
 
 const ProductForm = ({
+  portal = "admin",
   values,
   setValues,
   categories,
@@ -29,8 +31,8 @@ const ProductForm = ({
     setUploading(true);
     setUploadError("");
     try {
-      const token = localStorage.getItem("adminToken");
-      if (!token) throw new Error("Your admin session has expired. Sign in again.");
+      const token = portalToken(portal);
+      if (!token) throw new Error(portalConfig(portal).sessionExpired);
 
       const uploaded = await Promise.all(files.map(async (file) => {
         const formData = new FormData();
@@ -135,13 +137,15 @@ const ProductForm = ({
           <input id="qty" name="qty" type="number" min="0" step="1" className={`form-control ${errors.qty ? "is-invalid" : ""}`} value={values.qty} onChange={handleChange} />
           {fieldError("qty")}
         </div>
-        <div className="col-md-3 mb-3">
-          <label htmlFor="is_featured" className="form-label">Featured</label>
-          <select id="is_featured" name="is_featured" className="form-select" value={values.is_featured} onChange={handleChange}>
-            <option value="no">No</option>
-            <option value="yes">Yes</option>
-          </select>
-        </div>
+        {portal === "admin" && (
+          <div className="col-md-3 mb-3">
+            <label htmlFor="is_featured" className="form-label">Featured</label>
+            <select id="is_featured" name="is_featured" className="form-select" value={values.is_featured} onChange={handleChange}>
+              <option value="no">No</option>
+              <option value="yes">Yes</option>
+            </select>
+          </div>
+        )}
       </div>
 
       <div className="row">

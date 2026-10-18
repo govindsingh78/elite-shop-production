@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Product extends Model
 {
     protected $fillable = [
+        'vendor_id',
         'title',
         'price',
         'compare_price',
@@ -28,6 +29,11 @@ class Product extends Model
         'status' => 'integer',
         'qty' => 'integer',
     ];
+
+    public function vendor()
+    {
+        return $this->belongsTo(User::class, 'vendor_id');
+    }
 
     public function category()
     {

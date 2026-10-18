@@ -19,6 +19,16 @@ class User extends Authenticatable
         $this->notify(new ResetPasswordNotification($token));
     }
 
+    public function addresses()
+    {
+        return $this->hasMany(CustomerAddress::class);
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
     /**
      * The attributes that are mass assignable.
      *
@@ -27,6 +37,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'phone',
         'role',
         'password',
     ];

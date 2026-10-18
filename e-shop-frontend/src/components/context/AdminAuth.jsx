@@ -28,12 +28,15 @@ export const AdminAuthProvider = ({ children }) => {
         } else if (authData.portal === "vendor") {
             localStorage.setItem("vendor", JSON.stringify(authData));
             localStorage.setItem("vendorToken", authData.token);
+        } else if (authData.portal === "customer") {
+            localStorage.setItem("customer", JSON.stringify(authData.user));
+            localStorage.setItem("customerToken", authData.token);
         }
         setUser(authData);
     };
 
     const logout = () => {
-        ["admin", "adminToken", "vendor", "vendorToken", "authUser", "authToken"].forEach((key) => localStorage.removeItem(key));
+        ["admin", "adminToken", "vendor", "vendorToken", "customer", "customerToken", "authUser", "authToken"].forEach((key) => localStorage.removeItem(key));
         setUser(null);
     };
 

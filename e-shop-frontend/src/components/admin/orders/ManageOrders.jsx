@@ -3,11 +3,14 @@ import { useNavigate } from "react-router-dom";
 import Layout from "../../common/Layout";
 import Sidebar from "../../common/Sidebar";
 import { apiUrl } from "../../common/http";
+import { portalConfig, portalToken } from "../portal";
 
 const orderStatuses = ["pending", "processing", "shipped", "delivered", "cancelled"];
 const money = (value) => Number(value || 0).toFixed(2);
 
-const ManageOrders = () => {
+const ManageOrders = ({ portal = "admin" }) => {
+  const config = portalConfig(portal);
+  const isVendor = portal === "vendor";
   const [orders, setOrders] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [searchInput, setSearchInput] = useState("");
@@ -20,12 +23,12 @@ const ManageOrders = () => {
     setLoading(true);
     setError("");
     try {
-      const token = localStorage.getItem("adminToken");
-      if (!token) throw new Error("Your admin session has expired. Sign in again.");
+      const token = portalToken(portal);
+      if (!token) throw new Error(config.sessionExpired);
       const params = new URLSearchParams({ page: String(filters.page) });
       if (filters.search) params.set("search", filters.search);
       if (filters.status) params.set("status", filters.status);
-      const response = await fetch(`${apiUrl}/admin/orders?${params}`, {
+      const response = await fetch(`${apiUrl}/${config.api}/orders?${params}`, {
         headers: { Accept: "application/json", Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
@@ -37,7 +40,7 @@ const ManageOrders = () => {
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [filters, portal, config]);
 
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
@@ -49,10 +52,9 @@ const ManageOrders = () => {
   const handleDelete = async (order) => {
     if (!window.confirm(`Delete order #${order.id}? This cannot be undone.`)) return;
     try {
-      const token = localStorage.getItem("adminToken");
       const response = await fetch(`${apiUrl}/admin/orders/${order.id}`, {
         method: "DELETE",
-        headers: { Accept: "application/json", Authorization: `Bearer ${token || ""}` },
+        headers: { Accept: "application/json", Authorization: `Bearer ${portalToken(portal) || ""}` },
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || "Unable to delete order.");
@@ -78,17 +80,17 @@ const ManageOrders = () => {
     <Layout>
       <div className="container py-5">
         <div className="d-flex">
-          <Sidebar />
+          <Sidebar variant={config.sidebar} />
           <main className="container-fluid p-4">
             <div className="mb-4">
-              <h2 className="mb-1">Manage Orders</h2>
-              <p className="text-muted mb-0">Review orders, update fulfillment, and manage tracking.</p>
+              <h2 className="mb-1">{isVendor ? "My Orders" : "Manage Orders"}</h2>
+              <p className="text-muted mb-0">{isVendor ? "Orders that include your products. Ship them and keep customers updated." : "Review orders, update fulfillment, and manage tracking."}</p>
             </div>
 
             <form className="row g-2 mb-3" onSubmit={handleSearch}>
               <div className="col-sm-6 col-lg-5">
                 <label htmlFor="order-search" className="visually-hidden">Search orders</label>
-                <input id="order-search" className="form-control" placeholder="Search order #, customer, email, tracking" value={searchInput} onChange={(event) => setSearchInput(event.target.value)} />
+                <input id="order-search" className="form-control" placeholder={isVendor ? "Search order #, customer, tracking" : "Search order #, customer, email, tracking"} value={searchInput} onChange={(event) => setSearchInput(event.target.value)} />
               </div>
               <div className="col-sm-4 col-lg-3">
                 <label htmlFor="order-status-filter" className="visually-hidden">Filter status</label>
@@ -105,23 +107,23 @@ const ManageOrders = () => {
               <>
                 <div className="table-responsive">
                   <table className="table table-bordered table-hover align-middle">
-                    <thead className="table-light"><tr><th>Order</th><th>Customer</th><th>Placed</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th><th>Actions</th></tr></thead>
+                    <thead className="table-light"><tr><th>Order</th><th>Customer</th><th>Placed</th><th>{isVendor ? "Your items" : "Items"}</th><th>{isVendor ? "Your sales" : "Total"}</th><th>Payment</th><th>Status</th><th>Actions</th></tr></thead>
                     <tbody>
                       {orders.length ? orders.map((order) => (
                         <tr key={order.id}>
                           <td>#{order.id}</td>
-                          <td>{order.customer_name}<div className="small text-muted">{order.customer_email}</div></td>
+                          <td>{order.customer_name}{!isVendor && <div className="small text-muted">{order.customer_email}</div>}{isVendor && <div className="small text-muted">{order.city}</div>}</td>
                           <td>{order.created_at ? new Date(order.created_at).toLocaleDateString() : "—"}</td>
                           <td>{order.items_count ?? "—"}</td>
-                          <td>{money(order.total)}</td>
+                          <td>{money(isVendor ? order.vendor_subtotal : order.total)}</td>
                           <td className="text-capitalize">{order.payment_method} · {order.payment_status}</td>
-                          <td><span className={`badge text-capitalize ${statusClass(order.status)}`}>{order.status}</span></td>
+                          <td><span className={`badge text-capitalize ${statusClass(order.status)}`}>{order.status}</span>{order.latest_tracking_event?.location && <small className="d-block text-muted mt-1">📍 {order.latest_tracking_event.location}</small>}</td>
                           <td className="text-nowrap">
-                            <button className="btn btn-outline-primary btn-sm me-2" onClick={() => navigate(`/admin/manage-orders/${order.id}`)}>View / update</button>
-                            <button className="btn btn-outline-danger btn-sm" onClick={() => handleDelete(order)}>Delete</button>
+                            <button className="btn btn-outline-primary btn-sm me-2" onClick={() => navigate(config.orderPath(order.id))}>{isVendor ? "View / ship" : "View / update"}</button>
+                            {!isVendor && <button className="btn btn-outline-danger btn-sm" onClick={() => handleDelete(order)}>Delete</button>}
                           </td>
                         </tr>
-                      )) : <tr><td colSpan="8" className="text-center text-muted py-4">No orders found.</td></tr>}
+                      )) : <tr><td colSpan="8" className="text-center text-muted py-4">{isVendor && !filters.search && !filters.status ? "No orders yet. Orders for your products will appear here." : "No orders found."}</td></tr>}
                     </tbody>
                   </table>
                 </div>

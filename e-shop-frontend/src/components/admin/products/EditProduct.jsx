@@ -5,6 +5,7 @@ import Sidebar from "../../common/Sidebar";
 import { apiUrl } from "../../common/http";
 import { toast } from "react-toastify";
 import ProductForm from "./ProductForm";
+import { portalConfig, portalToken } from "../portal";
 
 const apiOrigin = apiUrl.replace(/\/api\/?$/, "");
 const emptyValues = {
@@ -13,7 +14,8 @@ const emptyValues = {
   is_featured: "no", gallery: [],
 };
 
-const EditProduct = () => {
+const EditProduct = ({ portal = "admin" }) => {
+  const config = portalConfig(portal);
   const { id } = useParams();
   const navigate = useNavigate();
   const [values, setValues] = useState(emptyValues);
@@ -27,12 +29,12 @@ const EditProduct = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem("adminToken");
-        if (!token) throw new Error("Your admin session has expired. Sign in again.");
+        const token = portalToken(portal);
+        if (!token) throw new Error(config.sessionExpired);
         const headers = { Accept: "application/json", Authorization: `Bearer ${token}` };
         const [productResponse, optionsResponse] = await Promise.all([
-          fetch(`${apiUrl}/admin/products/${id}`, { headers }),
-          fetch(`${apiUrl}/admin/product-options`, { headers }),
+          fetch(`${apiUrl}/${config.api}/products/${id}`, { headers }),
+          fetch(`${apiUrl}/${config.api}/product-options`, { headers }),
         ]);
         const productData = await productResponse.json();
         const optionsData = await optionsResponse.json();
@@ -68,15 +70,15 @@ const EditProduct = () => {
       }
     };
     fetchData();
-  }, [id]);
+  }, [id, portal, config]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
     setErrors({});
     try {
-      const token = localStorage.getItem("adminToken");
-      if (!token) throw new Error("Your admin session has expired. Sign in again.");
+      const token = portalToken(portal);
+      if (!token) throw new Error(config.sessionExpired);
       const payload = {
         ...values,
         price: Number(values.price),
@@ -87,7 +89,7 @@ const EditProduct = () => {
         status: Number(values.status),
         gallery: values.gallery.map((image) => image.id),
       };
-      const response = await fetch(`${apiUrl}/admin/products/${id}`, {
+      const response = await fetch(`${apiUrl}/${config.api}/products/${id}`, {
         method: "PUT",
         headers: { Accept: "application/json", "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload),
@@ -101,7 +103,7 @@ const EditProduct = () => {
       }
       if (!response.ok) throw new Error(data.message || "Unable to update product.");
       toast.success(data.message || "Product updated.");
-      navigate("/admin/manage-products");
+      navigate(config.productsPath);
     } catch (error) {
       setErrors({ general: error.message || "Unable to update product." });
     } finally {
@@ -111,7 +113,7 @@ const EditProduct = () => {
 
   return (
     <Layout>
-      <div className="container py-5"><div className="d-flex"><Sidebar /><main className="container-fluid p-4">
+      <div className="container py-5"><div className="d-flex"><Sidebar variant={config.sidebar} /><main className="container-fluid p-4">
         <h2 className="mb-4">Edit Product</h2>
         {loadingData ? <p role="status">Loading product...</p> : (
           <div className="card shadow-sm"><div className="card-body">
@@ -126,10 +128,10 @@ const EditProduct = () => {
                 <p className="form-text">Existing images are retained. Add more images below if needed.</p>
               </div>
             )}
-            <ProductForm values={values} setValues={setValues} categories={categories} brands={brands} onSubmit={handleSubmit} errors={errors} loading={loading} submitLabel="Save changes" />
+            <ProductForm portal={portal} values={values} setValues={setValues} categories={categories} brands={brands} onSubmit={handleSubmit} errors={errors} loading={loading} submitLabel="Save changes" />
           </div></div>
         )}
-        {!loadingData && errors.general && <button className="btn btn-link mt-2" onClick={() => navigate("/admin/manage-products")}>Back to products</button>}
+        {!loadingData && errors.general && <button className="btn btn-link mt-2" onClick={() => navigate(config.productsPath)}>Back to products</button>}
       </main></div></div>
     </Layout>
   );

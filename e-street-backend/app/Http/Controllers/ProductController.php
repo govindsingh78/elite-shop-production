@@ -18,6 +18,7 @@ class ProductController extends Controller
             'min_price' => ['nullable', 'numeric', 'min:0'],
             'max_price' => ['nullable', 'numeric', 'min:0'],
             'brand_id' => ['nullable', 'integer', 'min:1'],
+            'sort' => ['nullable', 'in:newest,price_asc,price_desc'],
         ]);
 
         if ($request->filled('min_price') && $request->filled('max_price')
@@ -64,6 +65,8 @@ class ProductController extends Controller
         $products = (clone $filteredProducts)
             ->when($minPrice !== null && $minPrice !== '', fn ($query) => $query->where('price', '>=', (float) $minPrice))
             ->when($maxPrice !== null && $maxPrice !== '', fn ($query) => $query->where('price', '<=', (float) $maxPrice))
+            ->when($request->input('sort') === 'price_asc', fn ($query) => $query->orderBy('price'))
+            ->when($request->input('sort') === 'price_desc', fn ($query) => $query->orderByDesc('price'))
             ->orderByDesc('id')
             ->paginate(12);
 
