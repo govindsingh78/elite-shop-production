@@ -142,7 +142,7 @@ const Product = () => {
                         <img key={selectedImage} src={`${imageBase}/uploads/products/large/${encodeURIComponent(selectedImage)}`} alt={product.title} style={zoom ? { transformOrigin: zoom } : undefined} />
                       </div>
                     ) : (
-                      <div className="pd-stage-placeholder">STREET SHOP<span>Image coming soon</span></div>
+                      <div className="pd-stage-placeholder">ELITE SHOP<span>Image coming soon</span></div>
                     )}
                     {images.length > 1 && <>
                       <button type="button" className="pd-nav pd-nav--prev" onClick={() => showImage(-1)} aria-label="Previous image">‹</button>

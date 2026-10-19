@@ -191,7 +191,7 @@ const Checkout = () => {
         order_id: session.razorpay_order_id,
         amount: session.amount,
         currency: session.currency,
-        name: "Street Shop",
+        name: "Elite Shop",
         description: `Order #${order.id}`,
         prefill: session.prefill,
         notes: { order_id: String(order.id) },

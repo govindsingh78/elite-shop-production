@@ -78,7 +78,7 @@ const ManageProducts = ({ portal = "admin" }) => {
             <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
               <div>
                 <h2 className="mb-1">{isVendor ? "My Products" : "Manage Products"}</h2>
-                <p className="text-muted mb-0">{isVendor ? "Create and maintain the products you sell on Street Shop." : "Create and maintain your product catalog."}</p>
+                <p className="text-muted mb-0">{isVendor ? "Create and maintain the products you sell on Elite Shop." : "Create and maintain your product catalog."}</p>
               </div>
               <button className="btn btn-primary" onClick={() => navigate(config.createProductPath)}>Add product</button>
             </div>

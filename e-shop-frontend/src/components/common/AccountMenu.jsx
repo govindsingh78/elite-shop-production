@@ -77,9 +77,17 @@ const AccountMenu = ({ onNavigate }) => {
 
   return (
     <Dropdown align="end" className={`account-menu account-menu--${portal?.accent || "guest"}`}>
-      <Dropdown.Toggle bsPrefix="store-icon-link" className={portal ? "account-menu-toggle is-signed-in" : "account-menu-toggle"} aria-label={portal ? `Account menu for ${profile?.name}` : "Sign in"} title={portal ? profile?.name : "Sign in"}>
-        {portal ? <span className="account-menu-initial">{initial}</span> : <Icon name="user" />}
-        {portal && <span className="account-menu-status" aria-hidden="true" />}
+      {/* as="button" + custom bsPrefix: avoids react-bootstrap's default "btn btn-primary dropdown-toggle" styling. */}
+      <Dropdown.Toggle as="button" type="button" bsPrefix="header-action" className={`header-account${portal ? " is-signed-in" : ""}`} aria-label={portal ? `Account menu for ${profile?.name}` : "Sign in or create an account"}>
+        <span className="header-account-avatar">
+          {portal ? <span className="account-menu-initial">{initial}</span> : <Icon name="user" />}
+          {portal && <span className="account-menu-status" aria-hidden="true" />}
+        </span>
+        <span className="header-action-copy">
+          <small>{portal ? `Hello, ${profile?.name?.split(" ")[0] || "there"}` : "Hello, sign in"}</small>
+          <strong>{portal ? portal.label.replace("Customer account", "My account") : "Account"}</strong>
+        </span>
+        <svg className="header-account-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5" /></svg>
       </Dropdown.Toggle>
 
       <Dropdown.Menu className="account-menu-panel">
@@ -104,7 +112,7 @@ const AccountMenu = ({ onNavigate }) => {
             <div className="account-menu-hero account-menu-hero--guest">
               <span className="account-menu-avatar"><Icon name="user" /></span>
               <div className="account-menu-hero-copy">
-                <strong>Welcome to Street Shop</strong>
+                <strong>Welcome to Elite Shop</strong>
                 <small>Sign in to track orders and check out faster.</small>
               </div>
             </div>
@@ -115,7 +123,7 @@ const AccountMenu = ({ onNavigate }) => {
             <div className="account-menu-section">For business</div>
             <div className="account-menu-list">
               {item(["Vendor login", "/vendor/login", "Manage your seller account", "box"])}
-              {item(["Become a vendor", "/vendor/register", "Sell with Street Shop", "store"])}
+              {item(["Become a vendor", "/vendor/register", "Sell with Elite Shop", "store"])}
               {item(["Admin login", "/admin/login", "Store staff only", "shield"])}
             </div>
           </>

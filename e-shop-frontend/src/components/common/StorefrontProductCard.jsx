@@ -31,7 +31,7 @@ const StorefrontProductCard = ({ product }) => {
           {product.image ? (
             <img src={`${imageBase}/uploads/products/small/${encodeURIComponent(product.image)}`} alt={product.title} loading="lazy" />
           ) : (
-            <span className="sp-card-placeholder">STREET SHOP<small>Image coming soon</small></span>
+            <span className="sp-card-placeholder">ELITE SHOP<small>Image coming soon</small></span>
           )}
         </Link>
         <div className="sp-card-badges">
@@ -47,7 +47,7 @@ const StorefrontProductCard = ({ product }) => {
       </div>
       <div className="sp-card-body">
         <div className="sp-card-meta">
-          <span>{product.brand?.name || product.category?.name || "Street Shop"}</span>
+          <span>{product.brand?.name || product.category?.name || "Elite Shop"}</span>
           {product.brand?.name && product.category?.name && <span>{product.category.name}</span>}
         </div>
         <Link to={`/product/${product.id}`} className="sp-card-title">{product.title}</Link>

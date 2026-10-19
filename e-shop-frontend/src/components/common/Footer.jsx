@@ -17,7 +17,7 @@ const Footer = () => {
                     </div>
                     <div className="row g-5 py-5">
                         <div className="col-lg-4 col-md-6">
-                            <Link to="/" className="store-footer-brand" aria-label="Street Shop home">
+                            <Link to="/" className="store-footer-brand" aria-label="Elite Shop home">
                                 <BrandLogo tone="light" size={46} />
                             </Link>
                             <p className="store-footer-description">A considered collection for everyday living. Find your next favourite, and make it yours.</p>
@@ -47,7 +47,7 @@ const Footer = () => {
                         <div className="col-lg-4 col-md-6">
                             <h2 className="store-footer-heading">A little note from us</h2>
                             <p className="store-footer-description">New finds, thoughtful details, and a fresh perspective—every now and then.</p>
-                            <a className="store-footer-email" href="mailto:support@streetshop.com">support@streetshop.com <span aria-hidden="true">↗</span></a>
+                            <a className="store-footer-email" href="mailto:support@eliteshop.com">support@eliteshop.com <span aria-hidden="true">↗</span></a>
                         </div>
                     </div>
                     <div className="store-footer-perks row g-3">
@@ -56,7 +56,7 @@ const Footer = () => {
                         <div className="col-md-4"><div className="store-perk"><span className="store-perk-icon">03</span><span><strong>Checkout securely</strong><small>Your details stay protected.</small></span></div></div>
                     </div>
                     <div className="store-footer-bottom">
-                        <span>© {year} Street Shop · Everyday, elevated.</span>
+                        <span>© {year} Elite Shop · Everyday, elevated.</span>
                         <Link to="/shop">Keep exploring <span aria-hidden="true">↑</span></Link>
                     </div>
                 </div>

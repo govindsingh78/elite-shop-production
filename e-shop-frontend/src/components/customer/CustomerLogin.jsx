@@ -59,7 +59,7 @@ const CustomerLogin = () => {
         <div className="text-end mb-4"><Link to="/forgot-password" className="customer-link">Forgot password?</Link></div>
         <button type="submit" className="btn btn-primary btn-lg w-100 customer-submit" disabled={loading}>{loading ? "Signing in…" : "Sign in"}</button>
       </form>
-      <div className="customer-auth-divider"><span>New to Street Shop?</span></div>
+      <div className="customer-auth-divider"><span>New to Elite Shop?</span></div>
       <Link to="/customer/register" state={location.state} className="btn btn-outline-secondary btn-lg w-100">Create an account</Link>
       <p className="customer-auth-footnote">Selling with us? <Link to="/vendor/login" className="customer-link">Vendor portal</Link></p>
     </CustomerAuthShell>

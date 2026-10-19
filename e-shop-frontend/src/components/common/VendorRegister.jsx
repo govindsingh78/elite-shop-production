@@ -1,18 +1,31 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Layout from "./Layout";
 import { apiUrl } from "./http";
+import CustomerAuthShell from "../customer/CustomerAuthShell";
 
 const VendorRegister = () => {
   const [form, setForm] = useState({ name: "", email: "", password: "", password_confirmation: "" });
+  const [errors, setErrors] = useState({});
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const change = (event) => {
+    const { name, value } = event.target;
+    setForm((current) => ({ ...current, [name]: value }));
+    setErrors((current) => ({ ...current, [name]: undefined }));
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (form.password !== form.password_confirmation) {
+      setErrors({ password_confirmation: "Passwords do not match." });
+      return;
+    }
     setLoading(true);
     setError("");
+    setErrors({});
     try {
       const response = await fetch(`${apiUrl}/vendor/register`, {
         method: "POST",
@@ -20,47 +33,61 @@ const VendorRegister = () => {
         body: JSON.stringify(form),
       });
       const data = await response.json();
-      if (!response.ok) {
-        const firstValidationError = Object.values(data.errors || {}).flat()[0];
-        throw new Error(firstValidationError || data.message || "Unable to create vendor account.");
+      if (response.status === 422) {
+        setErrors(Object.fromEntries(Object.entries(data.errors || {}).map(([field, messages]) => [field, messages[0]])));
+        setError("Please check the highlighted fields.");
+        return;
       }
-      navigate("/vendor/login", { replace: true, state: { message: data.message } });
+      if (response.status === 429) throw new Error("Too many attempts. Please wait a minute and try again.");
+      if (!response.ok) throw new Error(data.message || "Unable to create your seller account.");
+      navigate("/vendor/login", { replace: true, state: { message: "Your seller account is ready — sign in to start listing products." } });
     } catch (requestError) {
-      setError(requestError.message || "Unable to reach the vendor registration service.");
+      setError(requestError instanceof TypeError ? "Cannot reach the API server. Make sure the backend is running." : requestError.message);
     } finally {
       setLoading(false);
     }
   };
 
+  const strength = [form.password.length >= 8, /[A-Z]/.test(form.password) && /[a-z]/.test(form.password), /\d/.test(form.password), /[^A-Za-z0-9]/.test(form.password)].filter(Boolean).length;
+  const strengthLabel = ["Too short", "Weak", "Fair", "Good", "Strong"][strength];
+
+  const input = (name, label, props = {}) => (
+    <div className={props.wrapperClass || "col-12"}>
+      <label htmlFor={`vendor-${name}`} className="form-label">{label}</label>
+      <input id={`vendor-${name}`} name={name} type={props.type || "text"} className={`form-control form-control-lg ${errors[name] ? "is-invalid" : ""}`} value={form[name]} onChange={change} required autoComplete={props.autoComplete} minLength={props.minLength} maxLength={255} placeholder={props.placeholder} />
+      {errors[name] ? <div className="invalid-feedback">{errors[name]}</div> : props.hint && <div className="form-text">{props.hint}</div>}
+    </div>
+  );
+
   return (
-    <Layout>
-      <div className="container d-flex justify-content-center my-5 py-4">
-        <form onSubmit={handleSubmit} className="card shadow-sm border-0 p-4" style={{ width: "min(100%, 540px)" }}>
-          <p className="text-uppercase text-muted small mb-1">Seller partnership</p>
-          <h1 className="h3 mb-2">Create your vendor account</h1>
-          <p className="text-muted mb-4">Set up your seller login to access the vendor portal.</p>
-          {error && <div className="alert alert-danger" role="alert">{error}</div>}
-          <div className="mb-3">
-            <label htmlFor="name" className="form-label">Your name</label>
-            <input id="name" className="form-control" autoComplete="name" maxLength={255} value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} required />
+    <CustomerAuthShell portal="vendor" wide eyebrow="Become a seller" title="Start selling on Elite Shop" subtitle="Create your seller account — it takes less than a minute.">
+      <ol className="vendor-onboarding" aria-label="How it works">
+        <li><span>1</span>Create your account</li>
+        <li><span>2</span>List your products</li>
+        <li><span>3</span>Ship &amp; get paid</li>
+      </ol>
+      {error && <div className="alert alert-danger" role="alert">{error}</div>}
+      <form onSubmit={handleSubmit}>
+        <div className="row g-3">
+          {input("name", "Your name or store name", { autoComplete: "organization", placeholder: "e.g. Urban Threads", wrapperClass: "col-md-6" })}
+          {input("email", "Business email", { type: "email", autoComplete: "email", placeholder: "you@yourstore.com", wrapperClass: "col-md-6" })}
+          <div className="col-md-6">
+            <label htmlFor="vendor-password" className="form-label">Password</label>
+            <div className="customer-password-wrap">
+              <input id="vendor-password" name="password" type={showPassword ? "text" : "password"} className={`form-control form-control-lg ${errors.password ? "is-invalid" : ""}`} value={form.password} onChange={change} required minLength={8} autoComplete="new-password" />
+              <button type="button" className="customer-password-toggle" onClick={() => setShowPassword((shown) => !shown)} aria-pressed={showPassword}>{showPassword ? "Hide" : "Show"}</button>
+            </div>
+            {errors.password ? <div className="invalid-feedback d-block">{errors.password}</div> : form.password && (
+              <div className={`vendor-strength vendor-strength--${strength}`} aria-live="polite"><span><i /><i /><i /><i /></span>{strengthLabel}</div>
+            )}
           </div>
-          <div className="mb-3">
-            <label htmlFor="email" className="form-label">Email address</label>
-            <input id="email" type="email" className="form-control" autoComplete="email" maxLength={255} value={form.email} onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))} required />
-          </div>
-          <div className="mb-3">
-            <label htmlFor="password" className="form-label">Password</label>
-            <input id="password" type="password" className="form-control" autoComplete="new-password" minLength={8} value={form.password} onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))} required />
-          </div>
-          <div className="mb-3">
-            <label htmlFor="password_confirmation" className="form-label">Confirm password</label>
-            <input id="password_confirmation" type="password" className="form-control" autoComplete="new-password" minLength={8} value={form.password_confirmation} onChange={(event) => setForm((current) => ({ ...current, password_confirmation: event.target.value }))} required />
-          </div>
-          <button type="submit" className="btn btn-primary w-100" disabled={loading}>{loading ? "Creating account..." : "Create vendor account"}</button>
-          <p className="text-center mt-3 mb-0">Already registered? <Link to="/vendor/login">Vendor sign in</Link></p>
-        </form>
-      </div>
-    </Layout>
+          {input("password_confirmation", "Confirm password", { type: showPassword ? "text" : "password", autoComplete: "new-password", minLength: 8, wrapperClass: "col-md-6" })}
+        </div>
+        <p className="vendor-terms">By creating an account you agree to list genuine products and ship orders on time.</p>
+        <button type="submit" className="btn btn-primary btn-lg w-100 customer-submit" disabled={loading}>{loading ? "Creating your seller account…" : "Create seller account"}</button>
+      </form>
+      <p className="customer-auth-footnote">Already selling with us? <Link to="/vendor/login" className="customer-link">Sign in to the seller hub</Link></p>
+    </CustomerAuthShell>
   );
 };
 

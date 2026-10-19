@@ -5,10 +5,11 @@ import BrandLogo from "./BrandLogo";
 import { useStorefrontCategories } from "./useStorefrontCategories";
 import { useCart } from "../context/CartContext";
 import AccountMenu from "./AccountMenu";
+import { formatPrice } from "./currency";
 
 const Header = () => {
   const { categories, loading } = useStorefrontCategories();
-  const { count } = useCart();
+  const { count, subtotal } = useCart();
   const [expanded, setExpanded] = useState(false);
 
   const closeMenu = () => setExpanded(false);
@@ -24,7 +25,7 @@ const Header = () => {
       <header className="store-header sticky-top">
         <div className="container">
           <Navbar expand="lg" expanded={expanded} onToggle={setExpanded} className="store-navbar">
-            <Navbar.Brand as={Link} to="/" onClick={closeMenu} className="store-brand" aria-label="Street Shop home">
+            <Navbar.Brand as={Link} to="/" onClick={closeMenu} className="store-brand" aria-label="Elite Shop home">
               <BrandLogo />
             </Navbar.Brand>
             <Navbar.Toggle aria-controls="store-nav" aria-label="Toggle navigation" />
@@ -47,9 +48,16 @@ const Header = () => {
               </nav>
               <div className="store-header-actions">
                 <AccountMenu onNavigate={closeMenu} />
-                <Link to="/cart" className="store-icon-link store-bag-link position-relative" aria-label={`Shopping bag, ${count} items`} title="Shopping bag">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 13H6L5 8Z" /><path d="M9 9V6a3 3 0 0 1 6 0v3" /></svg>
-                  {count > 0 && <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{count}</span>}
+                <Link to="/cart" onClick={closeMenu} className={`header-action header-bag${count ? " has-items" : ""}`} aria-label={`Shopping bag, ${count} ${count === 1 ? "item" : "items"}, ${formatPrice(subtotal)}`}>
+                  <span className="header-bag-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 13H6L5 8Z" /><path d="M9 9V6a3 3 0 0 1 6 0v3" /></svg>
+                    {/* Keyed on count so the bounce replays every time an item is added. */}
+                    {count > 0 && <span key={count} className="header-bag-count">{count > 99 ? "99+" : count}</span>}
+                  </span>
+                  <span className="header-action-copy">
+                    <small>Your bag</small>
+                    <strong>{count ? formatPrice(subtotal) : "Empty"}</strong>
+                  </span>
                 </Link>
               </div>
             </Navbar.Collapse>

@@ -131,7 +131,7 @@ const Shop = () => {
             <div className="sp-hero-copy">
               <div>
                 <span className="shop-eyebrow">{activeCategory ? "THE COLLECTION" : "SHOP ALL"}</span>
-                <h1>{activeCategory?.name || "Everyday, elevated"}<span>.</span></h1>
+                <h1>{activeCategory?.name || "Everyday, elevated"}</h1>
                 <p>{activeCategory ? `Considered ${activeCategory.name.toLowerCase()} pieces, picked to be worn on repeat.` : "Thoughtfully picked pieces across every collection."}</p>
               </div>
               <div className="sp-hero-count"><strong>{loading ? "—" : totalProducts}</strong><span>{totalProducts === 1 ? "piece" : "pieces"}</span></div>
