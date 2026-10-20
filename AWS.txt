@@ -1,0 +1,217 @@
+Create all the necessary files in laravel for backend api and frontnd functionality in react js for manage-users section 
+
+Create all the necessary files in laravel for backend api and frontnd functionality in react js for manage-products
+
+Create all the necessary files in laravel for backend api and frontnd functionality in react js for manage-orders
+
+
+Make the header and footer navigation dynamic as per created Categories 
+
+Laravel Folder for Backend API e-street-backend
+React JS for Frontend : e-shop-frontend
+
+
+
+Master username
+admin
+Master password
+$amnet007A
+
+ubuntu@13.55.216.53
+3n7Oh7jy4vd0R8FjHbM2
+
+Endpoint
+elite-shop-db.ch068s2aqzdc.ap-southeast-2.rds.amazonaws.com
+
+
+Elastic IP address associated successfully.
+Elastic IP address 54.79.243.56 has been associated with instance i-0403e54088e4d71fc
+
+https://537621751796-ao265724.ap-southeast-2.console.aws.amazon.com/ec2-instance-connect/ssh/home?addressFamily=ipv4&connType=standard&instanceId=i-0403e54088e4d71fc&osUser=ec2-user&region=ap-southeast-2&sshPort=22#
+sudo apt update && sudo apt upgrade -y
+
+
+yum install -y httpd
+
+Elastic IP address associated successfully.
+Elastic IP address 13.55.216.53 has been associated with instance i-0729f99ecc3013652
+
+
+ubuntu@13.55.216.53
+sudo su -
+sudo apt update -y && sudo apt upgrade -y
+sudo apt install -y httpd
+systemctl status httpd
+
+
+sudo apt install --reinstall ca-certificates -y
+
+mysql> SHOW DATABASES;
++--------------------+
+| Database           |
++--------------------+
+| e_street_db        |
+| information_schema |
+| mysql              |
+| performance_schema |
+| sys                |
++--------------------+
+
+
+mysql> source /var/www/html/e*.sql
+
+
+sudo apt update && 
+sudo apt install apache2 -y &&
+sudo systemctl enable --now apache2
+
+Database Connection
+--------------------------------------------------------------------------------------
+mysql -h elite-shop-db.ch068s2aqzdc.ap-southeast-2.rds.amazonaws.com -P 3306 -u admin -p
+$amnet007A
+
+
+
+mysql> SHOW DATABASES;
++--------------------+
+| Database           |
++--------------------+
+| e_street_db        |
+| information_schema |
+| mysql              |
+| performance_schema |
+| sys                |
++--------------------+
+5 rows in set (0.02 sec)
+
+mysql> use e_street_db;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> SHOW TABLES;
++------------------------+
+| Tables_in_e_street_db  |
++------------------------+
+| brands                 |
+| cache                  |
+| cache_locks            |
+| categories             |
+| customer_addresses     |
+| failed_jobs            |
+| job_batches            |
+| jobs                   |
+| migrations             |
+| order_items            |
+| order_tracking_events  |
+| orders                 |
+| password_reset_tokens  |
+| personal_access_tokens |
+| product_images         |
+| product_sizes          |
+| products               |
+| sessions               |
+| shipping_methods       |
+| sizes                  |
+| temp_images            |
+| users                  |
++------------------------+
+22 rows in set (0.00 sec)
+
+mysql>
+sudo apt install -y mysql-client     # if not installed yet
+mysql -h <RDS-ENDPOINT> -u admin -p -e "SELECT 1"
+
+
+composer update --ignore-platform-req=ext-dom --ignore-platform-req=ext-xml --ignore-platform-req=ext-xmlwriter
+
+
+
+
+
+-----------------------------------------------------------
+
+
+APP_NAME="Elite Shop"
+APP_ENV=production
+APP_KEY=base64:ZGaSB76BdBNRCZynYWwB+7IrXRidFgWn57a6ItQ9VmI=
+APP_DEBUG=false
+APP_URL=http://elite-shop.com
+
+APP_LOCALE=en
+APP_FALLBACK_LOCALE=en
+APP_FAKER_LOCALE=en_US
+
+APP_MAINTENANCE_DRIVER=file
+# APP_MAINTENANCE_STORE=database
+
+PHP_CLI_SERVER_WORKERS=4
+
+BCRYPT_ROUNDS=12
+
+LOG_CHANNEL=stack
+LOG_STACK=single
+LOG_DEPRECATIONS_CHANNEL=null
+LOG_LEVEL=debug
+
+# DB_CONNECTION=sqlite
+# DB_HOST=127.0.0.1
+# DB_PORT=3306
+# DB_DATABASE=laravel
+# DB_USERNAME=root
+# DB_PASSWORD=
+
+DB_CONNECTION=mysql
+DB_HOST=elite-shop-db.ch068s2aqzdc.ap-southeast-2.rds.amazonaws.com
+DB_PORT=3306
+DB_DATABASE=e_street_db
+DB_USERNAME=admin
+DB_PASSWORD=$amnet007A
+
+SESSION_DRIVER=database
+SESSION_LIFETIME=120
+SESSION_ENCRYPT=false
+SESSION_PATH=/
+SESSION_DOMAIN=null
+
+BROADCAST_CONNECTION=log
+FILESYSTEM_DISK=local
+QUEUE_CONNECTION=database
+
+CACHE_STORE=database
+# CACHE_PREFIX=
+
+MEMCACHED_HOST=http://elite-shop.com
+
+REDIS_CLIENT=phpredis
+REDIS_HOST=http://elite-shop.com
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+MAIL_MAILER=log
+MAIL_SCHEME=null
+MAIL_HOST=http://elite-shop.com
+MAIL_PORT=2525
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_FROM_ADDRESS="support@eliteshop.com"
+MAIL_FROM_NAME="${APP_NAME}"
+
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_DEFAULT_REGION=us-east-1
+AWS_BUCKET=
+AWS_USE_PATH_STYLE_ENDPOINT=false
+
+VITE_APP_NAME="${APP_NAME}"
+
+# Razorpay (https://dashboard.razorpay.com/app/keys). Use rzp_test_ keys until you go live.
+RAZORPAY_KEY_ID=rzp_test_TpIh0LakKoAYRp
+RAZORPAY_KEY_SECRET=HIUoJJps7zdA1Q3oxayKxLhh
+RAZORPAY_WEBHOOK_SECRET=eshop1988
+
+
+
+
+
+
