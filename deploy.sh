@@ -2,7 +2,7 @@
 # Runs on the EC2 server after the latest code has been pulled.
 set -euo pipefail
 
-APP_DIR=/var/www/elite-shop-production
+APP_DIR=/var/www/html/elite-shop-production
 PHP_FPM=php8.5-fpm
 
 cd "$APP_DIR"
