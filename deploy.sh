@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_DIR=/var/www/elite-shop-production
+REPO_DIR=/var/www/html/elite-shop-production
 BACKEND_DIR=$REPO_DIR/e-street-backend
 FRONTEND_DIR=$REPO_DIR/e-shop-frontend
 
