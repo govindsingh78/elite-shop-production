@@ -60,7 +60,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware(EnsureVendor::class)->prefix('vendor')->group(function () {
         Route::get('dashboard', [VendorOrderController::class, 'dashboard']);
         Route::get('product-options', [VendorProductController::class, 'options']);
-        Route::apiResource('products', VendorProductController::class)->except(['create', 'edit']);
+        Route::apiResource('products', VendorProductController::class)->except(['create', 'edit'])->names('vendor.products');
         Route::get('orders', [VendorOrderController::class, 'index']);
         Route::get('orders/{order}', [VendorOrderController::class, 'show']);
         Route::put('orders/{order}', [VendorOrderController::class, 'update']);
@@ -85,16 +85,16 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::middleware(EnsureAdmin::class)->apiResource('admin/users', UserController::class)
-        ->except(['create', 'edit']);
+        ->except(['create', 'edit'])->names('admin.users');
 
     Route::middleware(EnsureAdmin::class)->group(function () {
         Route::get('admin/product-options', [AdminProductController::class, 'options']);
-        Route::apiResource('admin/products', AdminProductController::class)->except(['create', 'edit']);
+        Route::apiResource('admin/products', AdminProductController::class)->except(['create', 'edit'])->names('admin.products');
         Route::get('admin/orders/{order}/tracking', [AdminOrderTrackingController::class, 'index']);
         Route::post('admin/orders/{order}/tracking', [AdminOrderTrackingController::class, 'store']);
         Route::delete('admin/orders/{order}/tracking/{event}', [AdminOrderTrackingController::class, 'destroy']);
         Route::apiResource('admin/orders', AdminOrderController::class)
-            ->only(['index', 'show', 'update', 'destroy']);
+            ->only(['index', 'show', 'update', 'destroy'])->names('admin.orders');
     });
 });
 
