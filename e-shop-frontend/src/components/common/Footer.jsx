@@ -3,6 +3,12 @@ import { Link } from "react-router-dom";
 import BrandLogo from "./BrandLogo";
 import { useStorefrontCategories } from "./useStorefrontCategories";
 
+const PERKS = [
+    { title: "Delivery, made easy", copy: "Carefully packed and tracked live to your door.", icon: <><path d="M3 6h11v12H3zM14 10h4l3 3v5h-7z" /><circle cx="7.5" cy="18" r="1.5" /><circle cx="18" cy="18" r="1.5" /></> },
+    { title: "Shop with confidence", copy: "Pay on delivery, with real help when you need it.", icon: <><path d="M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.6-7 10-7 10Z" /></> },
+    { title: "Checkout securely", copy: "Encrypted payments. Your details stay private.", icon: <><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3Z" /><path d="m9 12 2 2 4-4" /></> },
+];
+
 const Footer = () => {
     const { categories } = useStorefrontCategories();
     const year = new Date().getFullYear();
@@ -50,14 +56,35 @@ const Footer = () => {
                             <a className="store-footer-email" href="mailto:support@eliteshop.com">support@eliteshop.com <span aria-hidden="true">↗</span></a>
                         </div>
                     </div>
-                    <div className="store-footer-perks row g-3">
-                        <div className="col-md-4"><div className="store-perk"><span className="store-perk-icon">01</span><span><strong>Delivery, made easy</strong><small>Carefully packed, right to your door.</small></span></div></div>
-                        <div className="col-md-4"><div className="store-perk"><span className="store-perk-icon">02</span><span><strong>Shopping with confidence</strong><small>Thoughtful service at every step.</small></span></div></div>
-                        <div className="col-md-4"><div className="store-perk"><span className="store-perk-icon">03</span><span><strong>Checkout securely</strong><small>Your details stay protected.</small></span></div></div>
-                    </div>
+                    <ul className="store-footer-perks">
+                        {PERKS.map(({ title, copy, icon }, index) => (
+                            <li key={title} className="store-perk">
+                                <span className="store-perk-icon"><svg viewBox="0 0 24 24" aria-hidden="true">{icon}</svg></span>
+                                <span><strong>{title}</strong><small>{copy}</small></span>
+                                <span className="store-perk-index" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+                            </li>
+                        ))}
+                    </ul>
                     <div className="store-footer-bottom">
-                        <span>© {year} Elite Shop · Everyday, elevated.</span>
-                        <Link to="/shop">Keep exploring <span aria-hidden="true">↑</span></Link>
+                        <div className="store-footer-legal">
+                            <span>© {year} Elite Shop. All rights reserved.</span>
+                            <nav aria-label="Footer">
+                                <Link to="/shop">Shop</Link>
+                                <Link to="/customer/orders">Track an order</Link>
+                                <a href="mailto:support@eliteshop.com">Support</a>
+                            </nav>
+                        </div>
+                        <div className="store-footer-pay">
+                            <span>We accept</span>
+                            <ul aria-label="Payment methods">
+                                <li>UPI</li>
+                                <li>Net banking</li>
+                                <li>Cash on delivery</li>
+                            </ul>
+                        </div>
+                        <button type="button" className="store-footer-top" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+                            Back to top <span aria-hidden="true">↑</span>
+                        </button>
                     </div>
                 </div>
             </div>

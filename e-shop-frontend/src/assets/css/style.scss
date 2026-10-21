@@ -675,21 +675,42 @@ a:hover > .brand-logo .brand-mark { transform: rotate(-6deg) scale(1.04); }
 .store-footer-cta, .store-footer-email { display: inline-flex; align-items: center; gap: 12px; color: #e2bb95; font-weight: 600; text-decoration: none; }
 .store-footer-cta:hover, .store-footer-email:hover { color: #fff; }
 
-.store-footer-perks {
-    margin: 0 0 24px;
-    border-top: 1px solid rgba(239, 241, 233, .16);
-    border-bottom: 1px solid rgba(239, 241, 233, .16);
-    padding: 20px 0;
+.store-footer-perks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 0 0 36px; padding: 0; list-style: none; }
+.store-perk {
+    position: relative; display: flex; align-items: center; gap: 16px; overflow: hidden; border: 1px solid rgba(239, 241, 233, .1); border-radius: 20px; padding: 20px 22px; background: linear-gradient(145deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .015)); transition: border-color .25s ease, transform .25s ease, background .25s ease;
+    &:hover { border-color: rgba(211, 184, 148, .45); background: linear-gradient(145deg, rgba(255, 255, 255, .09), rgba(255, 255, 255, .03)); transform: translateY(-3px); }
+    &:hover .store-perk-icon { color: #1b342d; background: linear-gradient(135deg, #f3dfb3, #d2984b); }
+    strong, small { display: block; }
+    strong { color: #f7f3e9; font-family: "Outfit", sans-serif; font-size: 1.02rem; font-weight: 600; letter-spacing: -.01em; }
+    small { margin-top: 4px; color: #aab6ab; font-size: .86rem; line-height: 1.5; }
+}
+.store-perk-icon {
+    display: grid; width: 50px; height: 50px; flex-shrink: 0; place-items: center; border: 1px solid rgba(211, 184, 148, .35); border-radius: 15px; color: #e2bb95; background: rgba(211, 184, 148, .08); transition: all .25s ease;
+    svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.6; }
+}
+.store-perk-index { position: absolute; top: 8px; right: 16px; color: rgba(239, 241, 233, .07); font-family: "Outfit", sans-serif; font-size: 2.6rem; font-weight: 800; line-height: 1; pointer-events: none; }
+
+.store-footer-bottom { flex-wrap: wrap; align-items: center; border-top: 1px solid rgba(239, 241, 233, .12); border-bottom: 0; padding: 22px 0 26px; font-size: .74rem; letter-spacing: .04em; text-transform: none; }
+.store-footer-legal { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 24px; color: #9fab9f;
+    nav { display: flex; flex-wrap: wrap; gap: 6px 20px; }
+    a { color: #c5c8b9; text-decoration: none; transition: color .2s ease; }
+    a:hover { color: #e2bb95; }
+}
+.store-footer-pay { display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+    > span { color: #8e9b90; font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; }
+    ul { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+    li { border: 1px solid rgba(239, 241, 233, .16); border-radius: 8px; padding: 5px 10px; color: #eff1e9; background: rgba(255, 255, 255, .04); font-size: .72rem; font-weight: 700; letter-spacing: .03em; }
+}
+.store-footer-top {
+    display: inline-flex; align-items: center; gap: 10px; border: 1px solid rgba(211, 184, 148, .45); border-radius: 30px; padding: 8px 8px 8px 16px; color: #e2bb95; background: transparent; font-size: .74rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; transition: all .2s ease;
+    span { display: grid; width: 26px; height: 26px; place-items: center; border-radius: 50%; color: #1b342d; background: #d3b894; font-size: .85rem; transition: transform .2s ease; }
+    &:hover { border-color: #e2bb95; color: #fff; background: rgba(211, 184, 148, .12); }
+    &:hover span { transform: translateY(-2px); }
 }
 
-.store-perk { display: flex; align-items: center; gap: 13px; min-height: 42px; }
-.store-perk-icon { color: #d3b894; font-size: .75rem; letter-spacing: .12em; }
-.store-perk strong, .store-perk small { display: block; }
-.store-perk strong { color: #f2f0e8; font-size: .85rem; letter-spacing: .025em; }
-.store-perk small { margin-top: 3px; color: #aab6ab; font-size: .78rem; }
-
-.store-footer-bottom { align-items: center; border-bottom: 0; padding: 12px 0 22px; font-size: .69rem; }
-.store-footer-bottom a { color: #d3b894; text-decoration: none; }
+@media (max-width: 991.98px) {
+    .store-footer-perks { grid-template-columns: 1fr; }
+}
 
 .admin-sidebar-shell {
     position: sticky;
