@@ -125,7 +125,7 @@ const Hero = ({ stats, spotlight, categories }) => {
             <div className="lp-hero-badge" aria-hidden="true"><Icon><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3Z" /><path d="m9 12 2 2 4-4" /></Icon>Secure checkout</div>
             {spotlight && (
               <Link to={`/product/${spotlight.id}`} className="lp-spotlight">
-                <span className="lp-spotlight-image">{productImage(spotlight) ? <img src={productImage(spotlight)} alt="" /> : <span>ES</span>}</span>
+                <span className="lp-spotlight-image">{productImage(spotlight) ? <img src={productImage(spotlight)} alt="" /> : <span>EZ</span>}</span>
                 <span className="lp-spotlight-copy">
                   <small>{spotlight.is_featured === "yes" ? "Editor’s pick" : "Just in"}</small>
                   <strong>{spotlight.title}</strong>
@@ -279,7 +279,7 @@ const SellerCta = () => (
         <div>
           <span className="lp-seller-badge">FOR SELLERS</span>
           <h2>Have something worth selling?</h2>
-          <p>Open your Elite Shop store in under a minute. List products, ship orders and track sales from your own seller dashboard.</p>
+          <p>Open your Elitezaar store in under a minute. List products, ship orders and track sales from your own seller dashboard.</p>
         </div>
         <div className="lp-seller-actions">
           <Link to="/vendor/register" className="btn lp-btn lp-btn-gold">Become a seller ↗</Link>

@@ -72,7 +72,11 @@ class ProductController extends Controller
 
         $brands = \App\Models\Brand::query()
             ->where('status', 1)
-            ->whereIn('id', Product::query()->where('status', 1)->select('brand_id')->distinct())
+            // Brands within the current collection, so the brand filter never leads to an empty page.
+            ->whereIn('id', Product::query()->where('status', 1)
+                ->when($category, fn ($query) => $query->where('category_id', $category->id))
+                ->when(!$category && $categoryId, fn ($query) => $query->where('category_id', $categoryId))
+                ->select('brand_id')->distinct())
             ->orderBy('name')
             ->get(['id', 'name']);
 

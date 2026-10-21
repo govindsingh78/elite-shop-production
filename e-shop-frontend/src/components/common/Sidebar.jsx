@@ -61,7 +61,7 @@ const Sidebar = ({ variant = "admin" }) => {
       <aside className={`admin-sidebar${mobileOpen ? " is-open" : ""}`} aria-label={config.label}>
         <Link to={config.home} className="admin-sidebar-brand">
           <BrandMark size={42} className="admin-sidebar-brand-logo" />
-          <span className="admin-sidebar-brand-copy"><strong>Elite Shop</strong><small>{role}</small></span>
+          <span className="admin-sidebar-brand-copy"><strong>Elitezaar</strong><small>{role}</small></span>
         </Link>
 
         <div className="admin-sidebar-section-label">WORKSPACE</div>

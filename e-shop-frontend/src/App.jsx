@@ -33,6 +33,7 @@ import ResetPassword from './components/common/ResetPassword';
 import VendorRegister from './components/common/VendorRegister';
 import VendorDashboard from './components/admin/VendorDashboard';
 import { CartProvider } from './components/context/CartContext';
+import { StorefrontCategoriesProvider } from './components/common/useStorefrontCategories';
 import OrderConfirmation from './components/common/OrderConfirmation';
 import CustomerLogin from './components/customer/CustomerLogin';
 import CustomerRegister from './components/customer/CustomerRegister';
@@ -46,6 +47,7 @@ function App() {
   return (
     <AdminAuthProvider>
       <CartProvider>
+      <StorefrontCategoriesProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -274,6 +276,7 @@ function App() {
         {/* Inside the router so toast messages can contain <Link>s. */}
         <ToastContainer />
       </BrowserRouter>
+      </StorefrontCategoriesProvider>
       </CartProvider>
     </AdminAuthProvider>
   );

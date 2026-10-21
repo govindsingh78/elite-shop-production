@@ -53,7 +53,7 @@ const CustomerRegister = () => {
       if (response.status === 429) throw new Error("Too many attempts. Please wait a minute and try again.");
       if (!response.ok) throw new Error(result.message || "Unable to create your account.");
       login(result);
-      toast.success(`Welcome to Elite Shop, ${result.user.name.split(" ")[0]}!`);
+      toast.success(`Welcome to Elitezaar, ${result.user.name.split(" ")[0]}!`);
       navigate(redirectTo, { replace: true });
     } catch (requestError) {
       setError(requestError instanceof TypeError ? "Cannot reach the store right now. Please try again shortly." : requestError.message);
@@ -71,7 +71,7 @@ const CustomerRegister = () => {
   );
 
   return (
-    <CustomerAuthShell wide eyebrow="Join Elite Shop" title="Create your account" subtitle="Just the essentials — and where we should deliver.">
+    <CustomerAuthShell wide eyebrow="Join Elitezaar" title="Create your account" subtitle="Just the essentials — and where we should deliver.">
       {error && <div className="alert alert-danger" role="alert">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="customer-form-step"><span>1</span>About you</div>

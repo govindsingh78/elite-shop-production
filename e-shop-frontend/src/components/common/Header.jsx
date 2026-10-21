@@ -25,7 +25,7 @@ const Header = () => {
       <header className="store-header sticky-top">
         <div className="container">
           <Navbar expand="lg" expanded={expanded} onToggle={setExpanded} className="store-navbar">
-            <Navbar.Brand as={Link} to="/" onClick={closeMenu} className="store-brand" aria-label="Elite Shop home">
+            <Navbar.Brand as={Link} to="/" onClick={closeMenu} className="store-brand" aria-label="Elitezaar home">
               <BrandLogo />
             </Navbar.Brand>
             <Navbar.Toggle aria-controls="store-nav" aria-label="Toggle navigation" />

@@ -112,7 +112,7 @@ const AccountMenu = ({ onNavigate }) => {
             <div className="account-menu-hero account-menu-hero--guest">
               <span className="account-menu-avatar"><Icon name="user" /></span>
               <div className="account-menu-hero-copy">
-                <strong>Welcome to Elite Shop</strong>
+                <strong>Welcome to Elitezaar</strong>
                 <small>Sign in to track orders and check out faster.</small>
               </div>
             </div>
@@ -123,7 +123,7 @@ const AccountMenu = ({ onNavigate }) => {
             <div className="account-menu-section">For business</div>
             <div className="account-menu-list">
               {item(["Vendor login", "/vendor/login", "Manage your seller account", "box"])}
-              {item(["Become a vendor", "/vendor/register", "Sell with Elite Shop", "store"])}
+              {item(["Become a vendor", "/vendor/register", "Sell with Elitezaar", "store"])}
               {item(["Admin login", "/admin/login", "Store staff only", "shield"])}
             </div>
           </>

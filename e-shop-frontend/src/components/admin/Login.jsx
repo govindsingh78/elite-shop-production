@@ -80,7 +80,7 @@ const Login = ({ portal = "admin" }) => {
 
       {isVendor ? (
         <>
-          <div className="customer-auth-divider"><span>New to selling on Elite Shop?</span></div>
+          <div className="customer-auth-divider"><span>New to selling on Elitezaar?</span></div>
           <Link to="/vendor/register" className="btn btn-outline-secondary btn-lg w-100">Create a seller account</Link>
           <p className="customer-auth-footnote">Shopping instead? <Link to="/customer/login" className="customer-link">Customer sign in</Link></p>
         </>

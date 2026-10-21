@@ -60,7 +60,7 @@ const VendorRegister = () => {
   );
 
   return (
-    <CustomerAuthShell portal="vendor" wide eyebrow="Become a seller" title="Start selling on Elite Shop" subtitle="Create your seller account — it takes less than a minute.">
+    <CustomerAuthShell portal="vendor" wide eyebrow="Become a seller" title="Start selling on Elitezaar" subtitle="Create your seller account — it takes less than a minute.">
       <ol className="vendor-onboarding" aria-label="How it works">
         <li><span>1</span>Create your account</li>
         <li><span>2</span>List your products</li>

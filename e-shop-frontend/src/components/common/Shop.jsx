@@ -118,6 +118,7 @@ const Shop = () => {
     <Layout>
       <main className="shop-page">
         <section className="sp-hero">
+          <span className="sp-hero-mark" aria-hidden="true">{activeCategory?.name || "Shop"}</span>
           <div className="container">
             <nav aria-label="Breadcrumb">
               <ol className="breadcrumb shop-breadcrumb mb-0">
@@ -130,18 +131,25 @@ const Shop = () => {
             </nav>
             <div className="sp-hero-copy">
               <div>
-                <span className="shop-eyebrow">{activeCategory ? "THE COLLECTION" : "SHOP ALL"}</span>
-                <h1>{activeCategory?.name || "Everyday, elevated"}</h1>
-                <p>{activeCategory ? `Considered ${activeCategory.name.toLowerCase()} pieces, picked to be worn on repeat.` : "Thoughtfully picked pieces across every collection."}</p>
+                <span className="sp-hero-eyebrow"><i aria-hidden="true" />{activeCategory ? "The collection" : "Shop all"}</span>
+                <h1>{activeCategory ? <>{activeCategory.name}<em className="is-dot">.</em></> : <>Everyday, <em>elevated.</em></>}</h1>
+                <p>{activeCategory ? `Considered ${activeCategory.name.toLowerCase()} pieces, picked to be worn on repeat.` : "Thoughtfully picked pieces across every collection — new arrivals added every week."}</p>
               </div>
-              <div className="sp-hero-count"><strong>{loading ? "—" : totalProducts}</strong><span>{totalProducts === 1 ? "piece" : "pieces"}</span></div>
+              <dl className="sp-hero-stats">
+                <div><dt>{loading ? "—" : totalProducts}</dt><dd>{totalProducts === 1 ? "Piece" : "Pieces"}</dd></div>
+                <div><dt>{loading ? "—" : brands.length}</dt><dd>{brands.length === 1 ? "Brand" : "Brands"}</dd></div>
+                <div><dt>{loading || !totalProducts ? "—" : `₹${Math.round(priceRange.min).toLocaleString("en-IN")}`}</dt><dd>Starting at</dd></div>
+              </dl>
             </div>
-            <nav className="sp-pills" aria-label="Collections">
-              <Link to={`/shop${queryString}`} className={`sp-pill${!categorySlug ? " is-active" : ""}`}>All</Link>
-              {categories.map((category) => (
-                <Link key={category.id} to={`/shop/${category.slug}${queryString}`} className={`sp-pill${categorySlug === category.slug ? " is-active" : ""}`}>{category.name}</Link>
-              ))}
-            </nav>
+            <div className="sp-pills-bar">
+              <span className="sp-pills-label">Collections</span>
+              <nav className="sp-pills" aria-label="Collections">
+                <Link to={`/shop${queryString}`} className={`sp-pill${!categorySlug ? " is-active" : ""}`}>All</Link>
+                {categories.map((category) => (
+                  <Link key={category.id} to={`/shop/${category.slug}${queryString}`} className={`sp-pill${categorySlug === category.slug ? " is-active" : ""}`}>{category.name}</Link>
+                ))}
+              </nav>
+            </div>
           </div>
         </section>
 

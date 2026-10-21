@@ -47,7 +47,7 @@ const StorefrontProductCard = ({ product }) => {
       </div>
       <div className="sp-card-body">
         <div className="sp-card-meta">
-          <span>{product.brand?.name || product.category?.name || "Elite Shop"}</span>
+          <span>{product.brand?.name || product.category?.name || "Elitezaar"}</span>
           {product.brand?.name && product.category?.name && <span>{product.category.name}</span>}
         </div>
         <Link to={`/product/${product.id}`} className="sp-card-title">{product.title}</Link>

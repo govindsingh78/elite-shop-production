@@ -16,13 +16,13 @@ const PORTAL_ASIDES = {
   },
   vendor: {
     badge: "Seller hub",
-    heading: <>Grow your brand<br />with Elite Shop.</>,
+    heading: <>Grow your brand<br />with Elitezaar.</>,
     perks: [
       ["List in minutes", "Add products, photos and stock from one simple form."],
       ["Ship with confidence", "Manage orders and post live tracking updates."],
       ["See what sells", "Sales, low-stock alerts and recent orders at a glance."],
     ],
-    foot: "Elite Shop partner programme",
+    foot: "Elitezaar partner programme",
   },
   admin: {
     badge: "Store control",

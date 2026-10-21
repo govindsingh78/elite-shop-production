@@ -23,7 +23,7 @@ const Footer = () => {
                     </div>
                     <div className="row g-5 py-5">
                         <div className="col-lg-4 col-md-6">
-                            <Link to="/" className="store-footer-brand" aria-label="Elite Shop home">
+                            <Link to="/" className="store-footer-brand" aria-label="Elitezaar home">
                                 <BrandLogo tone="light" size={46} />
                             </Link>
                             <p className="store-footer-description">A considered collection for everyday living. Find your next favourite, and make it yours.</p>
@@ -53,7 +53,7 @@ const Footer = () => {
                         <div className="col-lg-4 col-md-6">
                             <h2 className="store-footer-heading">A little note from us</h2>
                             <p className="store-footer-description">New finds, thoughtful details, and a fresh perspective—every now and then.</p>
-                            <a className="store-footer-email" href="mailto:support@eliteshop.com">support@eliteshop.com <span aria-hidden="true">↗</span></a>
+                            <a className="store-footer-email" href="mailto:support@elitezaar.com">support@elitezaar.com <span aria-hidden="true">↗</span></a>
                         </div>
                     </div>
                     <ul className="store-footer-perks">
@@ -67,11 +67,11 @@ const Footer = () => {
                     </ul>
                     <div className="store-footer-bottom">
                         <div className="store-footer-legal">
-                            <span>© {year} Elite Shop. All rights reserved.</span>
+                            <span>© {year} Elitezaar. All rights reserved.</span>
                             <nav aria-label="Footer">
                                 <Link to="/shop">Shop</Link>
                                 <Link to="/customer/orders">Track an order</Link>
-                                <a href="mailto:support@eliteshop.com">Support</a>
+                                <a href="mailto:support@elitezaar.com">Support</a>
                             </nav>
                         </div>
                         <div className="store-footer-pay">
