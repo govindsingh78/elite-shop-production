@@ -1,0 +1,15 @@
+/** Laravel API base URL, e.g. http://13.55.216.53/api. Set EXPO_PUBLIC_API_URL in .env. */
+export const API_URL = (process.env.EXPO_PUBLIC_API_URL || "http://13.55.216.53/api").replace(/\/+$/, "");
+
+/** Uploaded product images are served from the site root, next to /api. */
+export const SITE_URL = API_URL.replace(/\/api$/, "");
+
+export const productImageUrl = (image, size = "small") =>
+  image ? `${SITE_URL}/uploads/products/${size}/${encodeURIComponent(image)}` : null;
+
+export const BRAND = {
+  name: "Elitezaar",
+  domain: "elitezaar.com",
+  slogan: "Everyday, elevated.",
+  supportEmail: "support@elitezaar.com",
+};
