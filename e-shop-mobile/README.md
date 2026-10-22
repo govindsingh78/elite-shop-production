@@ -30,7 +30,7 @@ Scan the QR code with Expo Go (Android) or the Camera app (iPhone).
 The address is set in `.env`:
 
 ```
-EXPO_PUBLIC_API_URL=http://13.55.216.53/api
+EXPO_PUBLIC_API_URL=https://elitezaar.com/api
 ```
 
 It must end in `/api`. Restart `npx expo start` after changing it.

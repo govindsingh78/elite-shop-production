@@ -10,13 +10,13 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://13.55.216.53/api"
+        "EXPO_PUBLIC_API_URL": "https://elitezaar.com/api"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://13.55.216.53/api"
+        "EXPO_PUBLIC_API_URL": "https://elitezaar.com/api"
       }
     }
   },

@@ -1,0 +1,32 @@
+# EAS Build (for the e-shop-mobile app) uploads this whole repository.
+# Only the mobile app is needed, so everything else is left out. This also avoids
+# Laravel's public/storage link, which EAS cannot copy on Windows.
+# When this file exists, EAS ignores all .gitignore files, so the mobile app's
+# own .gitignore rules are repeated below. Folder rules have no trailing "/" because
+# EAS checks paths without one.
+
+/*
+!/e-shop-mobile
+
+e-shop-mobile/node_modules
+e-shop-mobile/.expo
+e-shop-mobile/dist
+e-shop-mobile/web-build
+e-shop-mobile/expo-env.d.ts
+e-shop-mobile/.kotlin
+e-shop-mobile/ios
+e-shop-mobile/android
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+.metro-health-check*
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+.DS_Store
+*.pem
+.env*.local
+*.tsbuildinfo
