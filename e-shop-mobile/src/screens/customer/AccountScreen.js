@@ -3,10 +3,10 @@ import { StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import AuthHero from "@/components/AuthHero";
+import SupportCard from "@/components/SupportCard";
 import { MilestoneBar, OrderCard, OrderStatusPill } from "@/components/OrderBits";
 import { Button, Card, ListRow, Loader, Notice, Row, Screen, SectionHeader, Stat, T } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
-import { BRAND } from "@/lib/config";
 import { confirmAction } from "@/lib/confirm";
 import { firstName, formatPriceShort, initials } from "@/lib/format";
 import { useLoad } from "@/lib/useLoad";
@@ -32,7 +32,7 @@ function GuestAccount() {
         <ListRow icon="sparkles-outline" title="Become a seller" subtitle="Open your Elitezaar store" onPress={() => router.push("/vendor-register")} />
         <ListRow icon="shield-checkmark-outline" title="Store admin" subtitle="Authorised staff only" onPress={() => router.push({ pathname: "/login", params: { portal: "admin" } })} last />
       </Card>
-      <T variant="small" center style={{ marginTop: 18 }}>Need help? {BRAND.supportEmail}</T>
+      <SupportCard style={{ marginTop: 16 }} />
     </Screen>
   );
 }
@@ -128,7 +128,7 @@ function CustomerDashboard() {
         <ListRow icon="key-outline" title="Change password" onPress={() => router.push("/change-password")} />
         <ListRow icon="log-out-outline" title="Sign out" danger onPress={askSignOut} last />
       </Card>
-      <T variant="small" center style={{ marginTop: 18 }}>Need help? {BRAND.supportEmail}</T>
+      <SupportCard style={{ marginTop: 16 }} />
     </Screen>
   );
 }

@@ -1,6 +1,7 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
+import SupportCard from "@/components/SupportCard";
 import { Card, ListRow, Row, Screen, T } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import { BRAND } from "@/lib/config";
@@ -48,6 +49,7 @@ export default function MoreScreen({ portal }) {
         <ListRow icon="key-outline" title="Change password" onPress={() => router.push("/change-password")} />
         <ListRow icon="log-out-outline" title="Sign out" danger onPress={askSignOut} last />
       </Card>
+      {portal === "vendor" ? <SupportCard audience="seller" style={{ marginTop: 14 }} /> : null}
       <T variant="small" center style={{ marginTop: 18 }}>{BRAND.name} · {BRAND.supportEmail}</T>
     </Screen>
   );

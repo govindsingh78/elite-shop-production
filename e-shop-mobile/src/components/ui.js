@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import {
-  ActivityIndicator, FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, ScrollView,
+  ActivityIndicator, FlatList, Modal, Platform, Pressable, RefreshControl, ScrollView,
   StyleSheet, Switch, Text, TextInput, View,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { colors, fonts, radius, shadow } from "@/theme";
@@ -27,31 +28,33 @@ export function T({ variant = "body", color, center, style, children, ...props }
 }
 
 /* ---------- Layout ---------- */
-/** Page container: cream background, padded, scrollable, optional pull-to-refresh. */
+/**
+ * Page container: cream background, padded, scrollable, optional pull-to-refresh.
+ * Forms pass `keyboard`, which keeps the focused field scrolled above the keyboard on iOS and Android.
+ */
 export function Screen({ children, scroll = true, refreshing, onRefresh, safeTop = false, padded = true, footer, contentStyle, keyboard = false }) {
   const insets = useSafeAreaInsets();
   const padding = [padded && styles.padded, safeTop && { paddingTop: insets.top + 8 }, { paddingBottom: (footer ? 16 : insets.bottom + 28) }, contentStyle];
+  const ScrollComponent = keyboard ? KeyboardAwareScrollView : ScrollView;
   const body = scroll ? (
-    <ScrollView
+    <ScrollComponent
       style={styles.flex}
       contentContainerStyle={padding}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
+      {...(keyboard ? { bottomOffset: 24 } : null)}
       refreshControl={onRefresh ? <RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} tintColor={colors.emerald} colors={[colors.emerald]} /> : undefined}
     >
       {children}
-    </ScrollView>
+    </ScrollComponent>
   ) : <View style={[styles.flex, padding]}>{children}</View>;
 
-  const content = (
+  return (
     <View style={styles.screen}>
       {body}
       {footer && <View style={[styles.footer, { paddingBottom: insets.bottom + 12 }]}>{footer}</View>}
     </View>
   );
-  return keyboard
-    ? <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined} keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}>{content}</KeyboardAvoidingView>
-    : content;
 }
 
 export const Gap = ({ size = 12 }) => <View style={{ height: size }} />;
@@ -362,7 +365,9 @@ const styles = StyleSheet.create({
   fieldLabel: { marginBottom: 6, fontSize: 15 },
   fieldNote: { marginTop: 5 },
   inputWrap: { minHeight: 50, flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: colors.line, borderRadius: radius.md, backgroundColor: colors.white },
-  inputFocused: { borderColor: colors.teal, shadowColor: colors.teal, shadowOpacity: 0.15, shadowRadius: 6, shadowOffset: { width: 0, height: 0 } },
+  // Colour-only focus state. Adding shadow props on focus makes Android re-mount the native
+  // input, which drops focus and bounces it between fields (keyboard flickers and never opens).
+  inputFocused: { borderColor: colors.teal, backgroundColor: "#fbfefe" },
   inputError: { borderColor: colors.danger },
   input: { flex: 1, minHeight: 48, paddingHorizontal: 14, color: colors.text, fontFamily: fonts.bodySemi, fontSize: 16, ...(Platform.OS === "web" ? { outlineStyle: "none" } : null) },
   inputMultiline: { minHeight: 104, paddingTop: 13, paddingBottom: 13, textAlignVertical: "top" },

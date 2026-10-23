@@ -395,6 +395,15 @@ ul{
     &:hover { color: #fff; }
 }
 
+/* Helpline in the top bar: shown on every page, tap-to-call on phones. */
+.store-helpline {
+    display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 7px; margin: 0 auto 0 0; color: #c9d6cd;
+    svg { width: 14px; height: 14px; fill: none; stroke: #e0b77d; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+    a { color: #fff; font-weight: 700; letter-spacing: .02em; text-decoration: none; }
+    a:hover { color: #e0b77d; }
+}
+@media (min-width: 992px) { .store-helpline { margin: 0 auto; } }
+
 .store-header {
     z-index: 1030;
     border-bottom: 1px solid rgba(25, 47, 40, .1);
@@ -674,6 +683,11 @@ a:hover > .brand-logo .brand-mark { transform: rotate(-6deg) scale(1.04); }
 
 .store-footer-muted { color: #8e9b90; font-size: .9rem; }
 .store-footer-cta, .store-footer-email { display: inline-flex; align-items: center; gap: 12px; color: #e2bb95; font-weight: 600; text-decoration: none; }
+.store-footer-phones { display: grid; gap: 8px; margin: 0 0 14px; padding: 0; list-style: none;
+    a { display: inline-flex; align-items: center; gap: 10px; color: #fff; font-size: 1.15rem; font-weight: 700; letter-spacing: .02em; text-decoration: none; transition: color .2s ease; }
+    svg { width: 30px; height: 30px; flex-shrink: 0; border: 1px solid rgba(211, 184, 148, .4); border-radius: 50%; padding: 6px; fill: none; stroke: #e2bb95; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
+    a:hover { color: #e2bb95; }
+}
 .store-footer-cta:hover, .store-footer-email:hover { color: #fff; }
 
 .store-footer-perks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 0 0 36px; padding: 0; list-style: none; }
@@ -796,6 +810,13 @@ a:hover > .brand-logo .brand-mark { transform: rotate(-6deg) scale(1.04); }
 .admin-sidebar-link-arrow { margin-left: auto; color: #d1ba8e; font-size: .82rem; opacity: 0; transform: translate(-3px, 3px); transition: opacity .18s ease, transform .18s ease; }
 .admin-sidebar-link:hover .admin-sidebar-link-arrow, .admin-sidebar-link.is-active .admin-sidebar-link-arrow { opacity: .85; transform: translate(0, 0); }
 .admin-sidebar-spacer { position: relative; z-index: 1; flex: 1; min-height: 20px; }
+.admin-sidebar-help { position: relative; z-index: 1; display: grid; gap: 6px; margin: 0 2px 14px; border: 1px solid rgba(218, 190, 137, .22); border-radius: 14px; padding: 12px; background: rgba(211, 183, 132, .08);
+    strong { color: #f8f3e7; font-size: .86rem; }
+    small { margin: -3px 0 2px; color: #98b0a2; font-size: .74rem; line-height: 1.35; }
+    a { display: flex; align-items: center; gap: 8px; color: #f2dfb8; font-size: .84rem; font-weight: 700; letter-spacing: .02em; text-decoration: none; }
+    a:hover { color: #fff; }
+    svg { width: 15px; height: 15px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+}
 .admin-sidebar-profile { position: relative; z-index: 1; display: flex; align-items: center; gap: 9px; border-top: 1px solid rgba(236, 244, 238, .11); padding: 15px 2px 2px; }
 .admin-sidebar-avatar { display: grid; width: 35px; height: 35px; flex-shrink: 0; place-items: center; border: 1px solid rgba(216, 190, 142, .34); border-radius: 50%; color: #f2dfb8; background: rgba(213, 184, 132, .13); font-weight: 700; }
 .admin-sidebar-profile-copy { flex: 1; }
@@ -915,6 +936,10 @@ a:hover > .brand-logo .brand-mark { transform: rotate(-6deg) scale(1.04); }
     strong, small { display: block; }
     strong { color: #172b25; }
     small { margin-top: 2px; color: #7d8a82; }
+}
+.oc-help-phones { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px;
+    a { border: 1px solid #cfe0d8; border-radius: 30px; padding: 6px 13px; color: #18372e; background: #f3f9f6; font-weight: 700; text-decoration: none; }
+    a:hover { border-color: #18372e; color: #fff; background: #18372e; }
 }
 
 /* ---------- Checkout ---------- */

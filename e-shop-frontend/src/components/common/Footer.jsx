@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import BrandLogo from "./BrandLogo";
 import { useStorefrontCategories } from "./useStorefrontCategories";
+import { SUPPORT_EMAIL, SUPPORT_PHONES } from "./support";
 
 const PERKS = [
     { title: "Delivery, made easy", copy: "Carefully packed and tracked live to your door.", icon: <><path d="M3 6h11v12H3zM14 10h4l3 3v5h-7z" /><circle cx="7.5" cy="18" r="1.5" /><circle cx="18" cy="18" r="1.5" /></> },
@@ -51,9 +52,19 @@ const Footer = () => {
                             </ul>
                         </div>
                         <div className="col-lg-4 col-md-6">
-                            <h2 className="store-footer-heading">A little note from us</h2>
-                            <p className="store-footer-description">New finds, thoughtful details, and a fresh perspective—every now and then.</p>
-                            <a className="store-footer-email" href="mailto:support@elitezaar.com">support@elitezaar.com <span aria-hidden="true">↗</span></a>
+                            <h2 className="store-footer-heading">We're here to help</h2>
+                            <p className="store-footer-description">Questions about an order, a product or selling with us? Call our helpline for customers and sellers, or write to us.</p>
+                            <ul className="store-footer-phones">
+                                {SUPPORT_PHONES.map((phone) => (
+                                    <li key={phone.tel}>
+                                        <a href={`tel:${phone.tel}`}>
+                                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" /></svg>
+                                            {phone.label}
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                            <a className="store-footer-email" href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL} <span aria-hidden="true">↗</span></a>
                         </div>
                     </div>
                     <ul className="store-footer-perks">
@@ -71,7 +82,7 @@ const Footer = () => {
                             <nav aria-label="Footer">
                                 <Link to="/shop">Shop</Link>
                                 <Link to="/customer/orders">Track an order</Link>
-                                <a href="mailto:support@elitezaar.com">Support</a>
+                                <a href={`tel:${SUPPORT_PHONES[0].tel}`}>Call support</a>
                             </nav>
                         </div>
                         <div className="store-footer-pay">

@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { OrderCard } from "@/components/OrderBits";
+import SupportCard from "@/components/SupportCard";
 import { Button, Card, ListRow, Loader, Notice, Pill, Row, Screen, SectionHeader, Stat, T } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import { firstName, formatPriceShort } from "@/lib/format";
@@ -63,6 +64,8 @@ export default function VendorDashboardScreen() {
           ) : null}
         </>
       ) : null}
+
+      <SupportCard audience="seller" style={{ marginTop: 14 }} />
     </Screen>
   );
 }

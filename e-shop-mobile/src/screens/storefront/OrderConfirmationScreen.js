@@ -3,6 +3,7 @@ import { StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import SupportCard from "@/components/SupportCard";
 import { AddressBlock, OrderItemRow, PaymentStatusPill } from "@/components/OrderBits";
 import { Button, Card, EmptyState, KeyValue, Notice, Row, Screen, T } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
@@ -62,6 +63,8 @@ export default function OrderConfirmationScreen() {
         <T variant="h3" style={{ marginBottom: 8 }}>Delivering to</T>
         <AddressBlock order={order} />
       </Card>
+
+      <SupportCard orderId={order.id} style={{ marginTop: 12 }} />
     </Screen>
   );
 }

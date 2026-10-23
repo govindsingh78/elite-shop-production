@@ -3,6 +3,7 @@ import { Link, useLocation, useParams } from "react-router-dom";
 import Layout from "./Layout";
 import { apiUrl } from "./http";
 import { formatPrice } from "./currency";
+import { SUPPORT_PHONES } from "./support";
 import { AdminAuthContext } from "../context/AdminAuth";
 import { customerRequest } from "../customer/customerApi";
 
@@ -152,7 +153,10 @@ const OrderConfirmation = () => {
 
                 <section className="oc-help">
                   <strong>Need help with your order?</strong>
-                  <small>Quote order <b>#{order?.id || id}</b> when you contact us.</small>
+                  <small>Call our helpline and quote order <b>#{order?.id || id}</b>.</small>
+                  <span className="oc-help-phones">
+                    {SUPPORT_PHONES.map((phone) => <a key={phone.tel} href={`tel:${phone.tel}`}>{phone.label}</a>)}
+                  </span>
                 </section>
               </aside>
             </div>

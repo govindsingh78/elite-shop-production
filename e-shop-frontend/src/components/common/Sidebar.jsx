@@ -2,6 +2,7 @@ import React, { useContext, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { AdminAuthContext } from "../context/AdminAuth";
 import { BrandMark } from "./BrandLogo";
+import { SUPPORT_PHONES } from "./support";
 
 const adminLinks = [
   { label: "Overview", to: "/admin/dashboard", icon: <><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></> },
@@ -30,8 +31,8 @@ const customerLinks = [
 
 const variants = {
   admin: { links: adminLinks, home: "/admin/dashboard", login: "/admin/login", passwordPath: "/admin/change-password", role: "STORE CONTROL", menu: "Store menu", fallbackName: "Store administrator", fallbackEmail: "Administrator", label: "Admin navigation" },
-  vendor: { links: vendorLinks, home: "/vendor/dashboard", login: "/vendor/login", passwordPath: "/vendor/change-password", role: "PARTNER PORTAL", menu: "Vendor menu", fallbackName: "Vendor account", fallbackEmail: "Vendor", label: "Vendor navigation" },
-  customer: { links: customerLinks, home: "/customer/dashboard", login: "/customer/login", role: "MY ACCOUNT", menu: "Account menu", fallbackName: "My account", fallbackEmail: "Customer", label: "Account navigation" },
+  vendor: { links: vendorLinks, home: "/vendor/dashboard", login: "/vendor/login", passwordPath: "/vendor/change-password", role: "PARTNER PORTAL", menu: "Vendor menu", fallbackName: "Vendor account", fallbackEmail: "Vendor", label: "Vendor navigation", helpTitle: "Seller support", helpCopy: "Listings, orders or payouts — call us." },
+  customer: { links: customerLinks, home: "/customer/dashboard", login: "/customer/login", role: "MY ACCOUNT", menu: "Account menu", fallbackName: "My account", fallbackEmail: "Customer", label: "Account navigation", helpTitle: "Need help?", helpCopy: "Orders, delivery or payments — call us." },
 };
 
 const NavIcon =({ children }) => <svg className="admin-sidebar-icon" viewBox="0 0 24 24" aria-hidden="true">{children}</svg>;
@@ -93,6 +94,18 @@ const Sidebar = ({ variant = "admin" }) => {
         </>}
 
         <div className="admin-sidebar-spacer" />
+        {config.helpTitle && (
+          <div className="admin-sidebar-help">
+            <strong>{config.helpTitle}</strong>
+            <small>{config.helpCopy}</small>
+            {SUPPORT_PHONES.map((phone) => (
+              <a key={phone.tel} href={`tel:${phone.tel}`}>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" /></svg>
+                {phone.label}
+              </a>
+            ))}
+          </div>
+        )}
         <div className="admin-sidebar-profile">
           <span className="admin-sidebar-avatar">{name.trim().charAt(0).toUpperCase()}</span>
           <span className="admin-sidebar-profile-copy"><strong>{name}</strong><small>{profile?.email || config.fallbackEmail}</small></span>

@@ -12,4 +12,9 @@ export const BRAND = {
   domain: "elitezaar.com",
   slogan: "Everyday, elevated.",
   supportEmail: "support@elitezaar.com",
+  // Helpline for customers and sellers.
+  supportPhones: [
+    { label: "+91 70734 44156", tel: "+917073444156" },
+    { label: "+91 70734 44157", tel: "+917073444157" },
+  ],
 };

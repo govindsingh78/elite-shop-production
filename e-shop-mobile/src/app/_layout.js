@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { Stack, router, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Outfit_500Medium, Outfit_600SemiBold, Outfit_700Bold, Outfit_800ExtraBold, useFonts } from "@expo-google-fonts/outfit";
 import { Rajdhani_500Medium, Rajdhani_600SemiBold, Rajdhani_700Bold } from "@expo-google-fonts/rajdhani";
@@ -20,13 +21,17 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <CartProvider>
-          <ToastProvider>
-            <RootNavigator fontsReady={fontsLoaded || !!fontError} />
-          </ToastProvider>
-        </CartProvider>
-      </AuthProvider>
+      {/* Lets form screens keep the focused field above the keyboard (see Screen in components/ui).
+          Expo apps draw edge-to-edge on Android; without these flags the status bar turns white. */}
+      <KeyboardProvider statusBarTranslucent navigationBarTranslucent preserveEdgeToEdge>
+        <AuthProvider>
+          <CartProvider>
+            <ToastProvider>
+              <RootNavigator fontsReady={fontsLoaded || !!fontError} />
+            </ToastProvider>
+          </CartProvider>
+        </AuthProvider>
+      </KeyboardProvider>
     </SafeAreaProvider>
   );
 }

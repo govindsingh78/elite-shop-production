@@ -6,6 +6,7 @@ import { useStorefrontCategories } from "./useStorefrontCategories";
 import { useCart } from "../context/CartContext";
 import AccountMenu from "./AccountMenu";
 import { formatPrice } from "./currency";
+import { SUPPORT_PHONES } from "./support";
 
 const Header = () => {
   const { categories, loading } = useStorefrontCategories();
@@ -18,8 +19,18 @@ const Header = () => {
     <>
       <div className="store-announcement">
         <div className="container d-flex justify-content-between align-items-center">
-          <span>Thoughtfully picked. Made to be worn on repeat.</span>
-          <Link to="/shop" className="store-announcement-link">Explore the edit <span aria-hidden="true">↗</span></Link>
+          <span className="d-none d-lg-inline">Thoughtfully picked. Made to be worn on repeat.</span>
+          <span className="store-helpline">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" /></svg>
+            <span className="d-none d-sm-inline">Helpline</span>
+            {SUPPORT_PHONES.map((phone, index) => (
+              <React.Fragment key={phone.tel}>
+                {index > 0 && <span aria-hidden="true">/</span>}
+                <a href={`tel:${phone.tel}`}>{phone.label}</a>
+              </React.Fragment>
+            ))}
+          </span>
+          <Link to="/shop" className="store-announcement-link d-none d-md-inline">Explore the edit <span aria-hidden="true">↗</span></Link>
         </div>
       </div>
       <header className="store-header sticky-top">

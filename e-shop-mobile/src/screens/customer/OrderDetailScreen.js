@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef } from "react";
 import { View } from "react-native";
 import { Stack, useFocusEffect, useLocalSearchParams } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import SupportCard from "@/components/SupportCard";
 import { AddressBlock, MilestoneBar, OrderItemRow, OrderStatusPill, PaymentStatusPill, TrackingTimeline } from "@/components/OrderBits";
 import { Card, EmptyState, KeyValue, Loader, Notice, Row, Screen, T } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
@@ -104,6 +105,8 @@ export default function CustomerOrderDetailScreen() {
           <AddressBlock order={order} />
           {order.notes ? <T variant="small" style={{ marginTop: 10 }}>Note: {order.notes}</T> : null}
         </Card>
+
+        <SupportCard orderId={order.id} style={{ marginTop: 12 }} />
       </Screen>
     </>
   );
