@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\PolicyController;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderTrackingEvent;
@@ -68,7 +69,9 @@ class OrderController extends Controller
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['required', 'integer', 'exists:products,id'],
             'items.*.quantity' => ['required', 'integer', 'min:1', 'max:999'],
-        ]);
+            // Shoppers must agree to the Return & Refund Policy; the version they saw is kept on the order.
+            'accept_policy' => ['accepted'],
+        ], ['accept_policy.accepted' => 'Please read and accept the Return & Refund Policy to place your order.']);
 
         if ($validated['payment_method'] === 'razorpay' && !app(Razorpay::class)->configured()) {
             throw ValidationException::withMessages(['payment_method' => 'Online payment is not available right now. Please choose cash on delivery.']);
@@ -168,6 +171,8 @@ class OrderController extends Controller
                 'payment_status' => 'unpaid',
                 'status' => 'pending',
                 'notes' => $validated['notes'] ?? null,
+                'policy_version' => PolicyController::version(PolicyController::RETURN_REFUND),
+                'policy_accepted_at' => now(),
             ]);
 
             foreach ($items as $item) {

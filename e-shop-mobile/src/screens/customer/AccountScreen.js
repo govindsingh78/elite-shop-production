@@ -32,6 +32,10 @@ function GuestAccount() {
         <ListRow icon="sparkles-outline" title="Become a seller" subtitle="Open your Elitezaar store" onPress={() => router.push("/vendor-register")} />
         <ListRow icon="shield-checkmark-outline" title="Store admin" subtitle="Authorised staff only" onPress={() => router.push({ pathname: "/login", params: { portal: "admin" } })} last />
       </Card>
+      <Card style={{ marginTop: 16 }}>
+        <ListRow icon="information-circle-outline" title="About Elitezaar" subtitle="Our story and what we promise" onPress={() => router.push("/about")} />
+        <ListRow icon="refresh-circle-outline" title="Return & refund policy" subtitle="Returns, refunds and cancellations" onPress={() => router.push("/return-policy")} last />
+      </Card>
       <SupportCard style={{ marginTop: 16 }} />
     </Screen>
   );
@@ -126,6 +130,8 @@ function CustomerDashboard() {
         <ListRow icon="location-outline" title="Addresses" subtitle={`${stats?.saved_addresses ?? "Your"} saved address${stats?.saved_addresses === 1 ? "" : "es"}`} onPress={() => router.push("/customer/addresses")} />
         <ListRow icon="person-outline" title="Profile" subtitle="Name and phone number" onPress={() => router.push("/customer/profile")} />
         <ListRow icon="key-outline" title="Change password" onPress={() => router.push("/change-password")} />
+        <ListRow icon="information-circle-outline" title="About Elitezaar" subtitle="Our story and what we promise" onPress={() => router.push("/about")} />
+        <ListRow icon="refresh-circle-outline" title="Return & refund policy" subtitle="Returns, refunds and cancellations" onPress={() => router.push("/return-policy")} />
         <ListRow icon="log-out-outline" title="Sign out" danger onPress={askSignOut} last />
       </Card>
       <SupportCard style={{ marginTop: 16 }} />

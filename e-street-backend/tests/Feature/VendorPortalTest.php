@@ -52,7 +52,7 @@ class VendorPortalTest extends TestCase
     {
         $response = $this->postJson('/api/orders', [
             'customer_name' => 'Asha', 'customer_email' => 'asha@example.com', 'address' => '12 MG Road', 'city' => 'Jaipur',
-            'payment_method' => 'cod',
+            'payment_method' => 'cod', 'accept_policy' => true,
             'items' => array_map(fn ($product) => ['product_id' => $product->id, 'quantity' => 2], $products),
         ])->assertCreated();
 

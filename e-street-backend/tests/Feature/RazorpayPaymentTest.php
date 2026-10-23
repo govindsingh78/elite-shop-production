@@ -46,7 +46,7 @@ class RazorpayPaymentTest extends TestCase
     {
         $response = $this->postJson('/api/orders', [
             'customer_name' => 'Asha', 'customer_email' => 'asha@example.com', 'customer_phone' => '9876543210',
-            'address' => '12 MG Road', 'city' => 'Jaipur', 'payment_method' => 'razorpay',
+            'address' => '12 MG Road', 'city' => 'Jaipur', 'payment_method' => 'razorpay', 'accept_policy' => true,
             'items' => [['product_id' => $this->product->id, 'quantity' => 2]],
         ])->assertCreated();
 
@@ -124,7 +124,7 @@ class RazorpayPaymentTest extends TestCase
 
         $this->getJson('/api/storefront/payment-methods')->assertJsonPath('online', false);
         $this->postJson('/api/orders', [
-            'customer_name' => 'Asha', 'customer_email' => 'asha@example.com', 'address' => 'x', 'city' => 'y', 'payment_method' => 'razorpay',
+            'customer_name' => 'Asha', 'customer_email' => 'asha@example.com', 'address' => 'x', 'city' => 'y', 'payment_method' => 'razorpay', 'accept_policy' => true,
             'items' => [['product_id' => $this->product->id, 'quantity' => 1]],
         ])->assertStatus(422)->assertJsonValidationErrors('payment_method');
     }

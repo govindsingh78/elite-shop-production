@@ -71,7 +71,7 @@ class ProductApprovalTest extends TestCase
         $this->getJson("/api/storefront/products/{$product->id}")->assertNotFound();
         $this->postJson('/api/orders', [
             'customer_name' => 'Asha', 'customer_email' => 'asha@example.com', 'address' => '12 MG Road', 'city' => 'Jaipur',
-            'payment_method' => 'cod', 'items' => [['product_id' => $product->id, 'quantity' => 1]],
+            'payment_method' => 'cod', 'accept_policy' => true, 'items' => [['product_id' => $product->id, 'quantity' => 1]],
         ])->assertStatus(422);
 
         $this->actingAs($this->admin, 'sanctum')->patchJson("/api/admin/products/{$product->id}/review", ['decision' => 'approved'])

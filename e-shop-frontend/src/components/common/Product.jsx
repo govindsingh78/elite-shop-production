@@ -6,6 +6,7 @@ import { apiUrl } from "./http";
 import { useCart } from "../context/CartContext";
 import { formatPrice } from "./currency";
 import StorefrontProductCard from "./StorefrontProductCard";
+import { ProductReturnsNote } from "./PolicyBits";
 
 const imageBase = apiUrl.replace(/\/api\/?$/, "");
 const LOW_STOCK = 5;
@@ -198,6 +199,7 @@ const Product = () => {
                       </li>
                     ))}
                   </ul>
+                  <ProductReturnsNote />
 
                   <p className="pd-sku">SKU <strong>{product.sku || "—"}</strong></p>
                 </section>

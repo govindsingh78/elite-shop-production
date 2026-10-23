@@ -3,6 +3,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\GeoController;
+use App\Http\Controllers\PolicyController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TempImageController;
@@ -39,6 +40,7 @@ Route::middleware('throttle:20,1')->group(function () {
 });
 Route::post('/payments/razorpay/webhook', [PaymentController::class, 'webhook']);
 Route::get('/storefront/categories', [CategoryController::class, 'navigation']);
+Route::get('/storefront/policies/{policy}', [PolicyController::class, 'show'])->where('policy', '[a-z-]+');
 Route::get('/storefront/products', [ProductController::class, 'storefrontIndex']);
 Route::get('/storefront/products/{id}', [ProductController::class, 'storefrontShow'])->whereNumber('id');
 Route::middleware('throttle:120,1')->prefix('geo')->group(function () {

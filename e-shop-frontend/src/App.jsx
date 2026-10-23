@@ -3,6 +3,8 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AdminAuthProvider } from './components/context/AdminAuth';
 import Home from './components/common/Home';
 import Shop from './components/common/Shop';
+import About from './components/common/About';
+import ReturnPolicy from './components/common/ReturnPolicy';
 import Product from './components/common/Product';
 import Cart from './components/common/Cart';
 import Checkout from './components/common/Checkout';
@@ -52,6 +54,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/shop" element={<Shop />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/return-refund-policy" element={<ReturnPolicy />} />
           <Route path="/shop/:categorySlug" element={<Shop />} />
           <Route path="/product" element={<Product />} />
           <Route path="/product/:id" element={<Product />} />

@@ -1,0 +1,141 @@
+{
+  "slug": "return-refund",
+  "title": "Return & Refund Policy",
+  "version": "2026-10-23",
+  "updated": "23 October 2026",
+  "intro": "We want you to love every piece you buy on Elitezaar. If something isn't right, this policy explains how returns, refunds and cancellations work. By placing an order, you agree to the terms below.",
+  "highlights": [
+    { "icon": "calendar", "title": "7-day returns", "text": "Request a return within 7 days of delivery." },
+    { "icon": "refund", "title": "Refunds in 5–7 business days", "text": "Once your return passes our quality check." },
+    { "icon": "shield", "title": "Damaged or wrong item?", "text": "Report it within 48 hours for a free return." },
+    { "icon": "support", "title": "Simple requests", "text": "Call our helpline or email us with your order number." }
+  ],
+  "sections": [
+    {
+      "id": "return-window",
+      "title": "Return window",
+      "blocks": [
+        { "type": "p", "text": "You can request a return within 7 days of the date your order is delivered, as shown in your order tracking." },
+        { "type": "p", "text": "Requests made after the return window has closed cannot be accepted, except for damaged, defective or wrong items that were reported in time (see below)." }
+      ]
+    },
+    {
+      "id": "eligibility",
+      "title": "Conditions for a return",
+      "blocks": [
+        { "type": "p", "text": "To be accepted, a returned item must be:" },
+        { "type": "list", "items": [
+          "Unused, unworn, unwashed and unaltered.",
+          "In its original packaging, with all tags, labels and brand boxes attached and intact.",
+          "Returned with everything it came with, including accessories, free gifts and the invoice.",
+          "The same item that was delivered to you, matching its SKU, size and colour."
+        ] },
+        { "type": "note", "text": "Try items on gently, over undergarments, and keep the tags attached until you're sure you're keeping them." }
+      ]
+    },
+    {
+      "id": "non-returnable",
+      "title": "Items that can't be returned",
+      "blocks": [
+        { "type": "p", "text": "For hygiene, safety or personalisation reasons, the following can't be returned unless they arrive damaged, defective or incorrect:" },
+        { "type": "list", "items": [
+          "Innerwear, lingerie, swimwear and socks.",
+          "Beauty, personal-care and fragrance products once the seal has been opened.",
+          "Products that are customised, personalised or made to order.",
+          "Gift cards and vouchers.",
+          "Items sold as clearance or final sale, where this is stated at the time of purchase."
+        ] }
+      ]
+    },
+    {
+      "id": "damaged",
+      "title": "Damaged, defective or wrong items",
+      "blocks": [
+        { "type": "p", "text": "If your order arrives damaged, defective, incomplete or different from what you ordered, tell us within 48 hours of delivery. Share your order number, clear photos of the item and its packaging, and an unboxing video if you have one." },
+        { "type": "p", "text": "Once we've verified the issue, we'll arrange a free return and give you a full refund, including any delivery charge you paid, or send a replacement if the same item is in stock." },
+        { "type": "note", "text": "If the outer packaging looks tampered with or badly damaged, please refuse the parcel at the door or mention it to the delivery partner." }
+      ]
+    },
+    {
+      "id": "how-to-return",
+      "title": "How to request a return",
+      "blocks": [
+        { "type": "steps", "items": [
+          "Contact our customer care team within the return window with your order number, the items you'd like to return and the reason.",
+          "We review your request and confirm within 2 business days whether it's approved, along with return instructions.",
+          "Pack the item securely in its original packaging with all tags and accessories. Where reverse pickup is available for your PIN code we'll arrange a pickup; otherwise we'll share the address to send it to.",
+          "When the item reaches us and passes the quality check, we start your refund."
+        ] }
+      ]
+    },
+    {
+      "id": "quality-check",
+      "title": "Quality check",
+      "blocks": [
+        { "type": "p", "text": "Every returned item is inspected. If it doesn't meet the conditions above, for example it has been used, washed or damaged after delivery, or tags are missing, the return may be declined and the item sent back to you. No refund is issued in that case." }
+      ]
+    },
+    {
+      "id": "refunds",
+      "title": "Refunds",
+      "blocks": [
+        { "type": "p", "text": "We process refunds within 2 business days of a successful quality check, to the original payment method:" },
+        { "type": "list", "items": [
+          "UPI and net banking: credited back to the same account, usually within 5–7 business days depending on your bank.",
+          "Cash on delivery: paid by bank transfer (IMPS/NEFT) or UPI to the account details you share with us, within 5–7 business days.",
+          "Part of an order: if you return some items, we refund the price of the items returned."
+        ] },
+        { "type": "p", "text": "Online payments are processed by Razorpay. Once a refund is issued we'll share its reference number, so you can follow up with your bank if it takes longer to appear." }
+      ]
+    },
+    {
+      "id": "delivery-charges",
+      "title": "Delivery charges",
+      "blocks": [
+        { "type": "list", "items": [
+          "Delivery charges are refunded when an item was damaged, defective or wrong, or when the whole order is cancelled before it ships.",
+          "For other returns, such as a change of mind or the wrong size, the original delivery charge isn't refunded. If a reverse-pickup fee applies, we'll tell you the amount before you confirm the return."
+        ] }
+      ]
+    },
+    {
+      "id": "cancellations",
+      "title": "Cancelling an order",
+      "blocks": [
+        { "type": "p", "text": "You can cancel an order any time before it ships by contacting us with your order number. Prepaid orders are refunded in full to the original payment method." },
+        { "type": "p", "text": "Once an order has shipped it can't be cancelled, but you can refuse the delivery or request a return after it arrives, as set out in this policy." },
+        { "type": "p", "text": "We may cancel an order if an item is out of stock, can't be delivered to your address, or the payment couldn't be verified. If that happens we'll let you know and refund any amount you paid in full." }
+      ]
+    },
+    {
+      "id": "exchanges",
+      "title": "Exchanges",
+      "blocks": [
+        { "type": "p", "text": "We don't offer direct exchanges at the moment. If you need a different size or colour, return the original item for a refund and place a new order. It's the quickest way to get the piece you want before it sells out." }
+      ]
+    },
+    {
+      "id": "sellers",
+      "title": "Products from our sellers",
+      "blocks": [
+        { "type": "p", "text": "Many products on Elitezaar are sold by independent sellers. This policy applies to every order placed on Elitezaar, whichever seller ships it. Our customer care team handles your request and works with the seller, so you only ever need to contact us." }
+      ]
+    },
+    {
+      "id": "fair-use",
+      "title": "Fair use",
+      "blocks": [
+        { "type": "p", "text": "We may decline returns, or limit returns and cash on delivery on an account, where we see a pattern of excessive returns, items swapped or damaged after delivery, or other misuse of this policy." }
+      ]
+    },
+    {
+      "id": "contact",
+      "title": "Questions and grievances",
+      "contact": true,
+      "blocks": [
+        { "type": "p", "text": "For any question about a return, refund or cancellation, contact our customer care team with your order number. We acknowledge every complaint within 48 hours and aim to resolve it within one month, in line with the Consumer Protection (E-Commerce) Rules, 2020." },
+        { "type": "p", "text": "We may update this policy from time to time. The version on this page applies to orders placed on or after its last-updated date; your order follows the version you accepted at checkout." }
+      ]
+    }
+  ]
+}

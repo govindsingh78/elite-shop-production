@@ -46,6 +46,8 @@ export default function MoreScreen({ portal }) {
           <ListRow icon="add-circle-outline" title="Add a product" subtitle="List something new" onPress={() => router.push("/vendor/product-form")} />
         )}
         <ListRow icon="storefront-outline" title="View the store" subtitle="See Elitezaar as shoppers do" onPress={() => router.push("/")} />
+        <ListRow icon="information-circle-outline" title="About Elitezaar" subtitle="Our story and what we promise" onPress={() => router.push("/about")} />
+        <ListRow icon="refresh-circle-outline" title="Return & refund policy" subtitle="Returns, refunds and cancellations" onPress={() => router.push("/return-policy")} />
         <ListRow icon="key-outline" title="Change password" onPress={() => router.push("/change-password")} />
         <ListRow icon="log-out-outline" title="Sign out" danger onPress={askSignOut} last />
       </Card>

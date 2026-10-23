@@ -29,6 +29,7 @@ const Footer = () => {
                             </Link>
                             <p className="store-footer-description">A considered collection for everyday living. Find your next favourite, and make it yours.</p>
                             <Link className="store-footer-cta" to="/shop">Discover the collection <span aria-hidden="true">↗</span></Link>
+                            <Link className="store-footer-about" to="/about">Our story <span aria-hidden="true">→</span></Link>
                         </div>
                         <div className="col-lg-2 col-6">
                             <h2 className="store-footer-heading">Explore</h2>
@@ -65,6 +66,10 @@ const Footer = () => {
                                 ))}
                             </ul>
                             <a className="store-footer-email" href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL} <span aria-hidden="true">↗</span></a>
+                            <Link className="store-footer-policy" to="/return-refund-policy">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7L4 8.6" /><path d="M4 4v4.6h4.6" /></svg>
+                                Return &amp; Refund Policy
+                            </Link>
                         </div>
                     </div>
                     <ul className="store-footer-perks">
@@ -80,6 +85,8 @@ const Footer = () => {
                         <div className="store-footer-legal">
                             <span>© {year} Elitezaar. All rights reserved.</span>
                             <nav aria-label="Footer">
+                                <Link to="/about">About us</Link>
+                                <Link to="/return-refund-policy">Returns &amp; refunds</Link>
                                 <Link to="/shop">Shop</Link>
                                 <Link to="/customer/orders">Track an order</Link>
                                 <a href={`tel:${SUPPORT_PHONES[0].tel}`}>Call support</a>

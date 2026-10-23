@@ -108,6 +108,7 @@ export default function OrderManageScreen({ portal: portalKey }) {
           <Divider />
           <KeyValue label="Payment" value={paymentMethodLabel(order.payment_method)} last={!order.notes} />
           {order.notes && portalKey === "admin" ? <T variant="small" style={{ marginTop: 6 }}>Note: {order.notes}</T> : null}
+          {order.policy_accepted_at && portalKey === "admin" ? <T variant="small" style={{ marginTop: 6 }}>Accepted Return &amp; Refund Policy v{order.policy_version} on {formatDate(order.policy_accepted_at)}</T> : null}
         </Card>
 
         <Card style={{ marginTop: 12 }}>

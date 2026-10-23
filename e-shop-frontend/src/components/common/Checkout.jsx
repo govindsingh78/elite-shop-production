@@ -9,6 +9,9 @@ import { customerRequest } from "../customer/customerApi";
 import { loadRazorpay, methodDisplay, paymentRequest } from "./razorpay";
 import LocationFields from "./LocationFields";
 import { DEFAULT_COUNTRY, postalLabel } from "./geo";
+import { PolicyAgreement } from "./PolicyBits";
+
+const POLICY_REQUIRED = "Please read and accept the Return & Refund Policy to place your order.";
 
 const PAYMENT_OPTIONS = [
   { value: "upi", title: "UPI", copy: "Google Pay, PhonePe, Paytm, BHIM or any UPI app.", icon: <><rect x="6" y="2" width="12" height="20" rx="2.5" /><path d="M11 18h2M9.5 8.5 12 11l3-4" /></> },
@@ -31,6 +34,7 @@ const Checkout = () => {
   const isCustomer = user?.portal === "customer";
 
   const [shopperType, setShopperType] = useState("returning");
+  const [acceptPolicy, setAcceptPolicy] = useState(false);
   const [createAccount, setCreateAccount] = useState(false);
   const [form, setForm] = useState(initialForm);
   const [password, setPassword] = useState("");
@@ -246,6 +250,11 @@ const Checkout = () => {
       openPayment(pendingPayment);
       return;
     }
+    if (!acceptPolicy) {
+      setFieldErrors((current) => ({ ...current, accept_policy: POLICY_REQUIRED }));
+      setError(POLICY_REQUIRED);
+      return;
+    }
     setSubmitting(true);
     resetMessages();
     try {
@@ -263,6 +272,7 @@ const Checkout = () => {
         ...(customerAction === "register" ? { account_password: password, account_password_confirmation: passwordConfirmation } : {}),
         payment_method: paymentChoice === "cod" ? "cod" : "razorpay",
         shipping_method_id: shippingMethodId ? Number(shippingMethodId) : null,
+        accept_policy: acceptPolicy,
         items: items.map(({ id, quantity }) => ({ product_id: id, quantity })),
       };
       const response = await fetch(`${apiUrl}/orders`, {
@@ -555,9 +565,18 @@ const Checkout = () => {
                       <button type="button" className="co-pending-cod" onClick={payOnDeliveryInstead} disabled={paying}>Pay on delivery instead</button>
                     </div>
                   ) : (
-                    <button type="submit" className="btn btn-primary cart-checkout" disabled={submitting || paying || loadingShipping || signingIn || (isCustomer && loadingAddresses)}>
-                      {placeOrderLabel}{!submitting && !awaitingSignIn && <span aria-hidden="true">→</span>}
-                    </button>
+                    <>
+                      {!awaitingSignIn && (
+                        <PolicyAgreement
+                          checked={acceptPolicy}
+                          onChange={(value) => { setAcceptPolicy(value); setFieldErrors((current) => ({ ...current, accept_policy: undefined })); }}
+                          error={fieldErrors.accept_policy}
+                        />
+                      )}
+                      <button type="submit" className="btn btn-primary cart-checkout" disabled={submitting || paying || loadingShipping || signingIn || (isCustomer && loadingAddresses)}>
+                        {placeOrderLabel}{!submitting && !awaitingSignIn && <span aria-hidden="true">→</span>}
+                      </button>
+                    </>
                   )}
                   <p className="co-fineprint"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 1 1 8 0v3" /></svg>Prices and stock are verified when you place your order.</p>
                 </section>

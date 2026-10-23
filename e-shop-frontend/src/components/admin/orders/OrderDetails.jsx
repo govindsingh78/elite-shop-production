@@ -138,6 +138,9 @@ const OrderDetails = ({ portal = "admin" }) => {
                         {order.customer_phone && <p className="mb-2">{order.customer_phone}</p>}
                         <address className="mb-0">{order.address}<br />{order.city}{order.state ? `, ${order.state}` : ""} {order.postal_code || ""}<br />{order.country}</address>
                         {isVendor && order.notes && <p className="mt-3 mb-0"><span className="text-muted">Delivery notes:</span> {order.notes}</p>}
+                        {!isVendor && order.policy_accepted_at && (
+                          <p className="small text-muted mt-3 mb-0">Accepted the Return &amp; Refund Policy (version {order.policy_version}) on {new Date(order.policy_accepted_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}.</p>
+                        )}
                       </div>
                     </section>
                     <TrackingManager portal={portal} order={order} onOrderChange={applyOrder} readOnly={!canEdit} />

@@ -10,6 +10,7 @@ class Order extends Model
         'user_id', 'customer_name', 'customer_email', 'customer_phone', 'address',
         'city', 'state', 'postal_code', 'country', 'subtotal', 'shipping_amount',
         'shipping_method_id', 'total', 'payment_method', 'payment_status', 'status', 'tracking_number', 'courier_name', 'estimated_delivery_date', 'notes',
+        'policy_version', 'policy_accepted_at',
     ];
 
     // Payment fields are only ever set by the payment flow, never mass-assigned.
@@ -17,6 +18,7 @@ class Order extends Model
 
     protected $casts = [
         'paid_at' => 'datetime',
+        'policy_accepted_at' => 'datetime',
         'estimated_delivery_date' => 'date:Y-m-d',
         'subtotal' => 'decimal:2',
         'shipping_amount' => 'decimal:2',

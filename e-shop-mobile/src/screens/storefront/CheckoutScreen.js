@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AddressFields from "@/components/AddressFields";
+import { PolicyConsent, PolicySummaryCard } from "@/components/PolicyBits";
 import { Button, Card, EmptyState, KeyValue, Loader, Notice, Row, Screen, Segmented, SwitchRow, T, TextField } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
@@ -11,6 +12,7 @@ import { api } from "@/lib/api";
 import { formatPrice } from "@/lib/format";
 import { colors, fonts, radius } from "@/theme";
 
+const POLICY_REQUIRED = "Please read and accept the Return & Refund Policy to place your order.";
 const EMPTY_FORM = { customer_name: "", customer_email: "", customer_phone: "", address: "", city: "", state: "", postal_code: "", country: "India", notes: "" };
 
 const PAYMENT_OPTIONS = [
@@ -45,6 +47,7 @@ export default function CheckoutScreen() {
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
+  const [acceptPolicy, setAcceptPolicy] = useState(false);
 
   useEffect(() => {
     api("/storefront/shipping-methods").then((methods) => {
@@ -108,6 +111,11 @@ export default function CheckoutScreen() {
       setError("Passwords do not match.");
       return;
     }
+    if (!acceptPolicy) {
+      setFieldErrors({ accept_policy: POLICY_REQUIRED });
+      setError(POLICY_REQUIRED);
+      return;
+    }
 
     const delivery = usingSaved
       ? {
@@ -124,6 +132,7 @@ export default function CheckoutScreen() {
       ...(customerAction === "register" ? { account_password: password.value, account_password_confirmation: password.confirm } : {}),
       payment_method: payment === "cod" ? "cod" : "razorpay",
       shipping_method_id: shippingId || null,
+      accept_policy: acceptPolicy,
       items: items.map(({ id, quantity }) => ({ product_id: id, quantity })),
     };
 
@@ -169,6 +178,11 @@ export default function CheckoutScreen() {
       keyboard
       footer={(
         <View>
+          <PolicyConsent
+            checked={acceptPolicy}
+            onChange={(value) => { setAcceptPolicy(value); setFieldErrors((current) => ({ ...current, accept_policy: undefined })); }}
+            error={fieldErrors.accept_policy}
+          />
           <Row justify="space-between" style={{ marginBottom: 10 }}>
             <T variant="body">Total to pay</T>
             <T variant="price" style={{ fontSize: 21 }}>{formatPrice(total)}</T>
@@ -259,6 +273,8 @@ export default function CheckoutScreen() {
         {payment !== "cod" ? <T variant="small" style={{ marginTop: 4 }}>You’ll complete the payment securely with Razorpay after placing the order.</T> : null}
         <TextField label="Order notes (optional)" placeholder="Delivery instructions, gift note…" multiline value={form.notes} onChangeText={(value) => change("notes", value)} style={{ marginTop: 14 }} />
       </Step>
+
+      <PolicySummaryCard style={{ marginBottom: 14 }} />
 
       {/* Summary */}
       <Card>
