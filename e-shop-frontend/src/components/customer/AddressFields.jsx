@@ -1,12 +1,6 @@
 import React from "react";
-
-const INDIAN_STATES = [
-  "Andaman and Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chandigarh", "Chhattisgarh",
-  "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jammu and Kashmir",
-  "Jharkhand", "Karnataka", "Kerala", "Ladakh", "Lakshadweep", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya",
-  "Mizoram", "Nagaland", "Odisha", "Puducherry", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura",
-  "Uttar Pradesh", "Uttarakhand", "West Bengal",
-];
+import LocationFields from "../common/LocationFields";
+import { postalLabel } from "../common/geo";
 
 const LABELS = ["Home", "Work", "Other"];
 
@@ -40,11 +34,8 @@ const AddressFields = ({ values, errors = {}, onChange, idPrefix = "address", sh
       {showRecipient && field("full_name", "Recipient name", { required: true, autoComplete: "name" })}
       {showRecipient && field("phone", "Phone number", { type: "tel", required: true, autoComplete: "tel", inputMode: "tel", placeholder: "+91 98765 43210", maxLength: 40 })}
       {field("address", "House / flat, street and area", { multiline: true, required: true, autoComplete: "street-address", wrapperClass: "col-12", placeholder: "e.g. 12, MG Road, near City Mall" })}
-      {field("city", "City", { required: true, autoComplete: "address-level2", maxLength: 120 })}
-      {field("state", "State", { required: true, autoComplete: "address-level1", list: `${idPrefix}-states`, maxLength: 120 })}
-      {field("postal_code", "PIN code", { required: true, autoComplete: "postal-code", inputMode: "numeric", maxLength: 30 })}
-      {field("country", "Country", { autoComplete: "country-name", maxLength: 120 })}
-      <datalist id={`${idPrefix}-states`}>{INDIAN_STATES.map((state) => <option key={state} value={state} />)}</datalist>
+      <LocationFields values={values} errors={errors} onChange={onChange} idPrefix={idPrefix} />
+      {field("postal_code", postalLabel(values.country), { required: true, autoComplete: "postal-code", maxLength: 30 })}
     </div>
   );
 };

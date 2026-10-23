@@ -7,6 +7,8 @@ import { formatPrice } from "./currency";
 import { AdminAuthContext } from "../context/AdminAuth";
 import { customerRequest } from "../customer/customerApi";
 import { loadRazorpay, methodDisplay, paymentRequest } from "./razorpay";
+import LocationFields from "./LocationFields";
+import { DEFAULT_COUNTRY, postalLabel } from "./geo";
 
 const PAYMENT_OPTIONS = [
   { value: "upi", title: "UPI", copy: "Google Pay, PhonePe, Paytm, BHIM or any UPI app.", icon: <><rect x="6" y="2" width="12" height="20" rx="2.5" /><path d="M11 18h2M9.5 8.5 12 11l3-4" /></> },
@@ -16,7 +18,7 @@ const PAYMENT_OPTIONS = [
 
 const initialForm = {
   customer_name: "", customer_email: "", customer_phone: "", address: "", city: "",
-  state: "", postal_code: "", country: "", notes: "",
+  state: "", postal_code: "", country: DEFAULT_COUNTRY, notes: "",
 };
 
 const ADDRESS_LABELS = ["Home", "Work", "Other"];
@@ -349,7 +351,10 @@ const Checkout = () => {
     <>
       {isCustomer && <div className="row"><div className="col-md-6">{input("customer_name", "Recipient name", { autoComplete: "name", required: true })}</div><div className="col-md-6">{input("customer_phone", "Recipient phone", { type: "tel", autoComplete: "tel", required: true })}</div></div>}
       {input("address", "House / flat, street and area", { autoComplete: "street-address", multiline: true, required: true, placeholder: "e.g. 12, MG Road, near City Mall" })}
-      <div className="row"><div className="col-md-6">{input("city", "City", { autoComplete: "address-level2", required: true })}</div><div className="col-md-6">{input("state", needsFullAddress ? "State" : "State (optional)", { autoComplete: "address-level1", required: needsFullAddress })}</div><div className="col-md-6">{input("postal_code", needsFullAddress ? "PIN code" : "PIN code (optional)", { autoComplete: "postal-code", required: needsFullAddress })}</div><div className="col-md-6">{input("country", "Country", { autoComplete: "country-name", placeholder: "India" })}</div></div>
+      <div className="row">
+        <LocationFields values={form} errors={fieldErrors} onChange={changeField} idPrefix="checkout" wrapperClass="col-md-6 mb-3" stateOptional={!needsFullAddress} />
+        <div className="col-md-6">{input("postal_code", needsFullAddress ? postalLabel(form.country) : `${postalLabel(form.country)} (optional)`, { autoComplete: "postal-code", required: needsFullAddress })}</div>
+      </div>
     </>
   );
 

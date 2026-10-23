@@ -2,6 +2,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\GeoController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TempImageController;
@@ -40,6 +41,12 @@ Route::post('/payments/razorpay/webhook', [PaymentController::class, 'webhook'])
 Route::get('/storefront/categories', [CategoryController::class, 'navigation']);
 Route::get('/storefront/products', [ProductController::class, 'storefrontIndex']);
 Route::get('/storefront/products/{id}', [ProductController::class, 'storefrontShow'])->whereNumber('id');
+Route::middleware('throttle:120,1')->prefix('geo')->group(function () {
+    Route::get('countries', [GeoController::class, 'countries']);
+    Route::get('countries/{country}/states', [GeoController::class, 'states'])->where('country', '[A-Za-z]{2}');
+    Route::get('countries/{country}/states/{state}/cities', [GeoController::class, 'cities'])
+        ->where(['country' => '[A-Za-z]{2}', 'state' => '[A-Za-z0-9]{1,8}']);
+});
 Route::get('/storefront/shipping-methods', fn () => response()->json(
     ShippingMethod::query()->where('status', 1)->orderBy('price')->get(['id', 'name', 'price']),
 ));

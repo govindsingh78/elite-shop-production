@@ -1,8 +1,10 @@
 import React from "react";
 import { View } from "react-native";
-import { Row, TextField } from "@/components/ui";
+import LocationFields from "@/components/LocationFields";
+import { TextField } from "@/components/ui";
+import { DEFAULT_COUNTRY, postalLabel } from "@/lib/geo";
 
-export const EMPTY_ADDRESS = { label: "Home", full_name: "", phone: "", address: "", city: "", state: "", postal_code: "", country: "India" };
+export const EMPTY_ADDRESS = { label: "Home", full_name: "", phone: "", address: "", city: "", state: "", postal_code: "", country: DEFAULT_COUNTRY };
 
 /**
  * Delivery address inputs. `names` maps our field names to the API's, e.g. checkout uses
@@ -22,14 +24,12 @@ export default function AddressFields({ values, errors = {}, onChange, names = {
       {showName ? <TextField label="Full name" autoComplete="name" textContentType="name" {...bind("full_name")} /> : null}
       <TextField label="Phone" keyboardType="phone-pad" autoComplete="tel" textContentType="telephoneNumber" {...bind("phone")} />
       <TextField label="Address" placeholder="House, street, area" multiline autoComplete="street-address" {...bind("address")} />
-      <Row gap={10} align="flex-start">
-        <TextField label="City" style={{ flex: 1 }} {...bind("city")} />
-        <TextField label="State" style={{ flex: 1 }} {...bind("state")} />
-      </Row>
-      <Row gap={10} align="flex-start">
-        <TextField label="PIN code" keyboardType="number-pad" style={{ flex: 1 }} autoComplete="postal-code" {...bind("postal_code")} />
-        <TextField label="Country" style={{ flex: 1 }} {...bind("country")} />
-      </Row>
+      <LocationFields
+        values={{ country: values[field("country")], state: values[field("state")], city: values[field("city")] }}
+        errors={{ country: errors[field("country")], state: errors[field("state")], city: errors[field("city")] }}
+        onChange={(key, value) => onChange(field(key), value)}
+      />
+      <TextField label={postalLabel(values[field("country")])} keyboardType={postalLabel(values[field("country")]) === "PIN code" ? "number-pad" : "default"} autoComplete="postal-code" {...bind("postal_code")} />
     </View>
   );
 }

@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
-  ActivityIndicator, FlatList, Modal, Platform, Pressable, RefreshControl, ScrollView,
+  ActivityIndicator, FlatList, Keyboard, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, ScrollView,
   StyleSheet, Switch, Text, TextInput, View,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
@@ -156,45 +156,76 @@ export function TextField({ label, error, hint, secure, multiline, style, inputS
 }
 
 /** A tappable field that opens a bottom sheet of options. */
-export function SelectField({ label, value, options, onChange, placeholder = "Choose…", error, style }) {
+export function SelectField({ label, value, options, onChange, placeholder = "Choose…", error, style, disabled, searchable }) {
   const [open, setOpen] = useState(false);
   const selected = options.find((option) => String(option.value) === String(value));
   return (
     <View style={[styles.field, style]}>
       {label ? <T variant="strong" style={styles.fieldLabel}>{label}</T> : null}
-      <Pressable onPress={() => setOpen(true)} style={[styles.inputWrap, styles.select, error && styles.inputError]}>
+      <Pressable onPress={() => setOpen(true)} disabled={disabled} style={[styles.inputWrap, styles.select, error && styles.inputError, disabled && styles.selectDisabled]}>
         <T variant="body" color={selected ? colors.text : colors.faint} style={styles.flex} numberOfLines={1}>{selected ? selected.label : placeholder}</T>
         <Ionicons name="chevron-down" size={18} color={colors.muted} />
       </Pressable>
       {error ? <T variant="small" color={colors.danger} style={styles.fieldNote}>{error}</T> : null}
-      <OptionSheet visible={open} title={label || placeholder} options={options} value={value} onClose={() => setOpen(false)} onSelect={(next) => { onChange(next); setOpen(false); }} />
+      <OptionSheet visible={open} title={label || placeholder} options={options} value={value} searchable={searchable} onClose={() => setOpen(false)} onSelect={(next) => { onChange(next); setOpen(false); }} />
     </View>
   );
 }
 
-export function OptionSheet({ visible, title, options, value, onSelect, onClose }) {
+/** Bottom sheet of options. Long lists (countries, cities) get a search box; options marked `pinned` (e.g. "Not listed") stay at the top. */
+export function OptionSheet({ visible, title, options, value, onSelect, onClose, searchable }) {
   const insets = useSafeAreaInsets();
+  const [query, setQuery] = useState("");
+  const searchRef = useRef(null);
+  const canSearch = searchable ?? options.length > 12;
+  const term = query.trim().toLowerCase();
+  const matches = options.filter((option) => !option.pinned && (!canSearch || !term || String(option.label).toLowerCase().includes(term)));
+  const shown = [...options.filter((option) => option.pinned), ...matches];
+  // Let go of the search box before the sheet closes: on Android a Modal closing with a focused input
+  // hands focus to the first input on the screen underneath.
+  const finish = (done) => {
+    searchRef.current?.blur();
+    Keyboard.dismiss();
+    setQuery("");
+    done();
+  };
+  const close = () => finish(onClose);
+  const select = (next) => finish(() => onSelect(next));
+
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose} />
-      <View style={[styles.sheet, { paddingBottom: insets.bottom + 12 }]}>
-        <View style={styles.sheetHandle} />
-        <T variant="h3" style={{ marginBottom: 8 }}>{title}</T>
-        <FlatList
-          data={options}
-          keyExtractor={(option) => String(option.value)}
-          style={{ maxHeight: 420 }}
-          renderItem={({ item }) => {
-            const active = String(item.value) === String(value);
-            return (
-              <Pressable onPress={() => onSelect(item.value)} style={({ pressed }) => [styles.option, active && styles.optionActive, pressed && styles.pressed]}>
-                <T variant="title" color={active ? colors.emerald : colors.text} style={styles.flex}>{item.label}</T>
-                {active ? <Ionicons name="checkmark-circle" size={20} color={colors.emerald} /> : null}
-              </Pressable>
-            );
-          }}
-        />
-      </View>
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={close}>
+      {/* Android too: the app is edge-to-edge, so a Modal is not resized when the keyboard opens. */}
+      <KeyboardAvoidingView behavior="padding" style={styles.flex}>
+        <Pressable style={styles.backdrop} onPress={close} />
+        <View style={[styles.sheet, { paddingBottom: insets.bottom + 12 }]}>
+          <View style={styles.sheetHandle} />
+          <T variant="h3" style={{ marginBottom: 8 }}>{title}</T>
+          {canSearch ? (
+            <View style={styles.sheetSearch}>
+              <Ionicons name="search" size={18} color={colors.muted} />
+              <TextInput ref={searchRef} value={query} onChangeText={setQuery} placeholder="Search" placeholderTextColor={colors.faint} autoCorrect={false} autoCapitalize="none" returnKeyType="search" style={styles.sheetSearchInput} />
+              {query ? <Pressable onPress={() => setQuery("")} hitSlop={8}><Ionicons name="close-circle" size={18} color={colors.faint} /></Pressable> : null}
+            </View>
+          ) : null}
+          <FlatList
+            data={shown}
+            keyExtractor={(option) => String(option.value)}
+            style={{ maxHeight: canSearch ? 360 : 420 }}
+            keyboardShouldPersistTaps="handled"
+            initialNumToRender={24}
+            ListFooterComponent={term && !matches.length ? <T variant="small" style={{ padding: 14 }}>{`No matches for “${query.trim()}”.`}</T> : null}
+            renderItem={({ item }) => {
+              const active = String(item.value) === String(value);
+              return (
+                <Pressable onPress={() => select(item.value)} style={({ pressed }) => [styles.option, active && styles.optionActive, pressed && styles.pressed]}>
+                  <T variant="title" color={active ? colors.emerald : item.pinned ? colors.goldDeep : colors.text} style={styles.flex}>{item.label}</T>
+                  {active ? <Ionicons name="checkmark-circle" size={20} color={colors.emerald} /> : null}
+                </Pressable>
+              );
+            }}
+          />
+        </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -377,6 +408,9 @@ const styles = StyleSheet.create({
   sheet: { borderTopLeftRadius: 26, borderTopRightRadius: 26, paddingHorizontal: 18, paddingTop: 10, backgroundColor: colors.white },
   sheetHandle: { width: 42, height: 5, alignSelf: "center", marginBottom: 14, borderRadius: 3, backgroundColor: colors.line },
   option: { flexDirection: "row", alignItems: "center", borderRadius: radius.md, paddingHorizontal: 14, paddingVertical: 14 },
+  sheetSearch: { flexDirection: "row", alignItems: "center", gap: 10, height: 46, marginBottom: 8, borderWidth: 1, borderColor: colors.line, borderRadius: radius.pill, paddingHorizontal: 14, backgroundColor: colors.cream },
+  sheetSearchInput: { flex: 1, height: "100%", color: colors.text, fontFamily: fonts.bodySemi, fontSize: 16, ...(Platform.OS === "web" ? { outlineStyle: "none" } : null) },
+  selectDisabled: { opacity: 0.55 },
   optionActive: { backgroundColor: colors.mint },
   switchRow: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 8, marginBottom: 6 },
   segmented: { flexDirection: "row", borderWidth: 1, borderColor: colors.line, borderRadius: radius.pill, padding: 4, backgroundColor: colors.white },
