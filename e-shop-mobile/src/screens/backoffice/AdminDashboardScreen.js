@@ -21,15 +21,22 @@ export default function AdminDashboardScreen() {
   const { request, user } = useAuth();
   const { data, loading, refreshing, error, reload } = useLoad(async () => {
     const total = (path, query) => request(path, { query }).then((page) => Number(page.total || 0));
-    const [orders, users, products, pending, processing, shipped] = await Promise.all([
+    const [orders, users, productPage, pending, processing, shipped] = await Promise.all([
       request("/admin/orders"),
       total("/admin/users"),
-      total("/admin/products"),
+      request("/admin/products"),
       total("/admin/orders", { status: "pending" }),
       total("/admin/orders", { status: "processing" }),
       total("/admin/orders", { status: "shipped" }),
     ]);
-    return { orders: Number(orders.total || 0), recent: (orders.data || []).slice(0, 5), users, products, queue: { pending, processing, shipped } };
+    return {
+      orders: Number(orders.total || 0),
+      recent: (orders.data || []).slice(0, 5),
+      users,
+      products: Number(productPage.total || 0),
+      awaitingReview: Number(productPage.approval_counts?.pending || 0),
+      queue: { pending, processing, shipped },
+    };
   }, [request], { refocus: true });
 
   return (
@@ -52,6 +59,11 @@ export default function AdminDashboardScreen() {
       {error ? <Notice tone="error" message={error} style={{ marginTop: 14 }} /> : null}
       {loading ? <Loader /> : data ? (
         <>
+          {data.awaitingReview ? (
+            <Pressable onPress={() => router.push({ pathname: "/admin/products", params: { approval: "pending" } })} style={({ pressed }) => [{ marginTop: 14 }, pressed && { opacity: 0.85 }]}>
+              <Notice tone="warning" title={`${data.awaitingReview} seller product${data.awaitingReview === 1 ? "" : "s"} awaiting review`} message="They stay hidden from shoppers until you approve them. Tap to review." />
+            </Pressable>
+          ) : null}
           <View style={styles.stats}>
             <Stat icon="receipt-outline" label="Orders" value={data.orders} tone="teal" style={styles.stat} />
             <Stat icon="pricetags-outline" label="Products" value={data.products} style={styles.stat} />

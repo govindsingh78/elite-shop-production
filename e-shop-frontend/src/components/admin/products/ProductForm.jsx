@@ -106,7 +106,7 @@ const ProductForm = ({
             <label htmlFor="category_id" className="form-label">Category</label>
             <select id="category_id" name="category_id" className={`form-select ${errors.category_id ? "is-invalid" : ""}`} value={values.category_id} onChange={handleChange} required>
               <option value="">Select category</option>
-              {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+              {categories.map((category) => <option key={category.id} value={category.id}>{category.label || category.name}</option>)}
             </select>
             {fieldError("category_id")}
           </div>

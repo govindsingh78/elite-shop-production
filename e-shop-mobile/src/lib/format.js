@@ -50,4 +50,11 @@ export const PAYMENT_STATUSES = {
   failed: { label: "Failed", color: "#a63d2f", background: "#fbe9e6" },
 };
 
-export const paymentMethodLabel = (method) => (method === "razorpay" ? "Online (UPI / net banking)" : "Cash on delivery");
+/** Seller listings wait for an admin review before shoppers can see them. */
+export const APPROVAL_STATUSES = {
+  pending: { label: "In review", color: "#9a6512", background: "#fdf3e1" },
+  approved: { label: "Approved", color: "#22774b", background: "#e5f4ec" },
+  rejected: { label: "Rejected", color: "#a63d2f", background: "#fbe9e6" },
+};
+
+export const paymentMethodLabel =(method) => (method === "razorpay" ? "Online (UPI / net banking)" : "Cash on delivery");

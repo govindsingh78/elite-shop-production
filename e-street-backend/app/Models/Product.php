@@ -6,6 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
+    public const PENDING = 'pending';
+    public const APPROVED = 'approved';
+    public const REJECTED = 'rejected';
+    public const APPROVAL_STATUSES = [self::PENDING, self::APPROVED, self::REJECTED];
+
     protected $fillable = [
         'vendor_id',
         'title',
@@ -21,6 +26,9 @@ class Product extends Model
         'barcode',
         'status',
         'is_featured',
+        'approval_status',
+        'review_note',
+        'reviewed_at',
     ];
 
     protected $casts = [
@@ -28,7 +36,19 @@ class Product extends Model
         'compare_price' => 'decimal:2',
         'status' => 'integer',
         'qty' => 'integer',
+        'reviewed_at' => 'datetime',
     ];
+
+    /** Products shoppers can see and buy: switched on and approved by an admin. */
+    public function scopeOnStorefront($query)
+    {
+        return $query->where('status', 1)->where('approval_status', self::APPROVED);
+    }
+
+    public function isOnStorefront(): bool
+    {
+        return (int) $this->status === 1 && $this->approval_status === self::APPROVED;
+    }
 
     public function vendor()
     {

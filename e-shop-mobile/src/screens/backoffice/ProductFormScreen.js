@@ -3,17 +3,18 @@ import { ActivityIndicator, Image, Platform, Pressable, ScrollView, StyleSheet, 
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { Button, Card, Loader, Notice, Row, Screen, SelectField, SwitchRow, T, TextField } from "@/components/ui";
+import { Button, Card, Loader, Notice, Pill, Row, Screen, SelectField, SwitchRow, T, TextField } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { productImageUrl, SITE_URL } from "@/lib/config";
 import { confirmAction } from "@/lib/confirm";
+import { APPROVAL_STATUSES } from "@/lib/format";
 import { PORTALS } from "@/lib/portals";
 import { colors, radius } from "@/theme";
 
 const EMPTY = { title: "", price: "", compare_price: "", sku: "", barcode: "", qty: "", category_id: "", brand_id: "", short_description: "", description: "", status: true, is_featured: false };
 
-/** Create or edit a product. Vendors manage their own listings; only admins can feature a product. */
+/** Create or edit a product. Vendors manage their own listings, which an admin reviews before they go live; only admins can feature a product. */
 export default function ProductFormScreen({ portal: portalKey }) {
   const portal = PORTALS[portalKey];
   const { id } = useLocalSearchParams();
@@ -24,6 +25,7 @@ export default function ProductFormScreen({ portal: portalKey }) {
   const [values, setValues] = useState(EMPTY);
   const [options, setOptions] = useState({ categories: [], brands: [] });
   const [existingImages, setExistingImages] = useState([]);
+  const [review, setReview] = useState(null);
   const [uploads, setUploads] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -53,6 +55,7 @@ export default function ProductFormScreen({ portal: portalKey }) {
           is_featured: product.is_featured === "yes",
         });
         setExistingImages([...new Set([product.image, ...(product.images || []).map((image) => image.image)].filter(Boolean))]);
+        setReview({ id: product.id, vendor_id: product.vendor_id, vendor: product.vendor, approval_status: product.approval_status || "approved", review_note: product.review_note });
       }
     }).catch((loadError) => setError(loadError.message)).finally(() => setLoading(false));
   }, [editing, id, portal, request]);
@@ -103,8 +106,9 @@ export default function ProductFormScreen({ portal: portalKey }) {
       gallery: uploads.map((upload) => upload.id),
     };
     try {
-      await request(editing ? `${portal.products}/${id}` : portal.products, { method: editing ? "PUT" : "POST", body });
-      toast(editing ? "Product updated" : "Product created");
+      const result = await request(editing ? `${portal.products}/${id}` : portal.products, { method: editing ? "PUT" : "POST", body });
+      const sentForReview = portalKey === "vendor" && result.data?.approval_status === "pending";
+      toast(sentForReview ? (editing ? "Saved and sent for review" : "Submitted for review") : editing ? "Product updated" : "Product created");
       router.back();
     } catch (saveError) {
       setErrors(saveError.fieldErrors || {});
@@ -130,13 +134,20 @@ export default function ProductFormScreen({ portal: portalKey }) {
 
   if (loading) return <Loader />;
 
-  const toOptions = (list) => list.map((item) => ({ value: String(item.id), label: item.name }));
+  // Categories carry a "Kids › Toys" label for subcategories.
+  const toOptions = (list) => list.map((item) => ({ value: String(item.id), label: item.label || item.name }));
+  const isVendor = portalKey === "vendor";
+  const saveTitle = !editing ? (isVendor ? "Submit for review" : "Publish product") : isVendor && review?.approval_status === "rejected" ? "Save & resubmit" : "Save changes";
 
   return (
     <>
       <Stack.Screen options={{ title: editing ? "Edit product" : "New product" }} />
-      <Screen keyboard footer={<Button title={editing ? "Save changes" : "Publish product"} icon="checkmark" loading={saving} disabled={uploading} onPress={save} />}>
+      <Screen keyboard footer={<Button title={saveTitle} icon="checkmark" loading={saving} disabled={uploading} onPress={save} />}>
         {error ? <Notice tone="error" message={error} style={{ marginBottom: 12 }} /> : null}
+        {!isVendor && review && (review.vendor_id || review.approval_status !== "approved") ? (
+          <ReviewCard product={review} onDone={(message) => { toast(message); router.back(); }} />
+        ) : null}
+        {isVendor ? <SellerReviewNotice status={editing ? review?.approval_status : "new"} note={review?.review_note} /> : null}
 
         <Card style={styles.card}>
           <T variant="h3" style={{ marginBottom: 4 }}>Photos</T>
@@ -180,7 +191,7 @@ export default function ProductFormScreen({ portal: portalKey }) {
         </Card>
 
         <Card style={styles.card}>
-          <SwitchRow label="Live on the store" hint="Hidden products can’t be bought" value={values.status} onValueChange={(value) => change("status", value)} />
+          <SwitchRow label="Live on the store" hint={isVendor && review?.approval_status !== "approved" ? "Goes live once our team approves it" : "Hidden products can’t be bought"} value={values.status} onValueChange={(value) => change("status", value)} />
           {portalKey === "admin" ? <SwitchRow label="Featured" hint="Shown in Editor’s picks on the home page" value={values.is_featured} onValueChange={(value) => change("is_featured", value)} /> : null}
         </Card>
 
@@ -190,8 +201,63 @@ export default function ProductFormScreen({ portal: portalKey }) {
   );
 }
 
+const REVIEW_COPY = {
+  pending: "Hidden from shoppers until you approve it. Check the photos and details below first.",
+  approved: "Approved — visible in the store while it’s switched on. Reject it to take it down.",
+  rejected: "Sent back to the seller with your note. Approve it if it’s fine after all.",
+};
+
+/** Admin approve / reject box for a seller’s listing. A rejection needs a note the seller will see. */
+function ReviewCard({ product, onDone }) {
+  const { request } = useAuth();
+  const [note, setNote] = useState(product.approval_status === "rejected" ? product.review_note || "" : "");
+  const [saving, setSaving] = useState("");
+  const [error, setError] = useState("");
+  const status = APPROVAL_STATUSES[product.approval_status] || APPROVAL_STATUSES.approved;
+
+  const submit = async (decision) => {
+    setSaving(decision);
+    setError("");
+    try {
+      const result = await request(`/admin/products/${product.id}/review`, { method: "PATCH", body: { decision, note: note.trim() || null } });
+      onDone(result.message || "Review saved");
+    } catch (reviewError) {
+      setError(reviewError.fieldErrors?.note || reviewError.message);
+      setSaving("");
+    }
+  };
+
+  return (
+    <Card style={[styles.card, styles.review, { borderColor: status.background }]}>
+      <Row justify="space-between" align="flex-start" gap={10}>
+        <View style={{ flex: 1 }}>
+          <T variant="eyebrow">Seller listing</T>
+          <T variant="h3" style={{ marginTop: 3 }} numberOfLines={1}>{product.vendor?.name || "Store listing"}</T>
+        </View>
+        <Pill label={status.label} color={status.color} background={status.background} />
+      </Row>
+      <T variant="small" style={{ marginTop: 6, marginBottom: 12 }}>{REVIEW_COPY[product.approval_status] || REVIEW_COPY.approved}</T>
+      <TextField label="Note to the seller" hint="Required to reject" value={note} onChangeText={(text) => { setNote(text); setError(""); }} error={error} multiline maxLength={500} />
+      <Row gap={10}>
+        {product.approval_status !== "approved" ? <Button title="Approve" icon="checkmark-circle-outline" loading={saving === "approved"} disabled={!!saving} onPress={() => submit("approved")} style={{ flex: 1 }} /> : null}
+        <Button title={product.approval_status === "rejected" ? "Update note" : "Reject"} variant="danger" icon="close-circle-outline" loading={saving === "rejected"} disabled={!!saving} onPress={() => submit("rejected")} style={{ flex: 1 }} />
+      </Row>
+    </Card>
+  );
+}
+
+/** Where a seller’s listing stands. `status` is "new" while creating. */
+function SellerReviewNotice({ status, note }) {
+  if (status === "new") return <Notice tone="info" message="New listings are checked by the Elitezaar team before they appear in the store." style={styles.card} />;
+  if (status === "pending") return <Notice tone="warning" title="In review" message="Shoppers can’t see this listing until our team approves it." style={styles.card} />;
+  if (status === "rejected") return <Notice tone="error" title="Changes needed" message={`${note || "Our team asked for changes to this listing."}
+Update it and save to send it for review again.`} style={styles.card} />;
+  return <Notice tone="info" message="Changing the title, descriptions, category, brand or photos sends this listing back for a quick review. Price and stock changes apply straight away." style={styles.card} />;
+}
+
 const styles = StyleSheet.create({
   card: { marginBottom: 12 },
+  review: { borderWidth: 1.5 },
   photo: { width: 88, height: 104, borderRadius: radius.md, backgroundColor: colors.mint },
   addPhoto: { alignItems: "center", justifyContent: "center", gap: 2, borderWidth: 1.5, borderStyle: "dashed", borderColor: colors.emerald },
   photoRemove: { position: "absolute", top: 5, right: 5, width: 22, height: 22, alignItems: "center", justifyContent: "center", borderRadius: 11, backgroundColor: "rgba(15,36,29,0.8)" },

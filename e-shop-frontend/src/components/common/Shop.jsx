@@ -71,7 +71,13 @@ const Shop = () => {
     return () => controller.abort();
   }, [categorySlug, brandId, search, minPriceFilter, maxPriceFilter, sort, page]);
 
-  const activeCategory = categories.find((category) => category.slug === categorySlug) || resolvedCategory;
+  // Categories arrive as a tree: find this page's top-level category, and the subcategory when one is open.
+  const topCategory = categories.find((category) => category.slug === categorySlug || category.children?.some((child) => child.slug === categorySlug));
+  const activeChild = topCategory?.children?.find((child) => child.slug === categorySlug);
+  const activeCategory = activeChild || topCategory || resolvedCategory;
+  const parentCategory = activeChild ? topCategory : resolvedCategory?.parent || null;
+  const familyTop = topCategory || resolvedCategory?.parent || resolvedCategory;
+  const subcategories = topCategory?.children || resolvedCategory?.subcategories || [];
   const activeBrand = brands.find((brand) => String(brand.id) === brandId);
   const totalPages = Math.ceil(totalProducts / PER_PAGE);
   const queryString = searchParams.size ? `?${searchParams}` : "";
@@ -125,15 +131,16 @@ const Shop = () => {
                 <li className="breadcrumb-item"><Link to="/">Home</Link></li>
                 {activeCategory ? <>
                   <li className="breadcrumb-item"><Link to="/shop">Shop</Link></li>
+                  {parentCategory && <li className="breadcrumb-item"><Link to={`/shop/${parentCategory.slug}`}>{parentCategory.name}</Link></li>}
                   <li className="breadcrumb-item active" aria-current="page">{activeCategory.name}</li>
                 </> : <li className="breadcrumb-item active" aria-current="page">Shop</li>}
               </ol>
             </nav>
             <div className="sp-hero-copy">
               <div>
-                <span className="sp-hero-eyebrow"><i aria-hidden="true" />{activeCategory ? "The collection" : "Shop all"}</span>
+                <span className="sp-hero-eyebrow"><i aria-hidden="true" />{activeCategory ? (parentCategory ? `${parentCategory.name} collection` : "The collection") : "Shop all"}</span>
                 <h1>{activeCategory ? <>{activeCategory.name}<em className="is-dot">.</em></> : <>Everyday, <em>elevated.</em></>}</h1>
-                <p>{activeCategory ? `Considered ${activeCategory.name.toLowerCase()} pieces, picked to be worn on repeat.` : "Thoughtfully picked pieces across every collection — new arrivals added every week."}</p>
+                <p>{activeCategory ? (parentCategory ? `Hand-picked ${activeCategory.name.toLowerCase()} from our ${parentCategory.name} collection.` : `Considered ${activeCategory.name.toLowerCase()} pieces, picked to be worn on repeat.`) : "Thoughtfully picked pieces across every collection — new arrivals added every week."}</p>
               </div>
               <dl className="sp-hero-stats">
                 <div><dt>{loading ? "—" : totalProducts}</dt><dd>{totalProducts === 1 ? "Piece" : "Pieces"}</dd></div>
@@ -146,10 +153,18 @@ const Shop = () => {
               <nav className="sp-pills" aria-label="Collections">
                 <Link to={`/shop${queryString}`} className={`sp-pill${!categorySlug ? " is-active" : ""}`}>All</Link>
                 {categories.map((category) => (
-                  <Link key={category.id} to={`/shop/${category.slug}${queryString}`} className={`sp-pill${categorySlug === category.slug ? " is-active" : ""}`}>{category.name}</Link>
+                  <Link key={category.id} to={`/shop/${category.slug}${queryString}`} className={`sp-pill${categorySlug === category.slug || topCategory?.id === category.id ? " is-active" : ""}`}>{category.name}</Link>
                 ))}
               </nav>
             </div>
+            {familyTop && subcategories.length > 0 && (
+              <nav className="sp-subpills" aria-label={`${familyTop.name} categories`}>
+                <Link to={`/shop/${familyTop.slug}${queryString}`} className={`sp-subpill${categorySlug === familyTop.slug ? " is-active" : ""}`}>All {familyTop.name}</Link>
+                {subcategories.map((child) => (
+                  <Link key={child.id} to={`/shop/${child.slug}${queryString}`} className={`sp-subpill${categorySlug === child.slug ? " is-active" : ""}`}>{child.name}</Link>
+                ))}
+              </nav>
+            )}
           </div>
         </section>
 

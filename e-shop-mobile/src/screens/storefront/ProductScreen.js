@@ -130,7 +130,7 @@ export default function ProductScreen() {
         <Card style={{ marginTop: 12 }}>
           <T variant="h3" style={{ marginBottom: 4 }}>Details</T>
           {product.brand?.name ? <KeyValue label="Brand" value={product.brand.name} /> : null}
-          {product.category?.name ? <KeyValue label="Collection" value={product.category.name} /> : null}
+          {product.category?.name ? <KeyValue label="Collection" value={[product.category.parent?.name, product.category.name].filter(Boolean).join(" › ")} /> : null}
           <KeyValue label="SKU" value={product.sku} last />
         </Card>
 

@@ -24,7 +24,7 @@ const Show = () => {
           },
         });
         const data = await response.json();
-        setCategories(data); // Assuming the API returns { categories: [...] }
+        setCategories(Array.isArray(data) ? data : []); // Main categories, each followed by its subcategories
         setLoading(false);
       } catch (error) {
         console.error("Error fetching categories:", error);
@@ -53,7 +53,11 @@ const Show = () => {
 
       if (response.ok) {
         toast.success("Category deleted successfully!");
-        setCategories(categories.filter((category) => category.id !== id)); // Remove deleted category from the list
+        const removed = categories.find((category) => category.id === id);
+        // Remove deleted category from the list; its parent now has one subcategory fewer.
+        setCategories(categories
+          .filter((category) => category.id !== id)
+          .map((category) => (category.id === removed?.parent_id ? { ...category, children_count: category.children_count - 1 } : category)));
       } else {
         const data = await response.json();
         toast.error(data.message || "Failed to delete category.");
@@ -91,6 +95,8 @@ const Show = () => {
                       <tr>
                         <th>#</th>
                         <th>Name</th>
+                        <th>Parent</th>
+                        <th>Products</th>
                         <th>Status</th>
                         <th>Actions</th>
                       </tr>
@@ -100,7 +106,18 @@ const Show = () => {
                         categories.map((category, index) => (
                           <tr key={category.id}>
                             <td>{index + 1}</td>
-                            <td>{category.name}</td>
+                            <td>
+                              {category.parent_id ? (
+                                <span className="ps-3"><span className="text-muted me-2" aria-hidden="true">↳</span>{category.name}</span>
+                              ) : (
+                                <strong>{category.name}</strong>
+                              )}
+                              {!category.parent_id && category.children_count > 0 && (
+                                <span className="badge bg-light text-dark border ms-2">{category.children_count} sub</span>
+                              )}
+                            </td>
+                            <td>{category.parent_name || <span className="text-muted">—</span>}</td>
+                            <td>{category.products_count ?? 0}</td>
                             <td>
                               {category.status === 1 ? (
                                 <span className="badge bg-success">Active</span>
@@ -118,6 +135,15 @@ const Show = () => {
                               >
                                 Edit
                               </button>
+                              {/* Add Subcategory Button (main categories only) */}
+                              {!category.parent_id && (
+                                <button
+                                  className="btn btn-outline-primary btn-sm m-2"
+                                  onClick={() => navigate(`/admin/create-category?parent=${category.id}`)}
+                                >
+                                  Add subcategory
+                                </button>
+                              )}
                               {/* Delete Button */}
                               <button
                                 className="btn btn-danger btn-sm m-2"
@@ -130,7 +156,7 @@ const Show = () => {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="4" className="text-center">
+                          <td colSpan="6" className="text-center">
                             No categories found.
                           </td>
                         </tr>

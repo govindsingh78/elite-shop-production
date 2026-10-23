@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Modal, Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, Card, EmptyState, ListRow, Loader, Notice, Pill, Row, Screen, Segmented, SwitchRow, T, TextField } from "@/components/ui";
+import { Button, Card, EmptyState, ListRow, Loader, Notice, Pill, Row, Screen, Segmented, SelectField, SwitchRow, T, TextField } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { confirmAction } from "@/lib/confirm";
@@ -29,7 +29,9 @@ export default function CatalogScreen() {
 
   const remove = (row) => confirmAction({
     title: `Delete “${row.name}”?`,
-    message: kind === "shipping" ? "Shoppers will no longer see this delivery option." : `Products using this ${config.singular} keep their details, but you should move them to another ${config.singular}.`,
+    message: kind === "shipping" ? "Shoppers will no longer see this delivery option."
+      : kind === "categories" ? "Only empty categories can be deleted — move any products or subcategories out first."
+        : `Products using this ${config.singular} keep their details, but you should move them to another ${config.singular}.`,
     onConfirm: async () => {
       try {
         await request(`${config.path}/${row.id}`, { method: "DELETE" });
@@ -46,7 +48,7 @@ export default function CatalogScreen() {
     <Screen
       refreshing={refreshing}
       onRefresh={reload}
-      footer={<Button title={`Add ${config.singular}`} icon="add" onPress={() => setEditing({ name: "", price: "", status: true })} />}
+      footer={<Button title={`Add ${config.singular}`} icon="add" onPress={() => setEditing({ name: "", price: "", status: true, parent_id: null })} />}
     >
       <Segmented options={[{ value: "categories", label: "Categories" }, { value: "brands", label: "Brands" }, { value: "shipping", label: "Shipping" }]} value={kind} onChange={setKind} style={{ marginBottom: 14 }} />
       {error ? <Notice tone="error" message={error} style={{ marginBottom: 12 }} /> : null}
@@ -57,9 +59,9 @@ export default function CatalogScreen() {
           {rows.map((row, index) => (
             <ListRow
               key={row.id}
-              icon={config.icon}
+              icon={row.parent_id ? "return-down-forward-outline" : config.icon}
               title={row.name}
-              subtitle={config.hasPrice ? (Number(row.price) > 0 ? formatPrice(row.price) : "Free") : row.slug ? `/${row.slug}` : undefined}
+              subtitle={config.hasPrice ? (Number(row.price) > 0 ? formatPrice(row.price) : "Free") : kind === "categories" ? categorySubtitle(row) : row.slug ? `/${row.slug}` : undefined}
               right={Number(row.status) === 1 ? <Pill label="Active" /> : <Pill label="Hidden" color={colors.muted} background={colors.lineSoft} />}
               onPress={() => setEditing({ ...row, price: row.price != null ? String(row.price) : "", status: Number(row.status) === 1 })}
               last={index === rows.length - 1}
@@ -72,6 +74,7 @@ export default function CatalogScreen() {
         <EditSheet
         kind={kind}
         row={editing}
+        parents={kind === "categories" ? (rows || []).filter((item) => !item.parent_id && item.id !== editing.id) : []}
         onClose={() => setEditing(null)}
         onDelete={editing?.id ? () => remove(editing) : undefined}
         onSaved={(message) => { toast(message); setEditing(null); reload(); }}
@@ -81,12 +84,24 @@ export default function CatalogScreen() {
   );
 }
 
+const plural = (count, one, many) => `${count} ${count === 1 ? one : many}`;
+
+/** "In Kids · 4 products" for a subcategory, "2 subcategories · 9 products" for a main category. */
+function categorySubtitle(row) {
+  const products = plural(Number(row.products_count || 0), "product", "products");
+  if (row.parent_id) return `In ${row.parent_name} · ${products}`;
+  return row.children_count ? `${plural(Number(row.children_count), "subcategory", "subcategories")} · ${products}` : products;
+}
+
 /** Mounted only while editing, so its fields always start from the chosen row. */
-function EditSheet({ kind, row, onClose, onDelete, onSaved }) {
+function EditSheet({ kind, row, parents, onClose, onDelete, onSaved }) {
   const { request } = useAuth();
   const insets = useSafeAreaInsets();
   const config = KINDS[kind];
-  const [values, setValues] = useState({ name: row.name || "", price: row.price || "", status: row.status !== false });
+  const [values, setValues] = useState({ name: row.name || "", price: row.price || "", status: row.status !== false, parent_id: row.parent_id ? String(row.parent_id) : "" });
+  const isCategory = kind === "categories";
+  // A main category with subcategories of its own can't become a subcategory (one level deep).
+  const keepsTopLevel = isCategory && Number(row.children_count) > 0;
   const [errors, setErrors] = useState({});
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -96,7 +111,7 @@ function EditSheet({ kind, row, onClose, onDelete, onSaved }) {
     setError("");
     const body = config.hasPrice
       ? { name: values.name.trim(), price: values.price || 0, status: values.status }
-      : { name: values.name.trim(), status: values.status ? 1 : 0 };
+      : { name: values.name.trim(), status: values.status ? 1 : 0, ...(isCategory ? { parent_id: values.parent_id ? Number(values.parent_id) : null } : {}) };
     try {
       await request(row?.id ? `${config.path}/${row.id}` : config.path, { method: row?.id ? "PUT" : "POST", body });
       onSaved(row?.id ? `Saved ${values.name.trim()}` : `Added ${values.name.trim()}`);
@@ -116,6 +131,16 @@ function EditSheet({ kind, row, onClose, onDelete, onSaved }) {
         <T variant="h2" style={{ marginBottom: 14 }}>{row?.id ? `Edit ${config.singular}` : `New ${config.singular}`}</T>
         {error ? <Notice tone="error" message={error} style={{ marginBottom: 12 }} /> : null}
         <TextField label="Name" value={values.name} onChangeText={(name) => setValues((current) => ({ ...current, name }))} error={errors.name} autoFocus={!row?.id} />
+        {isCategory && !keepsTopLevel ? (
+          <SelectField
+            label="Parent category"
+            value={values.parent_id}
+            options={[{ value: "", label: "None — main category" }, ...parents.map((parent) => ({ value: String(parent.id), label: parent.name }))]}
+            onChange={(parent_id) => setValues((current) => ({ ...current, parent_id }))}
+            error={errors.parent_id}
+          />
+        ) : null}
+        {keepsTopLevel ? <T variant="small" style={{ marginTop: -4, marginBottom: 12 }}>Has its own subcategories, so it stays a main category.</T> : null}
         {config.hasPrice ? <TextField label="Price (₹)" keyboardType="decimal-pad" hint="0 for free delivery" value={values.price} onChangeText={(price) => setValues((current) => ({ ...current, price }))} error={errors.price} /> : null}
         <SwitchRow label="Active" hint={kind === "shipping" ? "Offered at checkout" : "Visible on the store"} value={values.status} onValueChange={(status) => setValues((current) => ({ ...current, status }))} />
         <Row gap={10} style={{ marginTop: 6 }}>

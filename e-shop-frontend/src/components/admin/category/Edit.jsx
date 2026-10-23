@@ -11,6 +11,9 @@ const Edit = () => {
   const navigate = useNavigate(); // For navigation
   const [name, setName] = useState(""); // State for category name
   const [status, setStatus] = useState("1"); // State for category status
+  const [parentId, setParentId] = useState(""); // Empty = a main category
+  const [parents, setParents] = useState([]); // Main categories that can hold subcategories
+  const [hasChildren, setHasChildren] = useState(false); // Categories with subcategories stay main categories
   const [loading, setLoading] = useState(false); // State for loading
 
   // Fetch category details to pre-fill the form
@@ -31,6 +34,8 @@ const Edit = () => {
         if (response.ok) {
           setName(data.name); // Pre-fill name
           setStatus(data.status.toString()); // Pre-fill status
+          setParentId(data.parent_id ? String(data.parent_id) : ""); // Pre-fill parent
+          setHasChildren(Number(data.children_count) > 0);
         } else {
           toast.error(data.message || "Failed to fetch category details.");
         }
@@ -41,6 +46,13 @@ const Edit = () => {
     };
 
     fetchCategory();
+
+    fetch(`${apiUrl}/categories`, {
+      headers: { Accept: "application/json", Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+    })
+      .then((response) => (response.ok ? response.json() : []))
+      .then((data) => setParents(Array.isArray(data) ? data.filter((category) => !category.parent_id && String(category.id) !== String(id)) : []))
+      .catch(() => setParents([]));
   }, [id]);
 
   // Handle form submission
@@ -59,6 +71,7 @@ const Edit = () => {
         body: JSON.stringify({
           name,
           status,
+          parent_id: parentId ? Number(parentId) : null,
         }),
       });
 
@@ -105,6 +118,27 @@ const Edit = () => {
                 placeholder="Enter category name"
                 required
               />
+            </div>
+
+            <div className="mb-3">
+              <label htmlFor="parent_id" className="form-label">
+                Parent category
+              </label>
+              <select
+                id="parent_id"
+                className="form-control"
+                value={parentId}
+                onChange={(e) => setParentId(e.target.value)}
+                disabled={hasChildren}
+              >
+                <option value="">None — this is a main category</option>
+                {parents.map((parent) => (
+                  <option key={parent.id} value={parent.id}>{parent.name}</option>
+                ))}
+              </select>
+              <div className="form-text">
+                {hasChildren ? "This category has its own subcategories, so it stays a main category." : "Choose a parent to make this a subcategory, e.g. Kids › Toys."}
+              </div>
             </div>
 
             <div className="mb-3">

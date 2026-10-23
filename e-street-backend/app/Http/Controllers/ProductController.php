@@ -36,18 +36,27 @@ class ProductController extends Controller
         $minPrice = $request->input('min_price');
         $maxPrice = $request->input('max_price');
         $category = $categorySlug
-            ? Category::query()->where('status', 1)->where('slug', $categorySlug)->first()
+            ? Category::query()->where('status', 1)->where('slug', $categorySlug)
+                // A subcategory is hidden along with its parent.
+                ->where(fn ($query) => $query->whereNull('parent_id')->orWhereHas('parent', fn ($parent) => $parent->where('status', 1)))
+                ->first()
             : null;
 
         if ($categorySlug && !$category) {
             return response()->json(['message' => 'Category not found.'], 404);
         }
 
+        // A top-level category also lists its subcategories' products.
+        $categoryIds = match (true) {
+            (bool) $category => $category->storefrontCategoryIds(),
+            (bool) $categoryId => Category::find($categoryId)?->storefrontCategoryIds() ?? [$categoryId],
+            default => null,
+        };
+
         $filteredProducts = Product::query()
             ->with(['category:id,name', 'brand:id,name'])
-            ->where('status', 1)
-            ->when($category, fn ($query) => $query->where('category_id', $category->id))
-            ->when(!$category && $categoryId, fn ($query) => $query->where('category_id', $categoryId))
+            ->onStorefront()
+            ->when($categoryIds, fn ($query) => $query->whereIn('category_id', $categoryIds))
             ->when($brandId, fn ($query) => $query->where('brand_id', $brandId))
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
@@ -73,16 +82,15 @@ class ProductController extends Controller
         $brands = \App\Models\Brand::query()
             ->where('status', 1)
             // Brands within the current collection, so the brand filter never leads to an empty page.
-            ->whereIn('id', Product::query()->where('status', 1)
-                ->when($category, fn ($query) => $query->where('category_id', $category->id))
-                ->when(!$category && $categoryId, fn ($query) => $query->where('category_id', $categoryId))
+            ->whereIn('id', Product::query()->onStorefront()
+                ->when($categoryIds, fn ($query) => $query->whereIn('category_id', $categoryIds))
                 ->select('brand_id')->distinct())
             ->orderBy('name')
             ->get(['id', 'name']);
 
         return response()->json([
             'products' => $products,
-            'category' => $category ? ['id' => $category->id, 'name' => $category->name, 'slug' => $category->slug] : null,
+            'category' => $category ? $this->categorySummary($category) : null,
             'brands' => $brands,
             'price_range' => [
                 'min' => $priceRange?->min_price !== null ? (float) $priceRange->min_price : 0,
@@ -101,8 +109,8 @@ class ProductController extends Controller
     public function storefrontShow(string $id)
     {
         $product = Product::query()
-            ->where('status', 1)
-            ->with(['category:id,name,slug', 'brand:id,name', 'images'])
+            ->onStorefront()
+            ->with(['category:id,name,slug,parent_id', 'category.parent:id,name,slug', 'brand:id,name', 'images'])
             ->find($id);
 
         if (!$product) {
@@ -110,6 +118,20 @@ class ProductController extends Controller
         }
 
         return response()->json(['data' => $product], 200);
+    }
+
+    /** The category with its place in the tree, for breadcrumbs and subcategory pills. */
+    private function categorySummary(Category $category): array
+    {
+        $top = $category->parent_id ? $category->parent : $category;
+        $link = fn (Category $item) => ['id' => $item->id, 'name' => $item->name, 'slug' => $item->slug];
+
+        return [
+            ...$link($category),
+            'parent' => $category->parent_id ? $link($top) : null,
+            // The top-level category's subcategories, so a subcategory page can list its siblings.
+            'subcategories' => $top->children()->where('status', 1)->orderBy('name')->get(['id', 'name', 'slug'])->map($link)->values(),
+        ];
     }
 
     /**

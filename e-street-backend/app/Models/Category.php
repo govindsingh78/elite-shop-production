@@ -10,21 +10,50 @@ class Category extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'status'];
+    protected $fillable = ['name', 'status', 'parent_id'];
 
     protected $hidden = [];
 
     protected static function booted(): void
     {
         static::creating(function (Category $category) {
-            $category->slug = static::uniqueSlug($category->name);
+            $category->slug = static::uniqueSlug($category->slugSource());
         });
 
         static::updating(function (Category $category) {
-            if ($category->isDirty('name')) {
-                $category->slug = static::uniqueSlug($category->name, $category->id);
+            if ($category->isDirty(['name', 'parent_id'])) {
+                $category->slug = static::uniqueSlug($category->slugSource(), $category->id);
             }
         });
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo(Category::class, 'parent_id');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(Category::class, 'parent_id');
+    }
+
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
+
+    /** This category and its active subcategories: browsing "Kids" shows Toys and Clothing too. */
+    public function storefrontCategoryIds(): array
+    {
+        return $this->children()->where('status', 1)->pluck('id')->prepend($this->id)->all();
+    }
+
+    /** Subcategory slugs carry the parent's name ("kids-toys"), so "Toys" can sit under several categories. */
+    private function slugSource(): string
+    {
+        $parentName = $this->parent_id ? static::query()->whereKey($this->parent_id)->value('name') : null;
+
+        return trim(($parentName ? $parentName . ' ' : '') . $this->name);
     }
 
     private static function uniqueSlug(string $name, ?int $ignoreId = null): string

@@ -6,6 +6,7 @@ import { apiUrl } from "../../common/http";
 import { toast } from "react-toastify";
 import ProductForm from "./ProductForm";
 import { portalConfig, portalToken } from "../portal";
+import { ReviewPanel, SellerReviewNotice } from "./ReviewBits";
 
 const apiOrigin = apiUrl.replace(/\/api\/?$/, "");
 const emptyValues = {
@@ -20,6 +21,7 @@ const EditProduct = ({ portal = "admin" }) => {
   const navigate = useNavigate();
   const [values, setValues] = useState(emptyValues);
   const [currentImages, setCurrentImages] = useState([]);
+  const [review, setReview] = useState(null);
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
@@ -63,6 +65,13 @@ const EditProduct = ({ portal = "admin" }) => {
           ? productData.images.map((image) => image.image)
           : productData.image ? [productData.image] : [];
         setCurrentImages(images);
+        setReview({
+          id: productData.id,
+          vendor_id: productData.vendor_id,
+          vendor: productData.vendor,
+          approval_status: productData.approval_status || "approved",
+          review_note: productData.review_note,
+        });
       } catch (error) {
         setErrors({ general: error.message || "Unable to load product." });
       } finally {
@@ -115,8 +124,12 @@ const EditProduct = ({ portal = "admin" }) => {
     <Layout>
       <div className="container py-5"><div className="d-flex"><Sidebar variant={config.sidebar} /><main className="container-fluid p-4">
         <h2 className="mb-4">Edit Product</h2>
+        {!loadingData && review && portal === "admin" && (review.vendor_id || review.approval_status !== "approved") && (
+          <ReviewPanel product={review} onReviewed={(data) => { toast.success(data.message || "Review saved."); navigate(config.productsPath); }} />
+        )}
         {loadingData ? <p role="status">Loading product...</p> : (
           <div className="card shadow-sm"><div className="card-body">
+            {portal === "vendor" && review && <SellerReviewNotice status={review.approval_status} note={review.review_note} />}
             {currentImages.length > 0 && (
               <div className="mb-4">
                 <h6>Current images</h6>
@@ -128,7 +141,7 @@ const EditProduct = ({ portal = "admin" }) => {
                 <p className="form-text">Existing images are retained. Add more images below if needed.</p>
               </div>
             )}
-            <ProductForm portal={portal} values={values} setValues={setValues} categories={categories} brands={brands} onSubmit={handleSubmit} errors={errors} loading={loading} submitLabel="Save changes" />
+            <ProductForm portal={portal} values={values} setValues={setValues} categories={categories} brands={brands} onSubmit={handleSubmit} errors={errors} loading={loading} submitLabel={portal === "vendor" && review?.approval_status === "rejected" ? "Save & resubmit" : "Save changes"} />
           </div></div>
         )}
         {!loadingData && errors.general && <button className="btn btn-link mt-2" onClick={() => navigate(config.productsPath)}>Back to products</button>}

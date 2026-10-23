@@ -37,6 +37,7 @@ const dashboardCards = [
 const Dashboard = () => {
   const [stats, setStats] = useState({ users: null, products: null, orders: null });
   const [statsError, setStatsError] = useState("");
+  const [pendingReview, setPendingReview] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -50,9 +51,11 @@ const Dashboard = () => {
           const response = await fetch(`${apiUrl}/${resource}?per_page=1`, { headers, signal: controller.signal });
           const data = await response.json();
           if (!response.ok) throw new Error(data.message || "Dashboard totals are temporarily unavailable.");
-          return Number(data.total ?? data.meta?.total ?? (Array.isArray(data) ? data.length : 0));
+          return data;
         }));
-        setStats({ users: results[0], products: results[1], orders: results[2] });
+        const total = (data) => Number(data.total ?? data.meta?.total ?? (Array.isArray(data) ? data.length : 0));
+        setStats({ users: total(results[0]), products: total(results[1]), orders: total(results[2]) });
+        setPendingReview(Number(results[1].approval_counts?.pending || 0));
       } catch (error) {
         if (error.name !== "AbortError") setStatsError("Live totals are temporarily unavailable.");
       }
@@ -76,6 +79,13 @@ const Dashboard = () => {
               <Link to="/admin/create-product" className="btn btn-primary admin-dashboard-create">＋ Add a product</Link>
             </div>
             {statsError && <p className="small text-muted mb-3" role="status">{statsError}</p>}
+            {pendingReview > 0 && (
+              <Link to="/admin/manage-products?approval=pending" className="review-callout">
+                <span className="review-callout-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M7 3h10M7 21h10M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9" /></svg></span>
+                <span className="review-callout-text"><strong>{pendingReview} seller {pendingReview === 1 ? "product is" : "products are"} waiting for review</strong><small>They stay hidden from shoppers until you approve them.</small></span>
+                <span className="review-callout-cta">Review now <span aria-hidden="true">→</span></span>
+              </Link>
+            )}
             <div className="row g-4">
               {dashboardCards.map((card, index) => (
                 <div className="col-md-6 col-xl-4" key={card.key}>

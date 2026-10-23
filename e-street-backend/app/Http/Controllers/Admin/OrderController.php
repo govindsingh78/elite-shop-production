@@ -120,7 +120,7 @@ class OrderController extends Controller
             $items = [];
             foreach ($validated['items'] as $requestedItem) {
                 $product = Product::query()->lockForUpdate()->findOrFail($requestedItem['product_id']);
-                if (!$product->status) {
+                if (!$product->isOnStorefront()) {
                     abort(422, "{$product->title} is not available.");
                 }
                 if ($product->qty !== null && $product->qty < $requestedItem['quantity']) {

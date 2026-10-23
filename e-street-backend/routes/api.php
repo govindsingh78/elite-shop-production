@@ -90,6 +90,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware(EnsureAdmin::class)->group(function () {
         Route::get('admin/product-options', [AdminProductController::class, 'options']);
         Route::apiResource('admin/products', AdminProductController::class)->except(['create', 'edit'])->names('admin.products');
+        Route::patch('admin/products/{product}/review', [AdminProductController::class, 'review'])->name('admin.products.review');
         Route::get('admin/orders/{order}/tracking', [AdminOrderTrackingController::class, 'index']);
         Route::post('admin/orders/{order}/tracking', [AdminOrderTrackingController::class, 'store']);
         Route::delete('admin/orders/{order}/tracking/{event}', [AdminOrderTrackingController::class, 'destroy']);

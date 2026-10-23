@@ -57,6 +57,20 @@ const VendorDashboard = () => {
 
             {error && <div className="alert alert-danger" role="alert">{error}</div>}
 
+            {stats && (stats.pending_review > 0 || stats.rejected > 0) && (
+              <Link to={`/vendor/products?approval=${stats.rejected ? "rejected" : "pending"}`} className={`review-callout${stats.rejected ? " is-rejected" : ""}`}>
+                <span className="review-callout-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M7 3h10M7 21h10M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9" /></svg></span>
+                <span className="review-callout-text">
+                  <strong>{[
+                    stats.pending_review > 0 && `${stats.pending_review} ${stats.pending_review === 1 ? "listing" : "listings"} in review`,
+                    stats.rejected > 0 && `${stats.rejected} ${stats.rejected === 1 ? "needs" : "need"} changes`,
+                  ].filter(Boolean).join(" · ")}</strong>
+                  <small>{stats.rejected ? "See our team’s note, update the listing and save to resubmit." : "They appear in the store as soon as our team approves them."}</small>
+                </span>
+                <span className="review-callout-cta">View <span aria-hidden="true">→</span></span>
+              </Link>
+            )}
+
             <div className="row g-3 mb-4">
               {statTiles.map((tile, index) => (
                 <div className="col-6 col-xl-3" key={tile.key}>

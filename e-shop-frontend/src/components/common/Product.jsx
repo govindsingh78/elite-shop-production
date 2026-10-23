@@ -108,6 +108,7 @@ const Product = () => {
           <ol className="breadcrumb mb-0">
             <li className="breadcrumb-item"><Link to="/">Home</Link></li>
             <li className="breadcrumb-item"><Link to="/shop">Shop</Link></li>
+            {product?.category?.parent && <li className="breadcrumb-item"><Link to={`/shop/${product.category.parent.slug}`}>{product.category.parent.name}</Link></li>}
             {product?.category && <li className="breadcrumb-item"><Link to={`/shop/${product.category.slug}`}>{product.category.name}</Link></li>}
             {product && <li className="breadcrumb-item active" aria-current="page">{product.title}</li>}
           </ol>
@@ -214,7 +215,7 @@ const Product = () => {
                 </div>
                 <div className="col-lg-5">
                   <dl className="pd-specs">
-                    <div><dt>Category</dt><dd>{product.category?.name || "—"}</dd></div>
+                    <div><dt>Category</dt><dd>{product.category ? [product.category.parent?.name, product.category.name].filter(Boolean).join(" › ") : "—"}</dd></div>
                     <div><dt>Brand</dt><dd>{product.brand?.name || "—"}</dd></div>
                     <div><dt>SKU</dt><dd>{product.sku || "—"}</dd></div>
                     <div><dt>Availability</dt><dd>{stock == null ? "Available" : soldOut ? "Sold out" : `${stock} in stock`}</dd></div>

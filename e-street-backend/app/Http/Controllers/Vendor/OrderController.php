@@ -28,7 +28,9 @@ class OrderController extends Controller
         return response()->json([
             'stats' => [
                 'total_products' => (clone $products)->count(),
-                'active_products' => (clone $products)->where('status', 1)->count(),
+                'active_products' => (clone $products)->onStorefront()->count(),
+                'pending_review' => (clone $products)->where('approval_status', Product::PENDING)->count(),
+                'rejected' => (clone $products)->where('approval_status', Product::REJECTED)->count(),
                 'low_stock' => (clone $products)->whereNotNull('qty')->where('qty', '<=', self::LOW_STOCK)->count(),
                 'total_orders' => $this->vendorOrders($vendorId)->count(),
                 'to_ship' => $this->vendorOrders($vendorId)->whereIn('status', ['pending', 'processing'])->count(),

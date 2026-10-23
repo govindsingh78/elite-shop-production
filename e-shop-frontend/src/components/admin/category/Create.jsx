@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import Layout from "../../common/Layout";
 import Sidebar from "../../common/Sidebar";
 import { toast } from "react-toastify";
@@ -6,9 +7,22 @@ import "react-toastify/dist/ReactToastify.css";
 import { apiUrl } from "../../common/http";
 
 const Create = () => {
+  const [searchParams] = useSearchParams();
   const [name, setName] = useState(""); // State for category name
+  const [parentId, setParentId] = useState(searchParams.get("parent") || ""); // Empty = a main category
+  const [parents, setParents] = useState([]); // Main categories that can hold subcategories
   const [status, setStatus] = useState("1"); // State for category status (default: Active)
   const [loading, setLoading] = useState(false); // State for loading
+
+  // Only main categories can hold subcategories (one level deep).
+  useEffect(() => {
+    fetch(`${apiUrl}/categories`, {
+      headers: { Accept: "application/json", Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+    })
+      .then((response) => (response.ok ? response.json() : []))
+      .then((data) => setParents(Array.isArray(data) ? data.filter((category) => !category.parent_id) : []))
+      .catch(() => setParents([]));
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,15 +39,18 @@ const Create = () => {
         body: JSON.stringify({
           name,
           status,
+          parent_id: parentId ? Number(parentId) : null,
         }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        toast.success("Category created successfully!");
+        toast.success(parentId ? "Subcategory created successfully!" : "Category created successfully!");
         setName(""); // Clear the form
         setStatus("1"); // Reset status to Active
+        // The parent stays selected so several subcategories can be added in a row.
+        if (!parentId && data.data) setParents((current) => [...current, data.data].sort((a, b) => a.name.localeCompare(b.name)));
       } else {
         toast.error(data.message || "Failed to create category.");
       }
@@ -73,6 +90,24 @@ const Create = () => {
                 placeholder="Enter category name"
                 required
               />
+            </div>
+
+            <div className="mb-3">
+              <label htmlFor="parent_id" className="form-label">
+                Parent category
+              </label>
+              <select
+                id="parent_id"
+                className="form-control"
+                value={parentId}
+                onChange={(e) => setParentId(e.target.value)}
+              >
+                <option value="">None — this is a main category</option>
+                {parents.map((parent) => (
+                  <option key={parent.id} value={parent.id}>{parent.name}</option>
+                ))}
+              </select>
+              <div className="form-text">Choose a parent to make this a subcategory, e.g. Kids › Toys.</div>
             </div>
 
             <div className="mb-3">

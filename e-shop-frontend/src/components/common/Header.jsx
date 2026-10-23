@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import Navbar from "react-bootstrap/Navbar";
 import BrandLogo from "./BrandLogo";
 import { useStorefrontCategories } from "./useStorefrontCategories";
@@ -8,10 +8,83 @@ import AccountMenu from "./AccountMenu";
 import { formatPrice } from "./currency";
 import { SUPPORT_PHONES } from "./support";
 
+/** "Categories" dropdown in the main menu: every category with its subcategories underneath. Desktop only; phones list them in the menu. */
+const CategoriesMenu = ({ categories, onNavigate }) => {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef(null);
+  const closeTimer = useRef(null);
+  const hoveredAt = useRef(0);
+
+  // Close on a click outside or Escape.
+  useEffect(() => {
+    if (!open) return undefined;
+    const onPointerDown = (event) => { if (!wrapRef.current?.contains(event.target)) setOpen(false); };
+    const onKeyDown = (event) => { if (event.key === "Escape") setOpen(false); };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  useEffect(() => () => clearTimeout(closeTimer.current), []);
+
+  // Mouse users open it by hovering (a click straight after doesn’t shut it again); touch and keyboard users tap the button.
+  const hoverOpen = (event) => {
+    if (event.pointerType !== "mouse") return;
+    clearTimeout(closeTimer.current);
+    hoveredAt.current = Date.now();
+    setOpen(true);
+  };
+  const hoverClose = (event) => {
+    if (event.pointerType !== "mouse") return;
+    closeTimer.current = setTimeout(() => setOpen(false), 180);
+  };
+  const go = () => {
+    setOpen(false);
+    onNavigate();
+  };
+
+  if (!categories.length) return null;
+
+  return (
+    <div ref={wrapRef} className={`store-mega${open ? " is-open" : ""}`} onPointerEnter={hoverOpen} onPointerLeave={hoverClose}>
+      <button type="button" className="store-nav-link store-mega-trigger" aria-expanded={open} aria-controls="store-mega-panel" onClick={() => setOpen((current) => (current && Date.now() - hoveredAt.current < 600) || !current)}>
+        <svg className="store-mega-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5" /><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5" /><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5" /><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5" /></svg>
+        Categories
+        <svg className="store-nav-caret" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+      </button>
+      <div id="store-mega-panel" className="store-mega-panel">
+        <div className="store-mega-head">
+          <span>Shop by category</span>
+          <Link to="/shop" onClick={go}>Browse everything <span aria-hidden="true">→</span></Link>
+        </div>
+        <div className="store-mega-grid">
+          {categories.map((category) => (
+            <section key={category.id} className="store-mega-col" aria-label={category.name}>
+              <Link to={`/shop/${category.slug}`} onClick={go} className="store-mega-title">{category.name}</Link>
+              {category.children?.length ? (
+                <ul>
+                  {category.children.map((child) => (
+                    <li key={child.id}><Link to={`/shop/${child.slug}`} onClick={go}>{child.name}</Link></li>
+                  ))}
+                </ul>
+              ) : null}
+              <Link to={`/shop/${category.slug}`} onClick={go} className="store-mega-all">Shop all {category.name} <span aria-hidden="true">→</span></Link>
+            </section>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Header = () => {
   const { categories, loading } = useStorefrontCategories();
   const { count, subtotal } = useCart();
   const [expanded, setExpanded] = useState(false);
+  const { pathname } = useLocation();
 
   const closeMenu = () => setExpanded(false);
 
@@ -42,15 +115,36 @@ const Header = () => {
             <Navbar.Toggle aria-controls="store-nav" aria-label="Toggle navigation" />
             <Navbar.Collapse id="store-nav">
               <nav className="store-category-nav" aria-label="Shop categories">
+                <CategoriesMenu categories={categories} onNavigate={closeMenu} />
                 <NavLink to="/shop" end onClick={closeMenu} className={({ isActive }) => `store-nav-link${isActive ? " active" : ""}`}>
                   Discover
                 </NavLink>
-                {categories.map((category) => (
+                {categories.map((category) => category.children?.length ? (
+                  // Categories with subcategories open a small menu on hover / focus (listed inline on phones).
+                  <div key={category.id} className="store-nav-item store-nav-quick">
+                    <NavLink
+                      to={`/shop/${category.slug}`}
+                      onClick={closeMenu}
+                      className={({ isActive }) => `store-nav-link${isActive || category.children.some((child) => pathname === `/shop/${child.slug}`) ? " active" : ""}`}
+                    >
+                      {category.name}
+                      <svg className="store-nav-caret" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                    </NavLink>
+                    <div className="store-subnav">
+                      <Link to={`/shop/${category.slug}`} onClick={closeMenu} className="store-subnav-all">All {category.name}</Link>
+                      {category.children.map((child) => (
+                        <NavLink key={child.id} to={`/shop/${child.slug}`} onClick={closeMenu} className={({ isActive }) => (isActive ? "active" : undefined)}>
+                          {child.name}
+                        </NavLink>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
                   <NavLink
                     key={category.id}
                     to={`/shop/${category.slug}`}
                     onClick={closeMenu}
-                    className={({ isActive }) => `store-nav-link${isActive ? " active" : ""}`}
+                    className={({ isActive }) => `store-nav-link store-nav-quick${isActive ? " active" : ""}`}
                   >
                     {category.name}
                   </NavLink>

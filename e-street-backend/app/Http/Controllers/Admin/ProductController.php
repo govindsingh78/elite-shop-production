@@ -16,7 +16,7 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $products = $this->productQuery($request)
-            ->with(['category:id,name', 'brand:id,name', 'vendor:id,name'])
+            ->with(['category:id,name,parent_id', 'category.parent:id,name', 'brand:id,name', 'vendor:id,name'])
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->string('search')->trim()->toString();
                 $query->where(function ($query) use ($search) {
@@ -26,16 +26,64 @@ class ProductController extends Controller
                 });
             })
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->input('status')))
+            ->when(in_array($request->input('approval'), Product::APPROVAL_STATUSES, true), fn ($query) => $query->where('approval_status', $request->input('approval')))
             ->orderByDesc('id')
             ->paginate(20);
 
-        return response()->json($products, 200);
+        // Totals for the review filters, across everything this user can manage.
+        $approvalCounts = $this->productQuery($request)
+            ->selectRaw('approval_status, COUNT(*) as total')
+            ->groupBy('approval_status')
+            ->pluck('total', 'approval_status');
+
+        return response()->json([
+            ...$products->toArray(),
+            'approval_counts' => [
+                Product::PENDING => (int) ($approvalCounts[Product::PENDING] ?? 0),
+                Product::REJECTED => (int) ($approvalCounts[Product::REJECTED] ?? 0),
+            ],
+        ], 200);
+    }
+
+    /** Approve a seller's listing so it appears in the store, or send it back with the reason. */
+    public function review(Request $request, Product $product)
+    {
+        $validated = $request->validate([
+            'decision' => ['required', Rule::in([Product::APPROVED, Product::REJECTED])],
+            'note' => ['required_if:decision,' . Product::REJECTED, 'nullable', 'string', 'max:500'],
+        ], ['note.required_if' => 'Tell the seller what needs to change.']);
+
+        $product->update([
+            'approval_status' => $validated['decision'],
+            'review_note' => $validated['note'] ?? null,
+            'reviewed_at' => now(),
+        ]);
+
+        $message = match (true) {
+            $validated['decision'] === Product::REJECTED => 'Product rejected. The seller will see your note.',
+            (int) $product->status === 1 => 'Product approved. It is now live in the store.',
+            default => 'Product approved. It goes live once it is switched to Active.',
+        };
+
+        return response()->json([
+            'message' => $message,
+            'data' => $product->refresh()->load(['category:id,name', 'brand:id,name', 'vendor:id,name', 'images']),
+        ], 200);
     }
 
     public function options()
     {
+        $categories = Category::query()->where('status', 1)->orderBy('name')->get(['id', 'name', 'parent_id']);
+        $children = $categories->whereNotNull('parent_id')->groupBy('parent_id');
+
         return response()->json([
-            'categories' => Category::query()->where('status', 1)->orderBy('name')->get(['id', 'name']),
+            // Each category followed by its subcategories, labelled "Kids › Toys" for the product form.
+            'categories' => $categories->whereNull('parent_id')->flatMap(fn (Category $parent) => [
+                ['id' => $parent->id, 'name' => $parent->name, 'label' => $parent->name, 'parent_id' => null],
+                ...($children->get($parent->id) ?? collect())->map(fn (Category $child) => [
+                    'id' => $child->id, 'name' => $child->name, 'label' => "{$parent->name} › {$child->name}", 'parent_id' => $parent->id,
+                ])->all(),
+            ])->values(),
             'brands' => Brand::query()->where('status', 1)->orderBy('name')->get(['id', 'name']),
         ], 200);
     }
@@ -44,7 +92,7 @@ class ProductController extends Controller
     {
         $this->authorizeProduct($request, $product);
 
-        return response()->json($product->load(['category:id,name', 'brand:id,name', 'images']), 200);
+        return response()->json($product->load(['category:id,name', 'brand:id,name', 'vendor:id,name', 'images']), 200);
     }
 
     public function store(Request $request)
@@ -64,8 +112,8 @@ class ProductController extends Controller
         });
 
         return response()->json([
-            'message' => 'Product created successfully.',
-            'data' => $product->load(['category:id,name', 'brand:id,name', 'images']),
+            'message' => $this->savedMessage($product, true),
+            'data' => $product->refresh()->load(['category:id,name', 'brand:id,name', 'images']),
         ], 201);
     }
 
@@ -75,6 +123,9 @@ class ProductController extends Controller
         $validated = $request->validate($this->rules($product));
         $galleryIds = $validated['gallery'] ?? [];
         unset($validated['gallery']);
+        if (array_key_exists('barcode', $validated)) {
+            $validated['barcode'] ??= '';
+        }
         $validated = $this->prepareAttributes($request, $validated, $product);
 
         DB::transaction(function () use ($product, $validated, $galleryIds) {
@@ -84,9 +135,11 @@ class ProductController extends Controller
             }
         });
 
+        $product->refresh();
+
         return response()->json([
-            'message' => 'Product updated successfully.',
-            'data' => $product->refresh()->load(['category:id,name', 'brand:id,name', 'images']),
+            'message' => $this->savedMessage($product, false),
+            'data' => $product->load(['category:id,name', 'brand:id,name', 'images']),
         ], 200);
     }
 
@@ -116,7 +169,17 @@ class ProductController extends Controller
     /** Final adjustments to validated attributes before saving. */
     protected function prepareAttributes(Request $request, array $validated, ?Product $product): array
     {
+        // The store's own listings need no review; editing a seller's listing keeps its review state.
+        if (!$product) {
+            $validated['approval_status'] = Product::APPROVED;
+        }
+
         return $validated;
+    }
+
+    protected function savedMessage(Product $product, bool $created): string
+    {
+        return $created ? 'Product created successfully.' : 'Product updated successfully.';
     }
 
     protected function rules(?Product $product = null): array

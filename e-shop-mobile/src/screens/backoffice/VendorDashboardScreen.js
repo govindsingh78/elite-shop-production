@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { OrderCard } from "@/components/OrderBits";
@@ -30,6 +30,18 @@ export default function VendorDashboardScreen() {
       {error ? <Notice tone="error" message={error} style={{ marginTop: 14 }} /> : null}
       {loading ? <Loader /> : stats ? (
         <>
+          {stats.pending_review || stats.rejected ? (
+            <Pressable onPress={() => router.push({ pathname: "/vendor/products", params: { approval: stats.rejected ? "rejected" : "pending" } })} style={({ pressed }) => [{ marginTop: 14 }, pressed && { opacity: 0.85 }]}>
+              <Notice
+                tone={stats.rejected ? "error" : "warning"}
+                title={[
+                  stats.pending_review ? `${stats.pending_review} listing${stats.pending_review === 1 ? "" : "s"} in review` : null,
+                  stats.rejected ? `${stats.rejected} need${stats.rejected === 1 ? "s" : ""} changes` : null,
+                ].filter(Boolean).join(" · ")}
+                message={stats.rejected ? "See our team’s note, update the listing and save to resubmit." : "They appear in the store as soon as our team approves them."}
+              />
+            </Pressable>
+          ) : null}
           <View style={styles.stats}>
             <Stat icon="wallet-outline" label="Revenue" value={formatPriceShort(stats.revenue)} tone="gold" />
             <Stat icon="cube-outline" label="Units sold" value={stats.units_sold} />

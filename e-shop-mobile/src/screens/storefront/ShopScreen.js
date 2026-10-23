@@ -76,12 +76,18 @@ export default function ShopScreen() {
     setSearchDraft("");
   };
 
-  const heading = meta.category?.name || categories.find((item) => item.slug === category)?.name || "Shop all";
+  // Categories arrive as a tree: this tab's top-level category, and the subcategory when one is open.
+  const topCategory = categories.find((item) => item.slug === category || item.children?.some((child) => child.slug === category));
+  const activeChild = topCategory?.children?.find((child) => child.slug === category);
+  const familyTop = topCategory || meta.category?.parent || meta.category;
+  const subcategories = topCategory?.children || meta.category?.subcategories || [];
+  const parentName = activeChild ? topCategory.name : meta.category?.parent?.name;
+  const heading = (category && (activeChild?.name || topCategory?.name || meta.category?.name)) || "Shop all";
 
   const header = (
     <View>
       <View style={[styles.top, { paddingTop: insets.top + 10 }]}>
-        <T variant="eyebrow">{category ? "The collection" : "Everyday, elevated"}</T>
+        <T variant="eyebrow">{category ? (parentName ? `${parentName} collection` : "The collection") : "Everyday, elevated"}</T>
         <T variant="display" style={{ marginTop: 4 }}>{heading}<Text style={{ color: colors.teal }}>.</Text></T>
         <View style={styles.searchBox}>
           <Ionicons name="search" size={18} color={colors.muted} />
@@ -101,8 +107,14 @@ export default function ShopScreen() {
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
         <Chip label="All" active={!category} onPress={() => setCategory("")} />
-        {categories.map((item) => <Chip key={item.id} label={item.name} active={category === item.slug} onPress={() => setCategory(item.slug)} />)}
+        {categories.map((item) => <Chip key={item.id} label={item.name} active={category === item.slug || topCategory?.id === item.id} onPress={() => setCategory(item.slug)} />)}
       </ScrollView>
+      {category && familyTop && subcategories.length ? (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.subChips}>
+          <SubChip label={`All ${familyTop.name}`} active={category === familyTop.slug} onPress={() => setCategory(familyTop.slug)} />
+          {subcategories.map((child) => <SubChip key={child.id} label={child.name} active={category === child.slug} onPress={() => setCategory(child.slug)} />)}
+        </ScrollView>
+      ) : null}
       <View style={styles.toolbar}>
         <T variant="strong" style={{ flex: 1 }}>{meta.total === null ? "Finding pieces…" : `${meta.total} ${meta.total === 1 ? "piece" : "pieces"}`}</T>
         <Pressable onPress={() => setFiltersOpen(true)} style={styles.toolButton}>
@@ -150,6 +162,15 @@ export default function ShopScreen() {
   );
 }
 
+/** Subcategory filter under the collection chips, e.g. All Kids · Toys · Clothing. */
+function SubChip({ label, active, onPress }) {
+  return (
+    <Pressable onPress={onPress} style={({ pressed }) => [styles.subChip, active && styles.subChipActive, pressed && { opacity: 0.8 }]}>
+      <Text style={[styles.subChipText, active && { color: colors.goldDeep }]}>{label}</Text>
+    </Pressable>
+  );
+}
+
 /** Mounted only while open, so it always starts from the filters currently applied. */
 function FilterSheet({ onClose, brands, range, brand, price, onApply }) {
   const insets = useSafeAreaInsets();
@@ -193,6 +214,10 @@ const styles = StyleSheet.create({
   searchBox: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 16, borderWidth: 1, borderColor: colors.line, borderRadius: radius.pill, paddingHorizontal: 16, height: 48, backgroundColor: colors.white, ...shadow.card },
   searchInput: { flex: 1, height: "100%", color: colors.text, fontFamily: fonts.bodySemi, fontSize: 16 },
   chips: { gap: 8, paddingHorizontal: 16, paddingVertical: 14 },
+  subChips: { gap: 8, paddingHorizontal: 16, paddingBottom: 14 },
+  subChip: { borderWidth: 1, borderColor: colors.line, borderRadius: radius.pill, paddingHorizontal: 14, paddingVertical: 7, backgroundColor: colors.white },
+  subChipActive: { borderColor: "#c79a66", backgroundColor: colors.goldSoft },
+  subChipText: { color: colors.text, fontFamily: fonts.semi, fontSize: 14 },
   toolbar: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 16, marginBottom: 12 },
   toolButton: { flexDirection: "row", alignItems: "center", gap: 6, borderWidth: 1, borderColor: colors.line, borderRadius: radius.pill, paddingHorizontal: 13, paddingVertical: 8, backgroundColor: colors.white },
   toolText: { color: colors.emerald, fontFamily: fonts.semi, fontSize: 14 },

@@ -6,6 +6,7 @@ import { apiUrl } from "../../common/http";
 import { toast } from "react-toastify";
 import ProductForm from "./ProductForm";
 import { portalConfig, portalToken } from "../portal";
+import { SellerReviewNotice } from "./ReviewBits";
 
 const initialValues = {
   title: "", price: "", compare_price: "", description: "", short_description: "",
@@ -87,7 +88,8 @@ const CreateProduct = ({ portal = "admin" }) => {
         <h2 className="mb-4">{portal === "vendor" ? "List a new product" : "Create Product"}</h2>
         {loadingOptions ? <p role="status">Loading categories and brands...</p> : (
           <div className="card shadow-sm"><div className="card-body">
-            <ProductForm portal={portal} values={values} setValues={setValues} categories={categories} brands={brands} onSubmit={handleSubmit} errors={errors} loading={loading} submitLabel="Create product" />
+            {portal === "vendor" && <SellerReviewNotice status="new" />}
+            <ProductForm portal={portal} values={values} setValues={setValues} categories={categories} brands={brands} onSubmit={handleSubmit} errors={errors} loading={loading} submitLabel={portal === "vendor" ? "Submit for review" : "Create product"} />
           </div></div>
         )}
       </main></div></div>
