@@ -9,6 +9,7 @@ import { Rajdhani_500Medium, Rajdhani_600SemiBold, Rajdhani_700Bold } from "@exp
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
 import { ToastProvider } from "@/context/ToastContext";
+import { WishlistProvider } from "@/context/WishlistContext";
 import { stackHeader } from "@/lib/navigation";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -26,9 +27,11 @@ export default function RootLayout() {
       <KeyboardProvider statusBarTranslucent navigationBarTranslucent preserveEdgeToEdge>
         <AuthProvider>
           <CartProvider>
+            <WishlistProvider>
             <ToastProvider>
               <RootNavigator fontsReady={fontsLoaded || !!fontError} />
             </ToastProvider>
+            </WishlistProvider>
           </CartProvider>
         </AuthProvider>
       </KeyboardProvider>
@@ -61,6 +64,8 @@ function RootNavigator({ fontsReady }) {
       <Stack screenOptions={stackHeader}>
         <Stack.Screen name="(store)" options={{ headerShown: false }} />
         <Stack.Screen name="product/[id]" options={{ title: "" }} />
+        <Stack.Screen name="reviews/[id]" options={{ title: "Ratings & reviews" }} />
+        <Stack.Screen name="write-review" options={{ title: "Your review" }} />
         <Stack.Screen name="checkout" options={{ title: "Checkout" }} />
         <Stack.Screen name="about" options={{ title: "About us" }} />
         <Stack.Screen name="return-policy" options={{ title: "Returns & refunds" }} />

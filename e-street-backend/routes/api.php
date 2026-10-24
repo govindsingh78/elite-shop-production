@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\GeoController;
 use App\Http\Controllers\PolicyController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TempImageController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\Vendor\ProductController as VendorProductController;
 use App\Http\Controllers\Vendor\OrderController as VendorOrderController;
 use App\Http\Controllers\Vendor\OrderTrackingController as VendorOrderTrackingController;
 use App\Http\Controllers\Customer\AccountController as CustomerAccountController;
+use App\Http\Controllers\Customer\WishlistController as CustomerWishlistController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\OrderTrackingController as AdminOrderTrackingController;
@@ -43,6 +45,7 @@ Route::get('/storefront/categories', [CategoryController::class, 'navigation']);
 Route::get('/storefront/policies/{policy}', [PolicyController::class, 'show'])->where('policy', '[a-z-]+');
 Route::get('/storefront/products', [ProductController::class, 'storefrontIndex']);
 Route::get('/storefront/products/{id}', [ProductController::class, 'storefrontShow'])->whereNumber('id');
+Route::get('/storefront/products/{product}/reviews', [ReviewController::class, 'index'])->whereNumber('product');
 Route::middleware('throttle:120,1')->prefix('geo')->group(function () {
     Route::get('countries', [GeoController::class, 'countries']);
     Route::get('countries/{country}/states', [GeoController::class, 'states'])->where('country', '[A-Za-z]{2}');
@@ -91,6 +94,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('addresses/{address}', [CustomerAccountController::class, 'updateAddress'])->whereNumber('address');
         Route::patch('addresses/{address}/default', [CustomerAccountController::class, 'setDefaultAddress'])->whereNumber('address');
         Route::delete('addresses/{address}', [CustomerAccountController::class, 'destroyAddress'])->whereNumber('address');
+        Route::get('wishlist', [CustomerWishlistController::class, 'index']);
+        Route::post('wishlist', [CustomerWishlistController::class, 'store']);
+        Route::post('wishlist/sync', [CustomerWishlistController::class, 'sync']);
+        Route::delete('wishlist/{product}', [CustomerWishlistController::class, 'destroy'])->whereNumber('product');
+        Route::get('reviews/{product}', [ReviewController::class, 'mine'])->whereNumber('product');
+        Route::put('reviews/{product}', [ReviewController::class, 'save'])->whereNumber('product')->middleware('throttle:20,1');
+        Route::delete('reviews/{product}', [ReviewController::class, 'destroy'])->whereNumber('product');
     });
 
     Route::middleware(EnsureAdmin::class)->apiResource('admin/users', UserController::class)
@@ -100,6 +110,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('admin/product-options', [AdminProductController::class, 'options']);
         Route::apiResource('admin/products', AdminProductController::class)->except(['create', 'edit'])->names('admin.products');
         Route::patch('admin/products/{product}/review', [AdminProductController::class, 'review'])->name('admin.products.review');
+        Route::get('admin/reviews', [ReviewController::class, 'adminIndex']);
+        Route::patch('admin/reviews/{review}', [ReviewController::class, 'moderate']);
+        Route::delete('admin/reviews/{review}', [ReviewController::class, 'adminDestroy']);
         Route::get('admin/orders/{order}/tracking', [AdminOrderTrackingController::class, 'index']);
         Route::post('admin/orders/{order}/tracking', [AdminOrderTrackingController::class, 'store']);
         Route::delete('admin/orders/{order}/tracking/{event}', [AdminOrderTrackingController::class, 'destroy']);

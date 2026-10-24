@@ -5,6 +5,9 @@ import Home from './components/common/Home';
 import Shop from './components/common/Shop';
 import About from './components/common/About';
 import ReturnPolicy from './components/common/ReturnPolicy';
+import Wishlist from './components/common/Wishlist';
+import ManageReviews from './components/admin/reviews/ManageReviews';
+import { WishlistProvider } from './components/context/WishlistProvider';
 import Product from './components/common/Product';
 import Cart from './components/common/Cart';
 import Checkout from './components/common/Checkout';
@@ -49,6 +52,7 @@ function App() {
   return (
     <AdminAuthProvider>
       <CartProvider>
+      <WishlistProvider>
       <StorefrontCategoriesProvider>
       <BrowserRouter>
         <Routes>
@@ -60,6 +64,7 @@ function App() {
           <Route path="/product" element={<Product />} />
           <Route path="/product/:id" element={<Product />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/order-confirmation/:id" element={<OrderConfirmation />} />
           <Route path="/admin/login" element={<Login />} />
@@ -144,6 +149,14 @@ function App() {
             element={
               <AdminRequireAuth>
                 <ManageShipping />
+              </AdminRequireAuth>
+            }
+          />
+          <Route
+            path="/admin/manage-reviews"
+            element={
+              <AdminRequireAuth>
+                <ManageReviews />
               </AdminRequireAuth>
             }
           />
@@ -281,6 +294,7 @@ function App() {
         <ToastContainer />
       </BrowserRouter>
       </StorefrontCategoriesProvider>
+      </WishlistProvider>
       </CartProvider>
     </AdminAuthProvider>
   );

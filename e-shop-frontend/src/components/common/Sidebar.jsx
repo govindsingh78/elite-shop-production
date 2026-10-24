@@ -9,6 +9,7 @@ const adminLinks = [
   { label: "Orders", to: "/admin/manage-orders", icon: <><path d="M5 3h14v18l-2.5-1.7L14 21l-2-1.7L9.5 21 7 19.3 5 21V3Z" /><path d="M8 8h8M8 12h8M8 16h4" /></> },
   { label: "Products", to: "/admin/manage-products", icon: <><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z" /><path d="m4.4 7.7 7.6 4.4 7.6-4.4M12 12v9" /></> },
   { label: "Categories", to: "/admin/manage-categories", icon: <><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 9h18M9 9v11" /></> },
+  { label: "Reviews", to: "/admin/manage-reviews", icon: <path d="M12 3.4l2.65 5.37 5.93.86-4.29 4.18 1.01 5.9L12 16.92l-5.3 2.79 1.01-5.9-4.29-4.18 5.93-.86L12 3.4Z" /> },
   { label: "Brands", to: "/admin/manage-brands", icon: <><path d="m12 3 2.2 5 5.5.6-4.1 3.7 1.2 5.4-4.8-2.8-4.8 2.8 1.2-5.4-4.1-3.7 5.5-.6L12 3Z" /></> },
   { label: "Customers", to: "/admin/manage-users", icon: <><circle cx="9" cy="8" r="3" /><path d="M3.5 19c.4-3.2 2.2-5 5.5-5s5.1 1.8 5.5 5M16 5.3a3 3 0 0 1 0 5.8M17 14c2.2.7 3.4 2.3 3.6 5" /></> },
   { label: "Shipping", to: "/admin/manage-shipping", icon: <><path d="M3 6h11v12H3zM14 10h4l3 3v5h-7z" /><circle cx="7.5" cy="18" r="1.5" /><circle cx="18" cy="18" r="1.5" /></> },
@@ -24,6 +25,7 @@ const vendorLinks = [
 const customerLinks = [
   { label: "Overview", to: "/customer/dashboard", icon: <><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></> },
   { label: "My orders", to: "/customer/orders", icon: <><path d="M5 8h14l-1 13H6L5 8Z" /><path d="M9 9V6a3 3 0 0 1 6 0v3" /></> },
+  { label: "Wishlist", to: "/wishlist", icon: <path d="M12 20.3s-7.6-4.6-7.6-10.5A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.6 2.6c0 5.9-7.6 10.5-7.6 10.5Z" /> },
   { label: "Addresses", to: "/customer/addresses", icon: <><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z" /><circle cx="12" cy="9.5" r="2.5" /></> },
   { label: "Profile & security", to: "/customer/profile", icon: <><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 1 1 8 0v3M12 14v3" /></> },
   { label: "Continue shopping", to: "/shop", icon: <><path d="M3 10V5h18v5M5 10v10h14V10M9 20v-6h6v6" /><path d="M3 10a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0" /></> },

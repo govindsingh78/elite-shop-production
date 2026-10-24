@@ -4,6 +4,8 @@ import Navbar from "react-bootstrap/Navbar";
 import BrandLogo from "./BrandLogo";
 import { useStorefrontCategories } from "./useStorefrontCategories";
 import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/wishlist";
+import { HeartIcon } from "./WishlistButton";
 import AccountMenu from "./AccountMenu";
 import { formatPrice } from "./currency";
 import { SUPPORT_PHONES } from "./support";
@@ -83,6 +85,7 @@ const CategoriesMenu = ({ categories, onNavigate }) => {
 const Header = () => {
   const { categories, loading } = useStorefrontCategories();
   const { count, subtotal } = useCart();
+  const { count: savedCount } = useWishlist();
   const [expanded, setExpanded] = useState(false);
   const { pathname } = useLocation();
 
@@ -152,6 +155,12 @@ const Header = () => {
                 {!categories.length && loading && <span className="store-nav-loading">Loading collections…</span>}
               </nav>
               <div className="store-header-actions">
+                <Link to="/wishlist" onClick={closeMenu} className={`header-action header-wish${savedCount ? " has-items" : ""}`} aria-label={`Wishlist, ${savedCount} saved`} title="Wishlist">
+                  <span className="header-wish-icon">
+                    <HeartIcon filled={savedCount > 0} />
+                    {savedCount > 0 && <span key={savedCount} className="header-bag-count">{savedCount > 99 ? "99+" : savedCount}</span>}
+                  </span>
+                </Link>
                 <AccountMenu onNavigate={closeMenu} />
                 <Link to="/cart" onClick={closeMenu} className={`header-action header-bag${count ? " has-items" : ""}`} aria-label={`Shopping bag, ${count} ${count === 1 ? "item" : "items"}, ${formatPrice(subtotal)}`}>
                   <span className="header-bag-icon">

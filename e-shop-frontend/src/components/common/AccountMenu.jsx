@@ -15,6 +15,7 @@ const icons = {
   shield: <><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3Z" /><path d="m9 12 2 2 4-4" /></>,
   user: <><circle cx="12" cy="8" r="3.5" /><path d="M4.5 20c.5-4 3-6 7.5-6s7 2 7.5 6" /></>,
   signout: <path d="M10 17l5-5-5-5M15 12H3M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6" />,
+  heart: <path d="M12 20.3s-7.6-4.6-7.6-10.5A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.6 2.6c0 5.9-7.6 10.5-7.6 10.5Z" />,
 };
 
 const portals = {
@@ -24,6 +25,7 @@ const portals = {
     items: [
       ["My dashboard", "/customer/dashboard", "Overview of your account", "dashboard"],
       ["My orders", "/customer/orders", "Track deliveries live", "bag"],
+      ["Wishlist", "/wishlist", "Pieces you’ve saved", "heart"],
       ["Addresses", "/customer/addresses", "Saved delivery addresses", "pin"],
       ["Profile & security", "/customer/profile", "Details and password", "lock"],
     ],

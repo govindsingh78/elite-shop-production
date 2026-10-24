@@ -4,6 +4,9 @@ import { Stack, router, useLocalSearchParams } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import ProductCard from "@/components/ProductCard";
 import { Button, Card, EmptyState, IconButton, KeyValue, Loader, QuantityStepper, Row, Screen, SectionHeader, T } from "@/components/ui";
+import WishlistButton from "@/components/WishlistButton";
+import ProductReviewsSection from "@/components/ProductReviewsSection";
+import { Stars } from "@/components/ReviewBits";
 import { useCart } from "@/context/CartContext";
 import { useToast } from "@/context/ToastContext";
 import { api } from "@/lib/api";
@@ -32,7 +35,12 @@ export default function ProductScreen() {
   const product = data?.product;
   const images = useMemo(() => (product ? [...new Set([product.image, ...(product.images || []).map((image) => image.image)].filter(Boolean))] : []), [product]);
 
-  const headerRight = () => <IconButton icon="bag-handle-outline" label="Shopping bag" badge={count} size={38} onPress={() => router.push("/cart")} />;
+  const headerRight = () => (
+    <Row gap={8}>
+      {product ? <WishlistButton product={product} variant="header" /> : null}
+      <IconButton icon="bag-handle-outline" label="Shopping bag" badge={count} size={38} onPress={() => router.push("/cart")} />
+    </Row>
+  );
 
   if (loading) return <><Stack.Screen options={{ title: "" }} /><Loader /></>;
   if (error || !product) {
@@ -94,6 +102,13 @@ export default function ProductScreen() {
         <View style={{ marginTop: 18 }}>
           <T variant="eyebrow">{[product.brand?.name, product.category?.name].filter(Boolean).join(" · ") || "Elitezaar"}</T>
           <T variant="h1" style={{ marginTop: 6 }}>{product.title}</T>
+          {Number(product.reviews_count) > 0 ? (
+            <Row gap={6} style={{ marginTop: 6 }}>
+              <Stars value={Number(product.reviews_avg_rating)} size={14} />
+              <T variant="strong">{Number(product.reviews_avg_rating).toFixed(1)}</T>
+              <T variant="small">· {product.reviews_count} {Number(product.reviews_count) === 1 ? "review" : "reviews"}</T>
+            </Row>
+          ) : null}
           <Row gap={10} style={{ marginTop: 10, flexWrap: "wrap" }} align="baseline">
             <Text style={styles.price}>{formatPrice(product.price)}</Text>
             {discount > 0 ? <Text style={styles.compare}>{formatPrice(product.compare_price)}</Text> : null}
@@ -133,6 +148,8 @@ export default function ProductScreen() {
           {product.category?.name ? <KeyValue label="Collection" value={[product.category.parent?.name, product.category.name].filter(Boolean).join(" › ")} /> : null}
           <KeyValue label="SKU" value={product.sku} last />
         </Card>
+
+        <ProductReviewsSection productId={product.id} productTitle={product.title} />
 
         {data.related.length ? (
           <View style={{ marginTop: 26 }}>

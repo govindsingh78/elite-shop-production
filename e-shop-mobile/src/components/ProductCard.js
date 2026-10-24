@@ -6,9 +6,10 @@ import { productImageUrl } from "@/lib/config";
 import { discountOf, formatPrice } from "@/lib/format";
 import { useCart } from "@/context/CartContext";
 import { useToast } from "@/context/ToastContext";
+import WishlistButton from "@/components/WishlistButton";
 import { colors, fonts, radius } from "@/theme";
 
-/** Storefront product tile with a quick "add to bag" button. */
+/** Storefront product tile with a wishlist heart and a quick "add to bag" button. */
 export default function ProductCard({ product, width }) {
   const { addItem } = useCart();
   const toast = useToast();
@@ -33,6 +34,7 @@ export default function ProductCard({ product, width }) {
           {discount > 0 ? <Text style={[styles.badge, styles.badgeSale]}>−{discount}%</Text> : null}
           {soldOut ? <Text style={[styles.badge, styles.badgeMuted]}>Sold out</Text> : lowStock ? <Text style={[styles.badge, styles.badgeLight]}>Only {product.qty} left</Text> : null}
         </View>
+        <WishlistButton product={product} />
         <Pressable onPress={quickAdd} disabled={soldOut} hitSlop={6} accessibilityLabel={`Add ${product.title} to bag`} style={({ pressed }) => [styles.quick, soldOut && { opacity: 0.4 }, pressed && { transform: [{ scale: 0.92 }] }]}>
           <Ionicons name="bag-add-outline" size={18} color={colors.white} />
         </Pressable>
@@ -40,6 +42,13 @@ export default function ProductCard({ product, width }) {
       <View style={styles.meta}>
         <Text style={styles.brand} numberOfLines={1}>{product.brand?.name || product.category?.name || "Elitezaar"}</Text>
         <Text style={styles.title} numberOfLines={2}>{product.title}</Text>
+        {Number(product.reviews_count) > 0 ? (
+          <View style={styles.rating}>
+            <Ionicons name="star" size={12} color="#e3a53c" />
+            <Text style={styles.ratingValue}>{Number(product.reviews_avg_rating).toFixed(1)}</Text>
+            <Text style={styles.ratingCount}>({product.reviews_count})</Text>
+          </View>
+        ) : null}
         <View style={styles.priceRow}>
           <Text style={styles.price}>{formatPrice(product.price)}</Text>
           {discount > 0 ? <Text style={styles.compare}>{formatPrice(product.compare_price)}</Text> : null}
@@ -64,6 +73,9 @@ const styles = StyleSheet.create({
   meta: { paddingHorizontal: 2, paddingTop: 10 },
   brand: { color: colors.goldDeep, fontFamily: fonts.bodyBold, fontSize: 11.5, letterSpacing: 1.2, textTransform: "uppercase" },
   title: { marginTop: 2, color: colors.text, fontFamily: fonts.bodySemi, fontSize: 15.5, lineHeight: 19 },
+  rating: { flexDirection: "row", alignItems: "center", gap: 3, marginTop: 3 },
+  ratingValue: { color: colors.text, fontFamily: fonts.bodyBold, fontSize: 13 },
+  ratingCount: { color: colors.muted, fontFamily: fonts.body, fontSize: 12.5 },
   priceRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "baseline", gap: 6, marginTop: 4 },
   price: { color: colors.ink, fontFamily: fonts.heading, fontSize: 15.5 },
   compare: { color: colors.faint, fontFamily: fonts.body, fontSize: 13, textDecorationLine: "line-through" },

@@ -72,6 +72,7 @@ class ProductController extends Controller
             ->first();
 
         $products = (clone $filteredProducts)
+            ->withRating()
             ->when($minPrice !== null && $minPrice !== '', fn ($query) => $query->where('price', '>=', (float) $minPrice))
             ->when($maxPrice !== null && $maxPrice !== '', fn ($query) => $query->where('price', '<=', (float) $maxPrice))
             ->when($request->input('sort') === 'price_asc', fn ($query) => $query->orderBy('price'))
@@ -111,6 +112,7 @@ class ProductController extends Controller
         $product = Product::query()
             ->onStorefront()
             ->with(['category:id,name,slug,parent_id', 'category.parent:id,name,slug', 'brand:id,name', 'images'])
+            ->withRating()
             ->find($id);
 
         if (!$product) {

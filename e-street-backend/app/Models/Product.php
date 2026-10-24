@@ -69,4 +69,17 @@ class Product extends Model
     {
         return $this->hasMany(ProductImage::class);
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(ProductReview::class);
+    }
+
+    /** Adds reviews_count and reviews_avg_rating (published reviews only) for product cards and pages. */
+    public function scopeWithRating($query)
+    {
+        $published = fn ($reviews) => $reviews->where('status', ProductReview::PUBLISHED);
+
+        return $query->withCount(['reviews' => $published])->withAvg(['reviews' => $published], 'rating');
+    }
 }

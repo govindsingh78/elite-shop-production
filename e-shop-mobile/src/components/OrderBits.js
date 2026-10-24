@@ -51,7 +51,8 @@ export function OrderCard({ order, onPress, amount, showCustomer }) {
 }
 
 /** Ordered item with thumbnail. */
-export function OrderItemRow({ item, last }) {
+/** One ordered item. `onReview` adds a "Rate & review" link (customers, delivered orders). */
+export function OrderItemRow({ item, last, onReview }) {
   const image = productImageUrl(item.product?.image);
   return (
     <View style={[styles.itemRow, !last && styles.itemBorder]}>
@@ -61,6 +62,12 @@ export function OrderItemRow({ item, last }) {
       <View style={{ flex: 1 }}>
         <T variant="title" numberOfLines={2}>{item.product_title}</T>
         <T variant="small">{item.sku ? `SKU ${item.sku} · ` : ""}{item.quantity} × {formatPrice(item.unit_price)}</T>
+        {onReview ? (
+          <Pressable onPress={onReview} hitSlop={6} style={styles.reviewLink} accessibilityRole="link">
+            <Ionicons name="star" size={13} color="#b07a2a" />
+            <Text style={styles.reviewLinkText}>Rate &amp; review</Text>
+          </Pressable>
+        ) : null}
       </View>
       <T variant="strong">{formatPrice(item.line_total)}</T>
     </View>
@@ -147,6 +154,8 @@ export function AddressBlock({ order }) {
 }
 
 const styles = StyleSheet.create({
+  reviewLink: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4, alignSelf: "flex-start" },
+  reviewLinkText: { color: "#b07a2a", fontFamily: fonts.bodyBold, fontSize: 13.5 },
   orderCard: { borderWidth: 1, borderColor: colors.lineSoft, borderRadius: radius.lg, padding: 16, marginBottom: 12, backgroundColor: colors.white, ...shadow.card },
   orderTop: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
   customerRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 10 },

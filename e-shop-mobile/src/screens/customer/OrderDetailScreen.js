@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef } from "react";
 import { View } from "react-native";
-import { Stack, useFocusEffect, useLocalSearchParams } from "expo-router";
+import { Stack, router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import SupportCard from "@/components/SupportCard";
 import { AddressBlock, MilestoneBar, OrderItemRow, OrderStatusPill, PaymentStatusPill, TrackingTimeline } from "@/components/OrderBits";
@@ -89,7 +89,16 @@ export default function CustomerOrderDetailScreen() {
             <T variant="h3">Items</T>
             <PaymentStatusPill status={order.payment_status} />
           </Row>
-          {(order.items || []).map((item, index, list) => <OrderItemRow key={item.id} item={item} last={index === list.length - 1} />)}
+          {(order.items || []).map((item, index, list) => (
+            <OrderItemRow
+              key={item.id}
+              item={item}
+              last={index === list.length - 1}
+              onReview={order.status === "delivered" && item.product_id
+                ? () => router.push({ pathname: "/write-review", params: { productId: String(item.product_id), title: item.product_title } })
+                : undefined}
+            />
+          ))}
           <KeyValue label="Subtotal" value={formatPrice(order.subtotal)} />
           <KeyValue label={order.shipping_method?.name ? `Delivery · ${order.shipping_method.name}` : "Delivery"} value={Number(order.shipping_amount) > 0 ? formatPrice(order.shipping_amount) : "Free"} />
           <KeyValue label="Payment" value={paymentMethodLabel(order.payment_method)} />

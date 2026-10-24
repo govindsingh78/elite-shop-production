@@ -154,6 +154,7 @@ const CustomerOrderDetails = () => {
                       <span className="customer-item-copy">
                         {item.product_id ? <Link to={`/product/${item.product_id}`}>{item.product_title}</Link> : <strong>{item.product_title}</strong>}
                         <small>{formatPrice(item.unit_price)} × {item.quantity}{item.sku ? ` · SKU ${item.sku}` : ""}</small>
+                        {delivered && item.product_id && <Link to={`/product/${item.product_id}#reviews`} className="customer-review-link">★ Rate &amp; review</Link>}
                       </span>
                       <strong>{formatPrice(item.line_total)}</strong>
                     </li>

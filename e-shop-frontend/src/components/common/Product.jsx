@@ -7,6 +7,9 @@ import { useCart } from "../context/CartContext";
 import { formatPrice } from "./currency";
 import StorefrontProductCard from "./StorefrontProductCard";
 import { ProductReturnsNote } from "./PolicyBits";
+import WishlistButton from "./WishlistButton";
+import ProductReviews from "./ProductReviews";
+import { Stars } from "./ReviewBits";
 
 const imageBase = apiUrl.replace(/\/api\/?$/, "");
 const LOW_STOCK = 5;
@@ -32,6 +35,8 @@ const Product = () => {
   const [related, setRelated] = useState([]);
   const [added, setAdded] = useState(false);
   const [zoom, setZoom] = useState(null);
+  // The reviews section reports the live summary, e.g. after the shopper posts a review.
+  const [ratingSummary, setRatingSummary] = useState(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -162,6 +167,16 @@ const Product = () => {
                     {product.brand?.name && <span className="pd-tag pd-tag--brand">{product.brand.name}</span>}
                   </div>
                   <h1 className="pd-title">{product.title}</h1>
+                  {(() => {
+                    const rating = ratingSummary?.productId === product.id
+                      ? ratingSummary
+                      : { count: Number(product.reviews_count || 0), average: Number(product.reviews_avg_rating || 0) };
+                    return (
+                      <a href="#reviews" className="pd-rating">
+                        {rating.count ? <><Stars value={rating.average} size={15} /><strong>{rating.average.toFixed(1)}</strong><span>{rating.count} {rating.count === 1 ? "review" : "reviews"}</span></> : <span>No reviews yet · Be the first to review</span>}
+                      </a>
+                    );
+                  })()}
 
                   <div className="pd-price">
                     <strong>{formatPrice(price)}</strong>
@@ -188,6 +203,7 @@ const Product = () => {
                     <button type="button" className={`btn btn-primary pd-add${added ? " is-added" : ""}`} onClick={addToBag} disabled={soldOut}>
                       {soldOut ? "Sold out" : added ? "Added to bag ✓" : <>Add to bag <span aria-hidden="true">↗</span></>}
                     </button>
+                    <WishlistButton product={product} variant="detail" />
                   </div>
                   {!soldOut && <button type="button" className="pd-buy-now" onClick={buyNow}>Buy now — {formatPrice(price * quantity)}</button>}
 
@@ -226,6 +242,8 @@ const Product = () => {
                 </div>
               </div>
             </section>
+
+            <ProductReviews key={product.id} productId={product.id} onSummary={setRatingSummary} />
 
             {related.length > 0 && (
               <section className="pd-related">
