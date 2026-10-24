@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "@/lib/api";
+import { googleSignIn } from "@/lib/googleSignIn";
 import { LOGIN_PATHS } from "@/lib/portals";
 import { secureStorage } from "@/lib/storage";
 
@@ -45,6 +46,15 @@ export function AuthProvider({ children }) {
     return next;
   }, [save]);
 
+  /** "Continue with Google". Resolves with the session and whether the account is new, or null if they backed out. */
+  const signInWithGoogle = useCallback(async (portal) => {
+    const data = await googleSignIn(portal);
+    if (!data) return null;
+    const next = { token: data.token, user: data.user, portal: data.portal || portal };
+    await save(next);
+    return { session: next, created: data.status === 201, message: data.message };
+  }, [save]);
+
   /** Starts a customer session from a register or checkout response that already carries a token. */
   const startSession = useCallback((token, user, portal = "customer") => save({ token, user, portal }), [save]);
 
@@ -78,11 +88,12 @@ export function AuthProvider({ children }) {
     portal: session?.portal || null,
     isCustomer: session?.portal === "customer",
     signIn,
+    signInWithGoogle,
     startSession,
     signOut,
     updateUser,
     request,
-  }), [ready, session, signIn, startSession, signOut, updateUser, request]);
+  }), [ready, session, signIn, signInWithGoogle, startSession, signOut, updateUser, request]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

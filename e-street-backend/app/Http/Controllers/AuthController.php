@@ -57,27 +57,26 @@ class AuthController extends Controller
                 ], 401);
         }
 
-        $allowedRoles = match ($portal) {
-            'admin' => ['admin', 'superadmin'],
-            'vendor' => ['seller'],
-            default => ['customer'],
-        };
-        if (!in_array($user->role, $allowedRoles, true)) {
+        if (!$user->canUsePortal($portal)) {
             return response()->json([
                 'message' => "This account cannot access the {$portal} portal.",
                 'status' => 403,
             ], 403);
         }
 
-        $token = $user->createToken($portal . '_auth_token')->plainTextToken;
+        return self::sessionResponse($user, $portal);
+    }
 
+    /** A new API token for the portal, in the shape every sign-in returns (password or Google). */
+    public static function sessionResponse(User $user, string $portal, string $message = 'Login successful', int $status = 200)
+    {
         return response()->json([
-            'status' => 200,
-            'message' => 'Login successful',
-            'token' => $token,
+            'status' => $status,
+            'message' => $message,
+            'token' => $user->createToken($portal . '_auth_token')->plainTextToken,
             'user' => $user,
             'portal' => $portal,
-        ]);
+        ], $status);
     }
 
     /** Register a customer account. A delivery address is mandatory and becomes the default. */

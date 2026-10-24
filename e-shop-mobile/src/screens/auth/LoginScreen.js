@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Pressable, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import AuthHero from "@/components/AuthHero";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 import { Button, Notice, Row, Screen, Segmented, T, TextField } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
@@ -16,7 +17,7 @@ const TITLES = {
 
 export default function LoginScreen() {
   const params = useLocalSearchParams();
-  const { signIn } = useAuth();
+  const { signIn, signInWithGoogle } = useAuth();
   const toast = useToast();
   const [portal, setPortal] = useState(["vendor", "admin"].includes(params.portal) ? params.portal : "customer");
   const [email, setEmail] = useState(params.email || "");
@@ -24,11 +25,23 @@ export default function LoginScreen() {
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const switchPortal = (next) => {
     setPortal(next);
     setError("");
     setFieldErrors({});
+  };
+
+  const enterPortal = () => {
+    if (portal === "customer") {
+      if (router.canGoBack()) router.back();
+      else router.replace("/account");
+    } else {
+      // Vendors and admins switch into their own dashboard.
+      if (router.canDismiss()) router.dismissAll();
+      router.replace(`/${portal}`);
+    }
   };
 
   const submit = async () => {
@@ -41,19 +54,28 @@ export default function LoginScreen() {
     try {
       const session = await signIn(portal, email, password);
       toast(`Welcome back, ${firstName(session.user?.name)}`);
-      if (portal === "customer") {
-        if (router.canGoBack()) router.back();
-        else router.replace("/account");
-      } else {
-        // Vendors and admins switch into their own dashboard.
-        if (router.canDismiss()) router.dismissAll();
-        router.replace(`/${portal}`);
-      }
+      enterPortal();
     } catch (loginError) {
       setFieldErrors(loginError.fieldErrors || {});
       setError(loginError.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const continueWithGoogle = async () => {
+    setGoogleLoading(true);
+    setError("");
+    setFieldErrors({});
+    try {
+      const result = await signInWithGoogle(portal);
+      if (!result) return;
+      toast(result.created ? `Welcome to Elitezaar, ${firstName(result.session.user?.name)}` : `Welcome back, ${firstName(result.session.user?.name)}`);
+      enterPortal();
+    } catch (googleError) {
+      setError(googleError.message);
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -78,7 +100,13 @@ export default function LoginScreen() {
       <Pressable onPress={() => router.push({ pathname: "/forgot-password", params: { email } })} style={{ alignSelf: "flex-end", marginTop: -4, marginBottom: 16 }}>
         <T variant="strong" color={colors.tealDark}>Forgot password?</T>
       </Pressable>
-      <Button title="Sign in" icon="log-in-outline" loading={loading} onPress={submit} />
+      <Button title="Sign in" icon="log-in-outline" loading={loading} disabled={googleLoading} onPress={submit} />
+      <GoogleSignInButton
+        title={portal === "admin" ? "Sign in with Google" : "Continue with Google"}
+        loading={googleLoading}
+        disabled={loading}
+        onPress={continueWithGoogle}
+      />
 
       <View style={{ marginTop: 22, alignItems: "center", gap: 10 }}>
         {portal === "customer" ? (

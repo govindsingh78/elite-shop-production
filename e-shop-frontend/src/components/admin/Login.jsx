@@ -1,6 +1,7 @@
 import React, { useContext, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { apiUrl } from "../common/http";
+import GoogleSignInButton from "../common/GoogleSignInButton";
 import { AdminAuthContext } from "../context/AdminAuth";
 import CustomerAuthShell from "../customer/CustomerAuthShell";
 
@@ -26,12 +27,13 @@ const COPY = {
 const Login = ({ portal = "admin" }) => {
   const isVendor = portal === "vendor";
   const copy = COPY[isVendor ? "vendor" : "admin"];
-  const [form, setForm] = useState({ email: "", password: "" });
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
+  // A Google sign-in that didn't finish comes back here with the reason.
+  const [error, setError] = useState(location.state?.error || "");
+  const [loading, setLoading] = useState(false);
   const { login } = useContext(AdminAuthContext);
 
   const change = (event) => setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
@@ -77,6 +79,7 @@ const Login = ({ portal = "admin" }) => {
         <div className="text-end mb-4"><Link to="/forgot-password" className="customer-link">Forgot password?</Link></div>
         <button type="submit" className="btn btn-primary btn-lg w-100 customer-submit" disabled={loading}>{loading ? "Signing in…" : copy.button}</button>
       </form>
+      <GoogleSignInButton portal={isVendor ? "vendor" : "admin"} from={location.state?.from} label={isVendor ? "Continue with Google" : "Sign in with Google"} onError={setError} />
 
       {isVendor ? (
         <>

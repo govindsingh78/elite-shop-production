@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Image, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
+import { File } from "expo-file-system";
+import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Button, Card, Loader, Notice, Pill, Row, Screen, SelectField, SwitchRow, T, TextField } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
@@ -11,6 +13,19 @@ import { confirmAction } from "@/lib/confirm";
 import { APPROVAL_STATUSES } from "@/lib/format";
 import { PORTALS } from "@/lib/portals";
 import { colors, radius } from "@/theme";
+
+// Phone photos are often 3–8 MB, more than the server accepts per file. Shrinking to at most 1600px and
+// re-saving as JPEG (usually 200–500 KB) makes uploads fit, and keeps them quick on mobile data.
+const MAX_PHOTO_SIDE = 1600;
+
+async function preparePhoto(asset) {
+  const context = ImageManipulator.manipulate(asset.uri);
+  if (Math.max(asset.width || 0, asset.height || 0) > MAX_PHOTO_SIDE) {
+    context.resize(asset.width >= asset.height ? { width: MAX_PHOTO_SIDE, height: null } : { width: null, height: MAX_PHOTO_SIDE });
+  }
+  const image = await context.renderAsync();
+  return image.saveAsync({ compress: 0.82, format: SaveFormat.JPEG });
+}
 
 const EMPTY = { title: "", price: "", compare_price: "", sku: "", barcode: "", qty: "", category_id: "", brand_id: "", short_description: "", description: "", status: true, is_featured: false };
 
@@ -69,19 +84,23 @@ export default function ProductFormScreen({ portal: portalKey }) {
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], allowsMultipleSelection: true, selectionLimit: 6, quality: 0.8 });
     if (result.canceled) return;
     setUploading(true);
-    for (const asset of result.assets) {
+    for (const [index, asset] of result.assets.entries()) {
       try {
+        const photo = await preparePhoto(asset);
         const form = new FormData();
-        const name = asset.fileName || `product-${Date.now()}.jpg`;
         if (Platform.OS === "web") {
-          form.append("image", await (await fetch(asset.uri)).blob(), name);
+          form.append("image", await (await fetch(photo.uri)).blob(), `product-${Date.now()}-${index + 1}.jpg`);
         } else {
-          form.append("image", { uri: asset.uri, name: /\.(jpe?g|png|gif)$/i.test(name) ? name : `${name}.jpg`, type: asset.mimeType || "image/jpeg" });
+          // Since SDK 57 the global fetch is expo/fetch, which only sends Blob-like files: React Native's
+          // `{ uri, name, type }` parts make it throw before the request starts.
+          form.append("image", new File(photo.uri));
         }
         const uploaded = await request("/temp-images", { method: "POST", form });
-        setUploads((current) => [...current, { id: uploaded.data.id, uri: asset.uri, thumb: `${SITE_URL}/${uploaded.data.thumb_path}` }]);
+        setUploads((current) => [...current, { id: uploaded.data.id, uri: photo.uri, thumb: `${SITE_URL}/${uploaded.data.thumb_path}` }]);
       } catch (uploadError) {
-        toast(uploadError.message, "error");
+        // "failed to upload" and 413 come from the server's size limits.
+        const tooLarge = uploadError.status === 413 || /failed to upload|too large/i.test(uploadError.message || "");
+        toast(tooLarge ? "That photo is too large to upload. Please try a smaller one." : uploadError.message || "Couldn’t upload that photo.", "error");
       }
     }
     setUploading(false);

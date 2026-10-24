@@ -1,17 +1,19 @@
 import React, { useContext, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { apiUrl } from "../common/http";
+import GoogleSignInButton from "../common/GoogleSignInButton";
 import { AdminAuthContext } from "../context/AdminAuth";
 import CustomerAuthShell from "./CustomerAuthShell";
 
 const CustomerLogin = () => {
-  const [form, setForm] = useState({ email: "", password: "" });
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const { user, login } = useContext(AdminAuthContext);
   const navigate = useNavigate();
   const location = useLocation();
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
+  // A Google sign-in that didn't finish comes back here with the reason.
+  const [error, setError] = useState(location.state?.error || "");
+  const [loading, setLoading] = useState(false);
+  const { user, login } = useContext(AdminAuthContext);
   const redirectTo = location.state?.from || "/customer/dashboard";
 
   if (user?.portal === "customer") return <Navigate to={redirectTo} replace />;
@@ -59,6 +61,7 @@ const CustomerLogin = () => {
         <div className="text-end mb-4"><Link to="/forgot-password" className="customer-link">Forgot password?</Link></div>
         <button type="submit" className="btn btn-primary btn-lg w-100 customer-submit" disabled={loading}>{loading ? "Signing in…" : "Sign in"}</button>
       </form>
+      <GoogleSignInButton portal="customer" from={location.state?.from} onError={setError} />
       <div className="customer-auth-divider"><span>New to Elitezaar?</span></div>
       <Link to="/customer/register" state={location.state} className="btn btn-outline-secondary btn-lg w-100">Create an account</Link>
       <p className="customer-auth-footnote">Selling with us? <Link to="/vendor/login" className="customer-link">Vendor portal</Link></p>

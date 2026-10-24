@@ -35,7 +35,9 @@ export async function api(path, { method = "GET", body, form, token, query } = {
   let response;
   try {
     response = await fetch(`${API_URL}${path}${search ? `?${search}` : ""}`, { method, headers, body: payload });
-  } catch {
+  } catch (error) {
+    // Not always the network: fetch also throws for a body it can't send. Keep the cause visible in development.
+    if (__DEV__) console.warn(`${method} ${path} failed before a response:`, error);
     throw new ApiError("We can’t reach Elitezaar right now. Check your connection and try again.");
   }
 

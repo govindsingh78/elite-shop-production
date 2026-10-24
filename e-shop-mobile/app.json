@@ -58,7 +58,8 @@
         {
           "photosPermission": "Elitezaar uses your photos so you can add pictures to your product listings."
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "extra": {
       "router": {

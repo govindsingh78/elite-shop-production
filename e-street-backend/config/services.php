@@ -42,4 +42,22 @@ return [
         'webhook_secret' => env('RAZORPAY_WEBHOOK_SECRET'),
     ],
 
+    // "Continue with Google" on the sign-in screens, using a Google Cloud OAuth client of type "Web application".
+    // The buttons are hidden until both keys are set.
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        // Must be listed under "Authorised redirect URIs" on the OAuth client. Defaults to <this site>/api/auth/google/callback.
+        'redirect' => env('GOOGLE_REDIRECT_URI'),
+        // Where a finished sign-in may return: the website's callback page and the app. Add more, comma-separated,
+        // in GOOGLE_RETURN_URLS (e.g. "exp://" while testing the app in Expo Go).
+        'return_urls' => array_values(array_filter(array_map('trim', [
+            rtrim((string) env('FRONTEND_URL', 'http://localhost:5173'), '/') . '/auth/google/callback',
+            'elitezaar://auth/google',
+            ...explode(',', (string) env('GOOGLE_RETURN_URLS', '')),
+        ]))),
+        'authorize_url' => 'https://accounts.google.com/o/oauth2/v2/auth',
+        'token_url' => 'https://oauth2.googleapis.com/token',
+    ],
+
 ];

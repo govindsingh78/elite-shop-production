@@ -1903,6 +1903,15 @@ a:hover > .brand-logo .brand-mark { transform: rotate(-6deg) scale(1.04); }
     &::before, &::after { flex: 1; height: 1px; background: #e7ece8; content: ""; }
 }
 .customer-auth-footnote { margin: 20px 0 0; color: #78847e; font-size: .9rem; text-align: center; }
+// "Continue with Google", styled to Google's sign-in branding guidelines.
+.google-signin-btn {
+    display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; min-height: 48px; border: 1px solid #dadce0; border-radius: 10px;
+    padding: 10px 16px; color: #3c4043; background: #fff; font-size: 1rem; font-weight: 600; transition: background-color .15s, box-shadow .15s;
+    &:hover:not(:disabled) { background: #f8faf9; box-shadow: 0 1px 3px rgba(60, 64, 67, .18); }
+    &:focus-visible { outline: 3px solid rgba(53, 125, 112, .35); outline-offset: 2px; }
+    &:disabled { opacity: .7; cursor: progress; }
+    svg { flex-shrink: 0; }
+}
 .customer-password-wrap { position: relative; }
 .customer-password-wrap .form-control { padding-right: 70px; }
 .customer-password-toggle { position: absolute; top: 50%; right: 8px; border: 0; border-radius: 7px; padding: 4px 9px; color: #357d70; background: #eef6f3; font-size: .8rem; font-weight: 700; transform: translateY(-50%); }

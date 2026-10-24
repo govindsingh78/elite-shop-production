@@ -29,6 +29,18 @@ class User extends Authenticatable
         return $this->hasMany(Order::class);
     }
 
+    /** The account roles each sign-in portal accepts. */
+    public const PORTAL_ROLES = [
+        'admin' => ['admin', 'superadmin'],
+        'vendor' => ['seller'],
+        'customer' => ['customer'],
+    ];
+
+    public function canUsePortal(string $portal): bool
+    {
+        return in_array($this->role, self::PORTAL_ROLES[$portal] ?? [], true);
+    }
+
     /**
      * The attributes that are mass assignable.
      *
@@ -50,6 +62,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'google_id',
     ];
 
     /**

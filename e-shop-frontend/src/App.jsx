@@ -41,6 +41,7 @@ import { CartProvider } from './components/context/CartContext';
 import { StorefrontCategoriesProvider } from './components/common/useStorefrontCategories';
 import OrderConfirmation from './components/common/OrderConfirmation';
 import CustomerLogin from './components/customer/CustomerLogin';
+import GoogleCallback from './components/common/GoogleCallback';
 import CustomerRegister from './components/customer/CustomerRegister';
 import CustomerDashboard from './components/customer/CustomerDashboard';
 import CustomerOrders from './components/customer/CustomerOrders';
@@ -73,6 +74,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/customer/login" element={<CustomerLogin />} />
+          <Route path="/auth/google/callback" element={<GoogleCallback />} />
           <Route path="/customer/register" element={<CustomerRegister />} />
           <Route
             path="/customer/dashboard"

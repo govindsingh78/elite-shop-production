@@ -3,6 +3,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\GeoController;
+use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\PolicyController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\BrandController;
@@ -33,6 +34,13 @@ Route::post('/customer/register', [AuthController::class, 'register'])->middlewa
 Route::post('/vendor/register', [AuthController::class, 'registerVendor'])->middleware('throttle:5,1');
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:5,1');
 Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:5,1');
+Route::get('/auth/providers', [GoogleAuthController::class, 'providers']);
+// Its own rate-limit bucket ("google-signin"): unnamed throttles share one count per IP across routes.
+Route::middleware('throttle:60,1,google-signin')->prefix('auth/google')->group(function () {
+    Route::get('redirect', [GoogleAuthController::class, 'redirect']);
+    Route::get('callback', [GoogleAuthController::class, 'callback']);
+    Route::post('exchange', [GoogleAuthController::class, 'exchange']);
+});
 Route::post('/orders', [AdminOrderController::class, 'store'])->middleware('throttle:10,1');
 Route::get('/storefront/payment-methods', [PaymentController::class, 'methods']);
 Route::middleware('throttle:20,1')->group(function () {
