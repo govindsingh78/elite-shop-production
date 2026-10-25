@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import Layout from "./Layout";
 import { useStorefrontCategories } from "./useStorefrontCategories";
 import { SUPPORT_EMAIL, SUPPORT_PHONES } from "./support";
+import founderPhoto from "../../assets/images/founder.jpg";
 
 const Icon = ({ children }) => <svg viewBox="0 0 24 24" aria-hidden="true">{children}</svg>;
 
@@ -28,6 +29,14 @@ const PROMISES = [
     icon: <><rect x="3" y="6" width="18" height="13" rx="2" /><path d="M3 10h18M7 15h3" /></>,
   },
 ];
+
+const FOUNDER_FACTS = [
+  ["Education", "B.Tech in Computer Science (2011), Rajasthan Technical University · Shrinath Ji Institute of Technology & Engineering"],
+  ["Experience", "15 years building web and mobile applications"],
+  ["Hobbies", "Singing and playing cricket"],
+];
+
+const FOUNDER_STACK = ["PHP", "OOP", "Laravel", "Drupal", "HTML", "CSS", "Bootstrap", "jQuery", "AJAX", "React", "React Native"];
 
 const STEPS = [
   { title: "Discover", copy: "Browse collections picked for everyday wear, from wardrobe staples to the finishing touches." },
@@ -79,6 +88,32 @@ const About = () => {
                   <blockquote>Fewer, better things, chosen with care and delivered with it too.</blockquote>
                   <figcaption>The Elitezaar promise</figcaption>
                 </figure>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="lp-section lp-section--warm" aria-labelledby="about-founder">
+          <div className="container">
+            <div className="ab-founder">
+              <figure className="ab-founder-photo">
+                <img src={founderPhoto} alt="Govind Singh, founder of Elitezaar" width="600" height="600" loading="lazy" />
+                <figcaption><strong>Govind Singh</strong><span>Founder, Elitezaar.com</span></figcaption>
+              </figure>
+              <div>
+                <span className="shop-eyebrow">MEET THE FOUNDER</span>
+                <h2 className="ab-title" id="about-founder">A dream project, built with care.</h2>
+                <p className="ab-copy">After completing my B.Tech in Computer Science in 2011, I’ve spent 15 years building web and mobile applications for companies. Today I pair that experience with AI tools like Claude to build better products, faster.</p>
+                <p className="ab-copy">Elitezaar is my dream project, and where all of it comes together: a store built to make shopping online feel as personal and trustworthy as a good local shop.</p>
+                <dl className="ab-founder-facts">
+                  {FOUNDER_FACTS.map(([label, value]) => (
+                    <div key={label}><dt>{label}</dt><dd>{value}</dd></div>
+                  ))}
+                </dl>
+                <div className="ab-founder-stack">
+                  <span>Tools of the trade</span>
+                  <ul>{FOUNDER_STACK.map((tool) => <li key={tool}>{tool}</li>)}</ul>
+                </div>
               </div>
             </div>
           </div>

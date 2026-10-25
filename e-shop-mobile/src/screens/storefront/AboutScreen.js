@@ -1,5 +1,5 @@
 import React from "react";
-import { Linking, StyleSheet, Text, View } from "react-native";
+import { Image, Linking, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -16,6 +16,14 @@ const PROMISES = [
   ["navigate-outline", "Tracked to your door", "Follow your order from packing to delivery, with live updates in your account."],
   ["card-outline", "Pay your way", "UPI, net banking or cash on delivery. Online payments are processed securely by Razorpay."],
 ];
+
+const FOUNDER_FACTS = [
+  ["school-outline", "Education", "B.Tech in Computer Science (2011), Rajasthan Technical University · Shrinath Ji Institute of Technology & Engineering"],
+  ["briefcase-outline", "Experience", "15 years building web and mobile applications"],
+  ["musical-notes-outline", "Hobbies", "Singing and playing cricket"],
+];
+
+const FOUNDER_STACK = ["PHP", "OOP", "Laravel", "Drupal", "HTML", "CSS", "Bootstrap", "jQuery", "AJAX", "React", "React Native"];
 
 const STEPS = [
   ["Discover", "Browse collections picked for everyday wear, from wardrobe staples to the finishing touches."],
@@ -47,6 +55,36 @@ export default function AboutScreen() {
         <Text style={styles.quoteText}>“Fewer, better things, chosen with care and delivered with it too.”</Text>
         <T variant="eyebrow" color={colors.goldDeep} style={{ marginTop: 10 }}>The Elitezaar promise</T>
       </View>
+
+      <SectionHeader eyebrow="Meet the founder" title="A dream project, built with care" style={styles.sectionHeader} />
+      <Card>
+        <View style={styles.founderHead}>
+          <LinearGradient colors={[colors.goldLight, "#1f4a3d", "#0a1f19"]} locations={[0, 0.55, 1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.founderFrame}>
+            <Image source={require("../../../assets/images/founder.jpg")} style={styles.founderPhoto} accessibilityLabel="Govind Singh, founder of Elitezaar" />
+          </LinearGradient>
+          <View style={{ flex: 1 }}>
+            <T variant="h2">Govind Singh</T>
+            <T variant="eyebrow" color={colors.goldDeep} style={{ marginTop: 4 }}>Founder, Elitezaar.com</T>
+          </View>
+        </View>
+        <T variant="body" style={{ marginTop: 16 }}>After completing my B.Tech in Computer Science in 2011, I’ve spent 15 years building web and mobile applications for companies. Today I pair that experience with AI tools like Claude to build better products, faster.</T>
+        <T variant="body" style={{ marginTop: 10 }}>Elitezaar is my dream project, and where all of it comes together: a store built to make shopping online feel as personal and trustworthy as a good local shop.</T>
+        <View style={styles.facts}>
+          {FOUNDER_FACTS.map(([icon, label, value]) => (
+            <View key={label} style={styles.fact}>
+              <View style={styles.factIcon}><Ionicons name={icon} size={18} color={colors.emerald} /></View>
+              <View style={{ flex: 1 }}>
+                <T variant="label">{label}</T>
+                <T variant="body" color={colors.text} style={{ marginTop: 2 }}>{value}</T>
+              </View>
+            </View>
+          ))}
+        </View>
+        <T variant="label" style={{ marginTop: 16, marginBottom: 8 }}>Tools of the trade</T>
+        <View style={styles.stack}>
+          {FOUNDER_STACK.map((tool) => <Text key={tool} style={styles.tool}>{tool}</Text>)}
+        </View>
+      </Card>
 
       <SectionHeader eyebrow="Why Elitezaar" title="What we promise" style={styles.sectionHeader} />
       {PROMISES.map(([icon, title, copy]) => (
@@ -111,6 +149,14 @@ const styles = StyleSheet.create({
   sectionHeader: { marginTop: 26 },
   quote: { marginTop: 16, borderLeftWidth: 3, borderLeftColor: colors.gold, borderRadius: radius.md, paddingHorizontal: 18, paddingVertical: 16, backgroundColor: colors.goldSoft },
   quoteText: { color: colors.ink, fontFamily: fonts.heading, fontSize: 19, lineHeight: 25 },
+  founderHead: { flexDirection: "row", alignItems: "center", gap: 16 },
+  founderFrame: { borderRadius: radius.lg + 4, padding: 4 },
+  founderPhoto: { width: 104, height: 104, borderRadius: radius.lg, backgroundColor: colors.white },
+  facts: { marginTop: 14, borderTopWidth: 1, borderTopColor: colors.lineSoft },
+  fact: { flexDirection: "row", alignItems: "flex-start", gap: 12, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.lineSoft },
+  factIcon: { width: 36, height: 36, alignItems: "center", justifyContent: "center", borderRadius: 12, backgroundColor: colors.mint },
+  stack: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  tool: { overflow: "hidden", borderWidth: 1, borderColor: colors.line, borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 6, color: colors.emerald, backgroundColor: colors.paper, fontFamily: fonts.bodyBold, fontSize: 13.5 },
   promise: { flexDirection: "row", alignItems: "flex-start", gap: 14, marginBottom: 10 },
   promiseIcon: { width: 44, height: 44, alignItems: "center", justifyContent: "center", borderRadius: 14, backgroundColor: colors.mint },
   steps: { borderRadius: radius.lg, paddingHorizontal: 18, paddingVertical: 6, backgroundColor: colors.paper, borderWidth: 1, borderColor: colors.lineSoft },
