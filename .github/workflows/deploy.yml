@@ -22,7 +22,9 @@ jobs:
           script: |
             set -e
             cd /var/www/html/elite-shop-production
-            # PHP (www-data) and sudo commands can take over these folders; git must be able to rewrite the files it tracks in them.
+            # PHP (www-data) and sudo commands can take over these folders; git must be able to write its own folder
+            # and rewrite the files it tracks in storage and bootstrap/cache.
+            sudo chown -R ubuntu:ubuntu .git
             sudo chown -R ubuntu:www-data e-street-backend/storage e-street-backend/bootstrap/cache
             # deploy.sh makes these folders 775, which git would otherwise see as changed files on every deploy.
             git config core.fileMode false
