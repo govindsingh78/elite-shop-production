@@ -1,3 +1,4 @@
+import excelScriptUrl from "exceljs/dist/exceljs.min.js?url";
 import { apiUrl } from "../../common/http";
 import { portalToken } from "../portal";
 
@@ -35,10 +36,27 @@ const headerKey = (text) => {
   return column?.key || ALIASES[clean] || null;
 };
 
-let excelModule;
-const loadExcel = async () => {
-  excelModule ??= (await import("exceljs")).default;
-  return excelModule;
+// exceljs ships a ready-made browser build. It is copied into the site as a plain file and loaded with a script tag
+// the first time a sheet is made or read: bundling it instead would add ~300 MB to the build's memory use.
+let excelLoading = null;
+const loadExcel = () => {
+  excelLoading ??= new Promise((resolve, reject) => {
+    if (window.ExcelJS) {
+      resolve(window.ExcelJS);
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = excelScriptUrl;
+    script.async = true;
+    script.onload = () => (window.ExcelJS ? resolve(window.ExcelJS) : reject(new Error("The spreadsheet tool didn’t load. Please refresh and try again.")));
+    script.onerror = () => {
+      excelLoading = null;
+      script.remove();
+      reject(new Error("We couldn’t load the spreadsheet tool. Check your connection and try again."));
+    };
+    document.head.appendChild(script);
+  });
+  return excelLoading;
 };
 
 /** Calls the bulk upload API as the signed-in admin or seller. */

@@ -244,7 +244,7 @@ ul{
 
 .lp-featured-swiper { padding-bottom: 46px !important;
     .swiper-button-prev, .swiper-button-next { top: 38%; width: 46px; height: 46px; border-radius: 50%; color: #18372e; background: #fff; box-shadow: 0 8px 20px rgba(16, 39, 32, .16); }
-    .swiper-button-prev::after, .swiper-button-next::after { font-size: 1rem; font-weight: 800; }
+    .swiper-button-prev svg, .swiper-button-next svg { width: 10px; height: 16px; }
     .swiper-button-disabled { opacity: 0 !important; }
     .swiper-pagination-bullet-active { background: #18372e; }
 }
