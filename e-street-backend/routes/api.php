@@ -12,6 +12,7 @@ use App\Http\Controllers\TempImageController;
 use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ShippingMethodController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureCustomer;
@@ -50,6 +51,7 @@ Route::middleware('throttle:20,1')->group(function () {
 });
 Route::post('/payments/razorpay/webhook', [PaymentController::class, 'webhook']);
 Route::get('/storefront/categories', [CategoryController::class, 'navigation']);
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->middleware('throttle:30,1');
 Route::get('/storefront/policies/{policy}', [PolicyController::class, 'show'])->where('policy', '[a-z-]+');
 Route::get('/storefront/products', [ProductController::class, 'storefrontIndex']);
 Route::get('/storefront/products/{id}', [ProductController::class, 'storefrontShow'])->whereNumber('id');

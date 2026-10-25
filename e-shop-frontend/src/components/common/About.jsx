@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import Layout from "./Layout";
 import { useStorefrontCategories } from "./useStorefrontCategories";
 import { SUPPORT_EMAIL, SUPPORT_PHONES } from "./support";
 import founderPhoto from "../../assets/images/founder.jpg";
+import { FOUNDER, ORGANIZATION_ID, SITE_URL, breadcrumbs, useSeo } from "./seo";
 
 const Icon = ({ children }) => <svg viewBox="0 0 24 24" aria-hidden="true">{children}</svg>;
 
@@ -46,6 +47,36 @@ const STEPS = [
 
 const About = () => {
   const { categories } = useStorefrontCategories();
+  // "Read our story" links straight to the founder section.
+  useEffect(() => {
+    if (window.location.hash === "#founder") document.getElementById("founder")?.scrollIntoView();
+  }, []);
+  useSeo({
+    title: "About us — our story and our founder",
+    description: `Elitezaar is an online marketplace for hand-picked everyday style from independent sellers, founded by ${FOUNDER}. Meet the founder and see what we promise on every order.`,
+    path: "/about",
+    jsonLd: [
+      {
+        "@type": "AboutPage",
+        "@id": `${SITE_URL}/about#page`,
+        url: `${SITE_URL}/about`,
+        name: "About Elitezaar",
+        about: { "@id": ORGANIZATION_ID },
+        mainEntity: { "@id": `${SITE_URL}/about#founder` },
+      },
+      {
+        "@type": "Person",
+        "@id": `${SITE_URL}/about#founder`,
+        name: FOUNDER,
+        jobTitle: "Founder",
+        image: new URL(founderPhoto, SITE_URL).href,
+        worksFor: { "@id": ORGANIZATION_ID },
+        alumniOf: { "@type": "CollegeOrUniversity", name: "Rajasthan Technical University" },
+        knowsAbout: ["Web application development", "Mobile app development", ...FOUNDER_STACK],
+      },
+      breadcrumbs([["Home", "/"], ["About us", "/about"]]),
+    ],
+  });
 
   return (
     <Layout>
@@ -93,7 +124,7 @@ const About = () => {
           </div>
         </section>
 
-        <section className="lp-section lp-section--warm" aria-labelledby="about-founder">
+        <section className="lp-section lp-section--warm" id="founder" aria-labelledby="about-founder">
           <div className="container">
             <div className="ab-founder">
               <figure className="ab-founder-photo">
@@ -105,6 +136,7 @@ const About = () => {
                 <h2 className="ab-title" id="about-founder">A dream project, built with care.</h2>
                 <p className="ab-copy">After completing my B.Tech in Computer Science in 2011, I’ve spent 15 years building web and mobile applications for companies. Today I pair that experience with AI tools like Claude to build better products, faster.</p>
                 <p className="ab-copy">Elitezaar is my dream project, and where all of it comes together: a store built to make shopping online feel as personal and trustworthy as a good local shop.</p>
+                <p className="ab-signature" aria-hidden="true">Govind Singh</p>
                 <dl className="ab-founder-facts">
                   {FOUNDER_FACTS.map(([label, value]) => (
                     <div key={label}><dt>{label}</dt><dd>{value}</dd></div>

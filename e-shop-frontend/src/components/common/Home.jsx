@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, EffectFade, Navigation, Pagination } from "swiper/modules";
@@ -12,6 +12,15 @@ import { useStorefrontCategories } from "./useStorefrontCategories";
 import StorefrontProductCard from "./StorefrontProductCard";
 import BannerImage1 from "../../assets/images/banner-1.jpg";
 import BannerImage2 from "../../assets/images/banner-2.jpg";
+import founderPhoto from "../../assets/images/founder.jpg";
+import { AdminAuthContext } from "../context/AdminAuth";
+import { useSeo } from "./seo";
+
+/** "Good evening, Asha" for a signed-in shopper, by the time of day where they are. */
+const greetingFor = (name) => {
+  const hour = new Date().getHours();
+  return `${hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening"}, ${name}`;
+};
 
 const imageBase = apiUrl.replace(/\/api\/?$/, "");
 const productImage = (product) => (product?.image ? `${imageBase}/uploads/products/small/${encodeURIComponent(product.image)}` : null);
@@ -95,7 +104,7 @@ const HeroSlider = ({ categories }) => {
   );
 };
 
-const Hero = ({ stats, spotlight, categories }) => {
+const Hero = ({ stats, spotlight, categories, shopperName }) => {
   const firstCategory = categories[0];
   return (
   <section className="lp-hero">
@@ -103,7 +112,7 @@ const Hero = ({ stats, spotlight, categories }) => {
       <div className="row g-4 g-xl-5 align-items-center">
         <div className="col-lg-6">
           <div className="lp-hero-copy">
-            <span className="lp-hero-eyebrow"><i aria-hidden="true" /> NEW SEASON · {new Date().getFullYear()}</span>
+            <span className="lp-hero-eyebrow"><i aria-hidden="true" /> {shopperName ? greetingFor(shopperName) : `NEW SEASON · ${new Date().getFullYear()}`}</span>
             <h1>Everyday style,<br /><em>elevated.</em></h1>
             <p>Thoughtfully picked pieces from independent sellers — delivered to your door, with live tracking from checkout to doorstep.</p>
             <div className="lp-hero-actions">
@@ -271,6 +280,31 @@ const HowItWorks = ({ online }) => (
   </section>
 );
 
+/* ---------- A note from the founder ---------- */
+const FounderNote = () => (
+  <section className="lp-section" aria-labelledby="founder-note">
+    <div className="container">
+      <div className="lp-founder">
+        <div className="lp-founder-portrait">
+          <img src={founderPhoto} alt="Govind Singh, founder of Elitezaar" width="600" height="600" loading="lazy" />
+        </div>
+        <div className="lp-founder-letter">
+          <span className="shop-eyebrow">A NOTE FROM OUR FOUNDER</span>
+          <h2 id="founder-note">Hello, and welcome to Elitezaar.</h2>
+          <p>I started Elitezaar with a simple idea: shopping online should feel as personal as walking into a good local shop, where someone has chosen every piece with care.</p>
+          <p>That’s why our team reviews every seller’s listing before it reaches the store, and why you can follow every order to your door. If anything isn’t right, call or write to us. We’d love to hear from you.</p>
+          <p className="lp-founder-thanks">Thank you for shopping with us.</p>
+          <div className="lp-founder-sign">
+            <span className="ab-signature" aria-hidden="true">Govind Singh</span>
+            <span><strong>Govind Singh</strong><small>Founder, Elitezaar.com</small></span>
+            <Link to="/about#founder" className="lp-head-link">Read our story <span aria-hidden="true">→</span></Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+);
+
 /* ---------- Become a seller ---------- */
 const SellerCta = () => (
   <section className="lp-section">
@@ -292,6 +326,9 @@ const SellerCta = () => (
 
 const HomeContent = () => {
   const { categories } = useStorefrontCategories();
+  const { user } = useContext(AdminAuthContext);
+  const shopperName = user?.portal === "customer" ? (user.user?.name || "").trim().split(/\s+/)[0] : "";
+  useSeo({ path: "/" });
   const [latest, setLatest] = useState(null);
   const [featured, setFeatured] = useState([]);
   const [online, setOnline] = useState(false);
@@ -336,7 +373,7 @@ const HomeContent = () => {
 
   return (
     <main className="lp-page">
-      <Hero stats={stats} spotlight={featured[0] || latestProducts[0]} categories={categories} />
+      <Hero stats={stats} spotlight={featured[0] || latestProducts[0]} categories={categories} shopperName={shopperName} />
       <TrustBar online={online} />
       {error && <div className="container"><div className="lp-error" role="status"><span aria-hidden="true">⚠</span>{error}</div></div>}
       {!latest && !error && (
@@ -346,6 +383,7 @@ const HomeContent = () => {
       )}
       <Collections categories={categories} covers={covers} />
       <ProductGrid eyebrow="NEW ARRIVALS" title="Just landed" copy="Fresh pieces, added this week." products={latestProducts.slice(0, 8)} link="/shop" linkLabel="View all" />
+      <FounderNote />
       <FeaturedCarousel products={featured} />
       <ProductGrid tone="warm" eyebrow="OFFERS" title="Offers you’ll love" copy="Our best prices right now — while stock lasts." products={deals} link="/shop?sort=price_asc" linkLabel="Shop by price" />
       <Brands brands={brands} />

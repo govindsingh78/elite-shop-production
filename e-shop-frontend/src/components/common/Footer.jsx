@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import BrandLogo from "./BrandLogo";
 import { useStorefrontCategories } from "./useStorefrontCategories";
 import { SUPPORT_EMAIL, SUPPORT_PHONES } from "./support";
+import founderPhoto from "../../assets/images/founder.jpg";
 
 const PERKS = [
     { title: "Delivery, made easy", copy: "Carefully packed and tracked live to your door.", icon: <><path d="M3 6h11v12H3zM14 10h4l3 3v5h-7z" /><circle cx="7.5" cy="18" r="1.5" /><circle cx="18" cy="18" r="1.5" /></> },
@@ -30,6 +31,10 @@ const Footer = () => {
                             <p className="store-footer-description">A considered collection for everyday living. Find your next favourite, and make it yours.</p>
                             <Link className="store-footer-cta" to="/shop">Discover the collection <span aria-hidden="true">↗</span></Link>
                             <Link className="store-footer-about" to="/about">Our story <span aria-hidden="true">→</span></Link>
+                            <Link className="store-footer-founder" to="/about#founder">
+                                <img src={founderPhoto} alt="" width="44" height="44" loading="lazy" />
+                                <span><small>Founded with care by</small><strong>Govind Singh</strong></span>
+                            </Link>
                         </div>
                         <div className="col-lg-2 col-6">
                             <h2 className="store-footer-heading">Explore</h2>

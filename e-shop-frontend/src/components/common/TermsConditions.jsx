@@ -1,11 +1,12 @@
 import React from "react";
 import PolicyPage from "./PolicyPage";
-import { TERMS } from "./policy";
+import { TERMS, TERMS_PATH } from "./policy";
 
 /** The Terms & Conditions for shopping and selling on Elitezaar. */
 const TermsConditions = () => (
   <PolicyPage
     slug={TERMS}
+    path={TERMS_PATH}
     mark="Terms"
     crumb="Terms & conditions"
     eyebrow="The fine print"

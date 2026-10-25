@@ -1,0 +1,21 @@
+# Elitezaar — https://elitezaar.com
+User-agent: *
+Allow: /
+# Account, checkout and back-office pages are private or personal; keep them out of search results.
+Disallow: /admin/
+Disallow: /customer/
+Disallow: /vendor/
+Allow: /vendor/register
+Disallow: /cart
+Disallow: /checkout
+Disallow: /wishlist
+Disallow: /order-confirmation/
+Disallow: /auth/
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /api/
+# Shoppers' search results and sorted listings duplicate the collection pages.
+Disallow: /shop?q=
+Disallow: /*?*sort=
+
+Sitemap: https://elitezaar.com/api/sitemap.xml

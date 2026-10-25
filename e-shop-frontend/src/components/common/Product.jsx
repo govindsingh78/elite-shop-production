@@ -10,9 +10,48 @@ import { ProductReturnsNote } from "./PolicyBits";
 import WishlistButton from "./WishlistButton";
 import ProductReviews from "./ProductReviews";
 import { Stars } from "./ReviewBits";
+import { ORGANIZATION_ID, SITE_URL, breadcrumbs, summarize, useSeo } from "./seo";
 
 const imageBase = apiUrl.replace(/\/api\/?$/, "");
 const LOW_STOCK = 5;
+const largeImage = (name) => `${imageBase}/uploads/products/large/${encodeURIComponent(name)}`;
+
+/** schema.org Product, so search results can show the price, stock and rating. */
+const productSchema = (product, images) => {
+  const url = `${SITE_URL}/product/${product.id}`;
+  const reviews = Number(product.reviews_count || 0);
+  return {
+    "@type": "Product",
+    "@id": `${url}#product`,
+    name: product.title,
+    description: summarize(product.description || product.short_description, 5000) || undefined,
+    sku: product.sku || undefined,
+    gtin: /^\d{8,14}$/.test(product.barcode || "") ? product.barcode : undefined,
+    image: images.map(largeImage),
+    brand: product.brand?.name ? { "@type": "Brand", name: product.brand.name } : undefined,
+    category: product.category?.name,
+    offers: {
+      "@type": "Offer",
+      url,
+      priceCurrency: "INR",
+      price: Number(product.price).toFixed(2),
+      availability: `https://schema.org/${product.qty === 0 ? "OutOfStock" : "InStock"}`,
+      itemCondition: "https://schema.org/NewCondition",
+      seller: { "@id": ORGANIZATION_ID },
+      // Mirrors the Return & Refund Policy (resources/policies/return-refund.json): 7 days from delivery.
+      hasMerchantReturnPolicy: {
+        "@type": "MerchantReturnPolicy",
+        applicableCountry: "IN",
+        returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+        merchantReturnDays: 7,
+        returnMethod: "https://schema.org/ReturnByMail",
+      },
+    },
+    aggregateRating: reviews > 0
+      ? { "@type": "AggregateRating", ratingValue: Number(product.reviews_avg_rating).toFixed(1), reviewCount: reviews, bestRating: 5, worstRating: 1 }
+      : undefined,
+  };
+};
 
 const perks = [
   { title: "Cash on delivery", copy: "Pay when your order arrives.", icon: <><rect x="3" y="6" width="18" height="13" rx="2" /><path d="M3 10h18M7 15h3" /></> },
@@ -85,6 +124,25 @@ const Product = () => {
   const price = Number(product?.price || 0);
   const discount = compare > price ? Math.round(((compare - price) / compare) * 100) : 0;
   const selectedImage = images[selectedIndex];
+
+  useSeo(product ? {
+    title: `${product.title}${product.brand?.name ? ` by ${product.brand.name}` : ""}`,
+    description: summarize(`${product.short_description || product.description || ""} Buy ${product.title} for ${formatPrice(price)} on Elitezaar, with cash on delivery and live order tracking.`),
+    path: `/product/${product.id}`,
+    image: images[0] ? largeImage(images[0]) : undefined,
+    type: "product",
+    extraMeta: [["product:price:amount", price.toFixed(2)], ["product:price:currency", "INR"], ["product:availability", soldOut ? "out of stock" : "in stock"]],
+    jsonLd: [
+      productSchema(product, images),
+      breadcrumbs([
+        ["Home", "/"],
+        ["Shop", "/shop"],
+        ...(product.category?.parent ? [[product.category.parent.name, `/shop/${product.category.parent.slug}`]] : []),
+        ...(product.category ? [[product.category.name, `/shop/${product.category.slug}`]] : []),
+        [product.title, `/product/${product.id}`],
+      ]),
+    ],
+  } : error ? { title: "Product not found", noindex: true } : { ready: false });
 
   const changeQuantity = (next) => setQuantity(Math.min(Math.max(1, next), Math.max(1, maxQuantity)));
 

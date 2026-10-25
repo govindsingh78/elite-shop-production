@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800&display=swap');
+/* Fonts (Outfit, Rajdhani and Great Vibes for signatures) load from index.html, where the browser can fetch them early. */
 
 $primary-font: "Rajdhani", sans-serif;
 $primary-white: #FFF;
@@ -1749,6 +1748,43 @@ a:hover > .brand-logo .brand-mark { transform: rotate(-6deg) scale(1.04); }
 }
 .store-footer-about { display: inline-flex; margin-left: 18px; color: #e2bb95; font-weight: 600; text-decoration: none; }
 .store-footer-about:hover { color: #fff; }
+
+/* Personal touches: the founder's signature, note and footer credit. */
+.ab-signature { margin: 6px 0 0; color: #1f4a3d; font-family: "Great Vibes", cursive; font-size: 2.6rem; font-weight: 400; line-height: 1.1; transform: rotate(-3deg); transform-origin: left center; }
+.lp-founder {
+    position: relative; display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 56px; align-items: center; overflow: hidden; border: 1px solid #efe4d2; border-radius: 32px; padding: 48px 56px;
+    background: radial-gradient(circle at 100% 0%, rgba(224, 183, 125, .18), transparent 42%), linear-gradient(150deg, #fffdf8, #fbf4e9); box-shadow: 0 24px 50px rgba(78, 58, 26, .08);
+    &::after { position: absolute; top: -40px; right: 36px; color: rgba(185, 138, 85, .14); content: "“"; font-family: Georgia, serif; font-size: 16rem; line-height: 1; pointer-events: none; }
+}
+.lp-founder-portrait {
+    position: relative; border-radius: 50%; padding: 8px; background: conic-gradient(from 210deg, #e0b77d, #1f4a3d, #0a1f19, #e0b77d); box-shadow: 0 22px 44px rgba(15, 36, 29, .18);
+    img { display: block; width: 100%; height: auto; aspect-ratio: 1; border: 6px solid #fffdf8; border-radius: 50%; object-fit: cover; }
+}
+.lp-founder-letter {
+    position: relative; z-index: 1;
+    h2 { margin: 10px 0 18px; color: #0f241d; font-family: "Outfit", sans-serif; font-size: clamp(1.7rem, 3vw, 2.3rem); font-weight: 800; letter-spacing: -.03em; }
+    p { max-width: 640px; color: #4f5f57; font-size: 1.06rem; line-height: 1.8; }
+}
+.lp-founder-thanks { margin-bottom: 4px; color: #1f3029 !important; font-weight: 700; }
+.lp-founder-sign {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px;
+    .ab-signature { flex-basis: 100%; }
+    > span:nth-child(2) { display: grid; gap: 2px; margin-right: auto; }
+    strong { color: #0f241d; font-family: "Outfit", sans-serif; font-size: 1.05rem; }
+    small { color: #b98a55; font: 700 .68rem/1.4 Arial, sans-serif; letter-spacing: .16em; text-transform: uppercase; }
+}
+.store-footer-founder {
+    display: flex; width: fit-content; align-items: center; gap: 12px; margin-top: 24px; border: 1px solid rgba(255, 255, 255, .12); border-radius: 40px; padding: 6px 18px 6px 6px; color: #fff; text-decoration: none; transition: border-color .15s ease, background-color .15s ease;
+    &:hover { border-color: #e2bb95; background: rgba(226, 187, 149, .08); color: #fff; }
+    img { width: 44px; height: 44px; border: 2px solid #e2bb95; border-radius: 50%; object-fit: cover; }
+    span { display: grid; line-height: 1.25; }
+    small { color: #b8c2b8; font-size: .78rem; }
+    strong { font-family: "Great Vibes", cursive; font-size: 1.45rem; font-weight: 400; }
+}
+@media (max-width: 991.98px) {
+    .lp-founder { grid-template-columns: 1fr; gap: 28px; padding: 36px 28px; text-align: left; }
+    .lp-founder-portrait { width: min(200px, 60%); }
+}
 @media (max-width: 991.98px) {
     .ab-founder { grid-template-columns: 1fr; gap: 36px; }
 }

@@ -3,10 +3,18 @@ import { Link } from "react-router-dom";
 import Layout from "./Layout";
 import { PolicyHighlights, PolicySections } from "./PolicyBits";
 import { usePolicy } from "./policy";
+import { breadcrumbs, summarize, useSeo } from "./seo";
 
 /** A store policy (returns, terms…): hero, key points, then the numbered sections beside a contents list. */
-const PolicyPage = ({ slug, mark, crumb, eyebrow, heading, fallbackIntro }) => {
+const PolicyPage = ({ slug, path, mark, crumb, eyebrow, heading, fallbackIntro }) => {
   const { policy, error } = usePolicy(slug);
+  useSeo({
+    title: policy?.title || crumb,
+    description: summarize(policy?.intro || fallbackIntro),
+    path,
+    ready: Boolean(policy || error),
+    jsonLd: breadcrumbs([["Home", "/"], [crumb, path]]),
+  });
 
   return (
     <Layout>

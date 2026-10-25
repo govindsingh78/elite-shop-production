@@ -5,6 +5,7 @@ import { apiUrl } from "./http";
 import { useStorefrontCategories } from "./useStorefrontCategories";
 import StorefrontProductCard from "./StorefrontProductCard";
 import { formatPrice } from "./currency";
+import { breadcrumbs, summarize, useSeo } from "./seo";
 
 const PER_PAGE = 12;
 const SORTS = [
@@ -115,6 +116,23 @@ const Shop = () => {
       clear: () => updateFilters({ min_price: "", max_price: "" }),
     },
   ].filter(Boolean);
+
+  const collectionLabel = activeCategory && (parentCategory ? `${parentCategory.name} ${activeCategory.name}` : `the ${activeCategory.name} collection`);
+  useSeo(categorySlug && !activeCategory ? (error ? { title: "Collection not found", noindex: true } : { ready: false }) : {
+    title: search ? `Search results for “${search}”` : activeCategory ? `Shop ${collectionLabel} online` : "Shop all products",
+    description: activeCategory
+      ? summarize(`Shop ${collectionLabel} on Elitezaar: hand-picked pieces from independent sellers, with UPI, cash on delivery and live order tracking.`)
+      : "Shop every collection on Elitezaar: hand-picked clothing and accessories from independent sellers, with new arrivals every week.",
+    // Filtered and sorted views share the collection's address; shoppers' searches stay out of results.
+    path: `${activeCategory ? `/shop/${categorySlug}` : "/shop"}${page > 1 ? `?page=${page}` : ""}`,
+    noindex: Boolean(search),
+    jsonLd: breadcrumbs([
+      ["Home", "/"],
+      ["Shop", "/shop"],
+      ...(activeCategory && parentCategory ? [[parentCategory.name, `/shop/${parentCategory.slug}`]] : []),
+      ...(activeCategory ? [[activeCategory.name, `/shop/${categorySlug}`]] : []),
+    ]),
+  });
 
   if (categorySlug && !activeCategory && !categoriesLoading && error) {
     return <Layout><main className="container py-5"><h1 className="h2">Collection not found</h1><p className="text-muted">This category may have been renamed or is no longer available.</p><Link to="/shop" className="btn btn-primary">Browse all products</Link></main></Layout>;

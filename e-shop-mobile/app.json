@@ -1,6 +1,7 @@
 {
   "expo": {
     "name": "Elitezaar",
+    "description": "Hand-picked clothing and accessories from independent sellers, with UPI, cash on delivery and live order tracking.",
     "slug": "elitezaar",
     "scheme": "elitezaar",
     "version": "1.0.0",
@@ -25,6 +26,20 @@
       },
       "permissions": [
         "android.permission.RECORD_AUDIO"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            { "scheme": "https", "host": "elitezaar.com", "pathPrefix": "/product" },
+            { "scheme": "https", "host": "elitezaar.com", "pathPrefix": "/shop" },
+            { "scheme": "https", "host": "elitezaar.com", "path": "/about" },
+            { "scheme": "https", "host": "elitezaar.com", "path": "/terms-and-conditions" },
+            { "scheme": "https", "host": "elitezaar.com", "path": "/return-refund-policy" }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
       ]
     },
     "web": {
