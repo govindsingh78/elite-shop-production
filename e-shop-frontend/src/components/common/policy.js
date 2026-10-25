@@ -6,9 +6,11 @@ export const RETURN_POLICY = "return-refund";
 export const RETURN_POLICY_PATH = "/return-refund-policy";
 export const TERMS = "terms";
 export const TERMS_PATH = "/terms-and-conditions";
+export const PRIVACY = "privacy";
+export const PRIVACY_PATH = "/privacy-policy";
 
 /** Each policy's page, for links from one policy to another. */
-export const POLICY_PATHS = { [RETURN_POLICY]: RETURN_POLICY_PATH, [TERMS]: TERMS_PATH };
+export const POLICY_PATHS = { [RETURN_POLICY]: RETURN_POLICY_PATH, [TERMS]: TERMS_PATH, [PRIVACY]: PRIVACY_PATH };
 
 const cache = new Map();
 

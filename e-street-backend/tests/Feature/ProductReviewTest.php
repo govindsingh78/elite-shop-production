@@ -128,6 +128,7 @@ class ProductReviewTest extends TestCase
     {
         $this->reviewer('Ravi Kumar', 2);
         $review = ProductReview::firstOrFail();
+        config(['admin.emails' => ['admin@example.com']]); // admin roles need an approved address (config/admin.php)
         $admin = User::create(['name' => 'Admin', 'email' => 'admin@example.com', 'password' => 'secret123', 'role' => 'admin']);
 
         $this->actingAs($this->customer, 'sanctum')->patchJson("/api/admin/reviews/{$review->id}", ['status' => 'hidden'])->assertForbidden();

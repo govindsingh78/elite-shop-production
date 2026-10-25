@@ -79,6 +79,10 @@ const Footer = () => {
                                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l4 4v14H7z" /><path d="M14 3v4h4M10 12h5M10 16h5" /></svg>
                                 Terms &amp; Conditions
                             </Link>
+                            <Link className="store-footer-policy" to="/privacy-policy">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3Z" /><rect x="9" y="11" width="6" height="5" rx="1" /><path d="M10.5 11V9.5a1.5 1.5 0 0 1 3 0V11" /></svg>
+                                Privacy Policy
+                            </Link>
                         </div>
                     </div>
                     <ul className="store-footer-perks">
@@ -97,6 +101,7 @@ const Footer = () => {
                                 <Link to="/about">About us</Link>
                                 <Link to="/return-refund-policy">Returns &amp; refunds</Link>
                                 <Link to="/terms-and-conditions">Terms</Link>
+                                <Link to="/privacy-policy">Privacy</Link>
                                 <Link to="/shop">Shop</Link>
                                 <Link to="/customer/orders">Track an order</Link>
                                 <a href={`tel:${SUPPORT_PHONES[0].tel}`}>Call support</a>

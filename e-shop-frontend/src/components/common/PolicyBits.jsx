@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Modal from "react-bootstrap/Modal";
-import { POLICY_PATHS, RETURN_POLICY, RETURN_POLICY_PATH, TERMS_PATH, usePolicy } from "./policy";
+import { POLICY_PATHS, PRIVACY_PATH, RETURN_POLICY, RETURN_POLICY_PATH, TERMS_PATH, usePolicy } from "./policy";
 import { SUPPORT_EMAIL, SUPPORT_PHONES } from "./support";
 
 const ICONS = {
@@ -10,6 +10,7 @@ const ICONS = {
   shield: <><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3Z" /><path d="m9 12 2 2 4-4" /></>,
   support: <><path d="M4 13v-1a8 8 0 0 1 16 0v1" /><rect x="3" y="13" width="4" height="6" rx="1.5" /><rect x="17" y="13" width="4" height="6" rx="1.5" /><path d="M19 19c0 1.5-1.5 2.5-4 2.5h-2" /></>,
   card: <><rect x="3" y="5.5" width="18" height="13" rx="2.5" /><path d="M3 10h18M7 15h4" /></>,
+  user: <><circle cx="12" cy="8.5" r="3.5" /><path d="M5 20a7 7 0 0 1 14 0" /><path d="m15.5 13.5 1.5 1.5 3-3" /></>,
 };
 
 export const PolicyIcon = ({ name }) => <svg viewBox="0 0 24 24" aria-hidden="true">{ICONS[name] || ICONS.shield}</svg>;
@@ -77,7 +78,7 @@ export const PolicyAgreement = ({ checked, onChange, error }) => {
       </div>
       <label className="co-policy-check">
         <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} />
-        <span>I have read and agree to the <a href={TERMS_PATH} target="_blank" rel="noreferrer">Terms &amp; Conditions</a> and the <button type="button" onClick={() => setOpen(true)}>Return &amp; Refund Policy</button>.</span>
+        <span>I have read and agree to the <a href={TERMS_PATH} target="_blank" rel="noreferrer">Terms &amp; Conditions</a>, the <button type="button" onClick={() => setOpen(true)}>Return &amp; Refund Policy</button> and the <a href={PRIVACY_PATH} target="_blank" rel="noreferrer">Privacy Policy</a>.</span>
       </label>
       {error && <p className="co-policy-error" role="alert">{error}</p>}
 
@@ -106,9 +107,9 @@ export const PolicyAgreement = ({ checked, onChange, error }) => {
   );
 };
 
-/** "By creating an account, you agree to our Terms & Conditions." The link opens a new tab so a half-filled form isn't lost. */
+/** "By creating an account, you agree to our Terms & Conditions and Privacy Policy." Links open a new tab so a half-filled form isn't lost. */
 export const TermsNote = ({ action = "creating an account" }) => (
-  <p className="auth-terms">By {action}, you agree to our <a href={TERMS_PATH} target="_blank" rel="noreferrer">Terms &amp; Conditions</a>.</p>
+  <p className="auth-terms">By {action}, you agree to our <a href={TERMS_PATH} target="_blank" rel="noreferrer">Terms &amp; Conditions</a> and <a href={PRIVACY_PATH} target="_blank" rel="noreferrer">Privacy Policy</a>.</p>
 );
 
 /** One line under "Add to bag": the return window, with a link to the policy. */

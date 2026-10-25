@@ -48,7 +48,7 @@ class ReturnPolicyTest extends TestCase
             ->json();
 
         $this->assertGreaterThanOrEqual(10, count($policy['sections']));
-        $this->getJson('/api/storefront/policies/privacy')->assertNotFound();
+        $this->getJson('/api/storefront/policies/shipping')->assertNotFound();
         $this->getJson('/api/storefront/policies/..%2F..%2F.env')->assertNotFound();
     }
 

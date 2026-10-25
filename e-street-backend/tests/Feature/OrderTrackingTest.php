@@ -25,6 +25,7 @@ class OrderTrackingTest extends TestCase
 
     private function setUpOrder(): array
     {
+        config(['admin.emails' => ['admin@example.com']]); // admin roles need an approved address (config/admin.php)
         $admin = User::create(['name' => 'Admin', 'email' => 'admin@example.com', 'password' => 'secret123', 'role' => 'admin']);
         $customer = User::create(['name' => 'Asha', 'email' => 'asha@example.com', 'password' => 'secret123', 'role' => 'customer']);
         $order = Order::create(['user_id' => $customer->id, 'customer_name' => 'Asha', 'customer_email' => $customer->email, 'address' => 'x', 'city' => 'Jaipur', 'total' => 500]);

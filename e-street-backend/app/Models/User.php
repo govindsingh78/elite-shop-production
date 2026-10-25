@@ -36,9 +36,28 @@ class User extends Authenticatable
         'customer' => ['customer'],
     ];
 
+    public const ADMIN_ROLES = ['admin', 'superadmin'];
+
+    /** Admin roles are reserved for the addresses in config/admin.php. */
+    public static function isApprovedAdminEmail(?string $email): bool
+    {
+        $approved = array_map(fn ($address) => strtolower(trim($address)), config('admin.emails', []));
+
+        return in_array(strtolower(trim((string) $email)), $approved, true);
+    }
+
+    public function hasAdminRole(): bool
+    {
+        return in_array($this->role, self::ADMIN_ROLES, true);
+    }
+
     public function canUsePortal(string $portal): bool
     {
-        return in_array($this->role, self::PORTAL_ROLES[$portal] ?? [], true);
+        if (!in_array($this->role, self::PORTAL_ROLES[$portal] ?? [], true)) {
+            return false;
+        }
+
+        return $portal !== 'admin' || self::isApprovedAdminEmail($this->email);
     }
 
     /**

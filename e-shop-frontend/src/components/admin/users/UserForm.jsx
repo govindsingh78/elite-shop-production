@@ -48,6 +48,7 @@ const UserForm = ({ values, onChange, onSubmit, errors = {}, loading, editing = 
         {roles.map((role) => <option key={role} value={role}>{role}</option>)}
       </select>
       {errors.role && <div className="invalid-feedback">{errors.role}</div>}
+      <div className="form-text">Admin and superadmin roles are reserved for the store owner’s approved email addresses.</div>
     </div>
 
     <div className="mb-3">

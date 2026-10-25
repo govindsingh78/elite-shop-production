@@ -33,6 +33,7 @@ class ProductApprovalTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        config(['admin.emails' => ['admin@example.com']]); // admin roles need an approved address (config/admin.php)
         $this->admin = User::create(['name' => 'Admin', 'email' => 'admin@example.com', 'password' => 'secret123', 'role' => 'admin']);
         $this->vendor = User::create(['name' => 'Vendor One', 'email' => 'v1@example.com', 'password' => 'secret123', 'role' => 'seller']);
         $this->category = Category::create(['name' => 'Men', 'slug' => 'men', 'status' => 1]);

@@ -73,7 +73,7 @@ export default function UserFormScreen() {
           <TextField label="Name" value={values.name} onChangeText={(text) => change("name", text)} error={errors.name} />
           <TextField label="Email" keyboardType="email-address" autoCapitalize="none" value={values.email} onChangeText={(text) => change("email", text)} error={errors.email} />
           <SelectField label="Role" value={values.role} options={Object.entries(ROLES).map(([value, config]) => ({ value, label: config.label }))} onChange={(value) => change("role", value)} error={errors.role} />
-          <T variant="small">Customers shop, sellers manage their own products and orders, admins run the whole store.</T>
+          <T variant="small">Customers shop, sellers manage their own products and orders, admins run the whole store. Admin roles are reserved for the store owner’s approved email addresses.</T>
         </Card>
         <Card style={{ marginBottom: 16 }}>
           <T variant="h3" style={{ marginBottom: 12 }}>{editing ? "Reset password (optional)" : "Password"}</T>

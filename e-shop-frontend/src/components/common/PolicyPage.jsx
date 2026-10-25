@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import Layout from "./Layout";
 import { PolicyHighlights, PolicySections } from "./PolicyBits";
@@ -8,6 +8,15 @@ import { breadcrumbs, summarize, useSeo } from "./seo";
 /** A store policy (returns, terms…): hero, key points, then the numbered sections beside a contents list. */
 const PolicyPage = ({ slug, path, mark, crumb, eyebrow, heading, fallbackIntro }) => {
   const { policy, error } = usePolicy(slug);
+  // Links to a section (e.g. /privacy-policy#delete-account) arrive before the policy has loaded. Scroll once
+  // the web fonts are in, or the text reflows afterwards and the section ends up out of view.
+  useEffect(() => {
+    const id = decodeURIComponent(window.location.hash.slice(1));
+    if (!policy || !id) return;
+    const scroll = () => requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView());
+    if (document.fonts?.ready) document.fonts.ready.then(scroll);
+    else scroll();
+  }, [policy]);
   useSeo({
     title: policy?.title || crumb,
     description: summarize(policy?.intro || fallbackIntro),

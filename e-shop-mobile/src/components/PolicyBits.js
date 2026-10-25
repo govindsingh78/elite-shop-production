@@ -6,7 +6,7 @@ import { Button, Card, T } from "@/components/ui";
 import { POLICY_ROUTES, RETURN_POLICY, usePolicy } from "@/lib/policy";
 import { colors, fonts, radius } from "@/theme";
 
-const ICONS = { calendar: "calendar-outline", refund: "refresh-circle-outline", shield: "shield-checkmark-outline", support: "headset-outline", card: "card-outline" };
+const ICONS = { calendar: "calendar-outline", refund: "refresh-circle-outline", shield: "shield-checkmark-outline", support: "headset-outline", card: "card-outline", user: "person-circle-outline" };
 
 /** The policy's key points. */
 export function PolicyHighlights({ policy, style }) {
@@ -104,19 +104,23 @@ export function PolicyConsent({ checked, onChange, error }) {
       <Text style={[styles.consentText, error && { color: colors.danger }]}>
         I have read and agree to the{" "}
         <Text style={styles.consentLink} onPress={() => router.push("/terms")}>Terms &amp; Conditions</Text>
-        {" "}and the{" "}
+        {", the "}
         <Text style={styles.consentLink} onPress={() => router.push("/return-policy")}>Return &amp; Refund Policy</Text>
+        {" and the "}
+        <Text style={styles.consentLink} onPress={() => router.push("/privacy")}>Privacy Policy</Text>
       </Text>
     </Pressable>
   );
 }
 
-/** "By creating an account, you agree to our Terms & Conditions." */
+/** "By creating an account, you agree to our Terms & Conditions and Privacy Policy." */
 export function TermsNote({ action = "creating an account", style }) {
   return (
     <Text style={[styles.termsNote, style]}>
       By {action}, you agree to our{" "}
-      <Text style={styles.consentLink} onPress={() => router.push("/terms")}>Terms &amp; Conditions</Text>.
+      <Text style={styles.consentLink} onPress={() => router.push("/terms")}>Terms &amp; Conditions</Text>
+      {" and "}
+      <Text style={styles.consentLink} onPress={() => router.push("/privacy")}>Privacy Policy</Text>.
     </Text>
   );
 }

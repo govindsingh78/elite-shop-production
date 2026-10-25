@@ -161,7 +161,7 @@ class GoogleAuthController extends Controller
         }
 
         return match (true) {
-            $user->canUsePortal('admin') => "{$email} is a staff account. Please use the admin sign-in.",
+            $user->hasAdminRole() => "{$email} is a staff account. Please use the admin sign-in.",
             $user->canUsePortal('vendor') => "{$email} is a seller account. Please use the seller sign-in.",
             default => "{$email} is a shopper account. Please use the shopper sign-in.",
         };

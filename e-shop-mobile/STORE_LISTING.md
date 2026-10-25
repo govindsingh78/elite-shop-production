@@ -45,7 +45,8 @@ Questions? Write to support@elitezaar.com or call +91 70734 44156.
 - **Website:** https://elitezaar.com
 - **Email:** support@elitezaar.com
 - **Phone:** +91 70734 44156
-- **Privacy policy:** required before you can publish. Elitezaar doesn't have a privacy policy page yet.
+- **Privacy policy URL:** https://elitezaar.com/privacy-policy
+- **Account deletion URL** (App content → Data deletion): https://elitezaar.com/privacy-policy#delete-account
 
 ## Graphics
 

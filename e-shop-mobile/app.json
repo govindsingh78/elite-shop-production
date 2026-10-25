@@ -36,7 +36,8 @@
             { "scheme": "https", "host": "elitezaar.com", "pathPrefix": "/shop" },
             { "scheme": "https", "host": "elitezaar.com", "path": "/about" },
             { "scheme": "https", "host": "elitezaar.com", "path": "/terms-and-conditions" },
-            { "scheme": "https", "host": "elitezaar.com", "path": "/return-refund-policy" }
+            { "scheme": "https", "host": "elitezaar.com", "path": "/return-refund-policy" },
+            { "scheme": "https", "host": "elitezaar.com", "path": "/privacy-policy" }
           ],
           "category": ["BROWSABLE", "DEFAULT"]
         }

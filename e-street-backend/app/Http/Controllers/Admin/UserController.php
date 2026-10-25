@@ -34,12 +34,22 @@ class UserController extends Controller
         return response()->json($user, 200);
     }
 
+    /** An admin role can only go to an address approved in config/admin.php. */
+    private function adminRoleRule(Request $request): \Closure
+    {
+        return function (string $attribute, mixed $role, \Closure $fail) use ($request) {
+            if (in_array($role, User::ADMIN_ROLES, true) && !User::isApprovedAdminEmail($request->input('email'))) {
+                $fail('Only the store owner’s approved email addresses can have an admin role.');
+            }
+        };
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'role' => ['required', Rule::in(self::ROLES)],
+            'role' => ['required', Rule::in(self::ROLES), $this->adminRoleRule($request)],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
@@ -57,7 +67,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-            'role' => ['required', Rule::in(self::ROLES)],
+            'role' => ['required', Rule::in(self::ROLES), $this->adminRoleRule($request)],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 

@@ -164,7 +164,9 @@
       "title": "Your privacy",
       "blocks": [
         { "type": "p", "text": "We use your personal information, such as your name, contact details, addresses and orders, to run your account, process and deliver your orders, handle returns and support, and keep the Platform secure." },
-        { "type": "p", "text": "We share it only as needed to do these things: for example with the seller and delivery partner for your order, with Razorpay when you pay online, and with authorities where the law requires. We don't sell your personal information." }
+        { "type": "p", "text": "We share it only as needed to do these things: for example with the seller and delivery partner for your order, with Razorpay when you pay online, and with authorities where the law requires. We don't sell your personal information." },
+        { "type": "p", "text": "Our Privacy Policy explains in full what we collect, how long we keep it, and your rights over it, including how to delete your account." },
+        { "type": "link", "text": "Read the Privacy Policy", "to": "privacy" }
       ]
     },
     {

@@ -5,6 +5,7 @@ const WEB_TO_APP = [
   [/^\/shop\/([^/]+)\/?$/, (match, search) => `/shop?${new URLSearchParams({ ...Object.fromEntries(search), category: decodeURIComponent(match[1]) })}`],
   [/^\/terms-and-conditions\/?$/, () => "/terms"],
   [/^\/return-refund-policy\/?$/, () => "/return-policy"],
+  [/^\/privacy-policy\/?$/, () => "/privacy"],
 ];
 
 /**

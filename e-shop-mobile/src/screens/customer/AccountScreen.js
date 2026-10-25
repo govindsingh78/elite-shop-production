@@ -35,7 +35,8 @@ function GuestAccount() {
       <Card style={{ marginTop: 16 }}>
         <ListRow icon="information-circle-outline" title="About Elitezaar" subtitle="Our story and what we promise" onPress={() => router.push("/about")} />
         <ListRow icon="refresh-circle-outline" title="Return & refund policy" subtitle="Returns, refunds and cancellations" onPress={() => router.push("/return-policy")} />
-        <ListRow icon="document-text-outline" title="Terms & conditions" subtitle="The terms for shopping and selling" onPress={() => router.push("/terms")} last />
+        <ListRow icon="document-text-outline" title="Terms & conditions" subtitle="The terms for shopping and selling" onPress={() => router.push("/terms")} />
+        <ListRow icon="lock-closed-outline" title="Privacy policy" subtitle="How we use and protect your data" onPress={() => router.push("/privacy")} last />
       </Card>
       <SupportCard style={{ marginTop: 16 }} />
     </Screen>
@@ -134,6 +135,7 @@ function CustomerDashboard() {
         <ListRow icon="information-circle-outline" title="About Elitezaar" subtitle="Our story and what we promise" onPress={() => router.push("/about")} />
         <ListRow icon="refresh-circle-outline" title="Return & refund policy" subtitle="Returns, refunds and cancellations" onPress={() => router.push("/return-policy")} />
         <ListRow icon="document-text-outline" title="Terms & conditions" subtitle="The terms for shopping and selling" onPress={() => router.push("/terms")} />
+        <ListRow icon="lock-closed-outline" title="Privacy policy" subtitle="How we use and protect your data" onPress={() => router.push("/privacy")} />
         <ListRow icon="log-out-outline" title="Sign out" danger onPress={askSignOut} last />
       </Card>
       <SupportCard style={{ marginTop: 16 }} />

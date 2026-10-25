@@ -34,6 +34,7 @@ class CategoryTreeTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        config(['admin.emails' => ['admin@example.com']]); // admin roles need an approved address (config/admin.php)
         $this->admin = User::create(['name' => 'Admin', 'email' => 'admin@example.com', 'password' => 'secret123', 'role' => 'admin']);
         $this->kids = Category::create(['name' => 'Kids', 'status' => 1]);
         $this->toys = Category::create(['name' => 'Toys', 'status' => 1, 'parent_id' => $this->kids->id]);

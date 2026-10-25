@@ -1,0 +1,218 @@
+{
+  "slug": "privacy",
+  "title": "Privacy Policy",
+  "version": "2026-10-25",
+  "updated": "25 October 2026",
+  "intro": "Your privacy matters to us. This policy explains what personal information Elitezaar collects when you use our website and app, how we use and protect it, who we share it with, and the rights you have over it.",
+  "highlights": [
+    { "icon": "shield", "title": "We never sell your data", "text": "Your details are used to serve you, never sold or rented." },
+    { "icon": "card", "title": "Payments stay with Razorpay", "text": "Card, UPI and bank details never reach our servers." },
+    { "icon": "user", "title": "You're in control", "text": "See, correct or delete your information at any time." },
+    { "icon": "support", "title": "Questions answered", "text": "Privacy requests acknowledged within 48 hours." }
+  ],
+  "sections": [
+    {
+      "id": "about",
+      "title": "Who we are and what this policy covers",
+      "blocks": [
+        { "type": "p", "text": "Elitezaar (\"Elitezaar\", \"we\", \"us\" or \"our\") runs the website elitezaar.com and the Elitezaar mobile app (together, the \"Platform\"). We decide how and why your personal information is used on the Platform, which makes us its \"Data Fiduciary\" under Indian law." },
+        { "type": "p", "text": "This policy applies to everyone who uses the Platform: shoppers, guests who check out without an account, and sellers. It is published in line with the Digital Personal Data Protection Act, 2023 and the Digital Personal Data Protection Rules, 2025; the Information Technology Act, 2000 and the Information Technology (Reasonable Security Practices and Procedures and Sensitive Personal Data or Information) Rules, 2011; and the Consumer Protection (E-Commerce) Rules, 2020." },
+        { "type": "p", "text": "This policy is part of our Terms & Conditions. By using the Platform, you confirm that you've read it." },
+        { "type": "link", "text": "Read the Terms & Conditions", "to": "terms" }
+      ]
+    },
+    {
+      "id": "information-we-collect",
+      "title": "Information we collect",
+      "blocks": [
+        { "type": "p", "text": "We collect only what we need to run your account and deliver your orders:" },
+        { "type": "list", "items": [
+          "Account details: your name, email address, phone number and password. Your password is stored only as a secure one-way hash, so nobody at Elitezaar can read it.",
+          "Google sign-in: if you continue with Google, Google shares your name, email address and Google account ID with us. We don't receive your Google password or access to anything else in your Google account.",
+          "Delivery addresses: the name, phone number and address you save or enter at checkout.",
+          "Orders: what you buy, prices, the delivery method, your contact details, the order's status and tracking, and when you accepted our Terms and Return & Refund Policy. This includes orders placed as a guest.",
+          "Payments: the payment method you choose and, for online payments, the order and payment reference numbers Razorpay gives us. We never receive or store your card number, UPI PIN or net banking password.",
+          "Reviews and wishlist: the ratings and reviews you write, and the products you save.",
+          "Seller information: if you sell on Elitezaar, your store name, contact details, the products and photos you upload, and how you handle orders.",
+          "Messages: what you tell us when you call, email or write to customer care, so we can help you."
+        ] },
+        { "type": "note", "text": "We don't ask for sensitive information such as your health, religion, caste, political views or biometric data, and we ask you not to include it in reviews or messages." }
+      ]
+    },
+    {
+      "id": "collected-automatically",
+      "title": "Information collected automatically",
+      "blocks": [
+        { "type": "list", "items": [
+          "Technical information: when you use the Platform, our servers record basic technical details such as your IP address, browser or device type, the pages you request and the time. We use these to keep the Platform secure and working, and to investigate misuse.",
+          "Device storage: the website and app store your bag, wishlist and sign-in session on your own device, so they're still there when you come back.",
+          "No advertising trackers: we don't use advertising cookies, analytics trackers or tracking pixels, and we don't build advertising profiles about you."
+        ] }
+      ]
+    },
+    {
+      "id": "how-we-use",
+      "title": "How we use your information",
+      "blocks": [
+        { "type": "list", "items": [
+          "To create and manage your account, and sign you in securely.",
+          "To process, pack, deliver and track your orders, and to handle cancellations, returns and refunds.",
+          "To take payments through Razorpay, and to prevent fraud and misuse of the Platform, orders and offers.",
+          "To send messages about your account and orders, such as order confirmations, delivery updates and password resets.",
+          "To publish your reviews, shown with your first name and last initial, and to show which reviews come from verified buyers.",
+          "To review seller listings before they go live, and to let sellers fulfil the orders they receive.",
+          "To answer your questions and complaints.",
+          "To keep records and meet our legal, tax and regulatory obligations."
+        ] },
+        { "type": "p", "text": "We use your information only for these purposes. If we ever want to use it for something new, we'll tell you first and, where the law requires, ask for your consent." }
+      ]
+    },
+    {
+      "id": "legal-basis",
+      "title": "Why we're allowed to use it",
+      "blocks": [
+        { "type": "list", "items": [
+          "Your consent: when you create an account, place an order or write a review, you agree to us using your details for that purpose, as described in this policy.",
+          "Information you choose to give us: for example, a delivery address you enter so we can deliver an order.",
+          "Legal obligations: for example, keeping invoices and order records under tax laws, or responding to lawful requests from authorities."
+        ] },
+        { "type": "p", "text": "You can withdraw your consent at any time by contacting us (see \"Your rights\" below). Withdrawing consent doesn't affect anything we did before, and we may still need to keep some records where the law requires. Without some information, such as a delivery address, we won't be able to fulfil an order." }
+      ]
+    },
+    {
+      "id": "sharing",
+      "title": "Who we share it with",
+      "blocks": [
+        { "type": "p", "text": "We never sell or rent your personal information. We share it only as needed to serve you:" },
+        { "type": "list", "items": [
+          "Sellers: the seller of the items in your order sees your name, contact details and delivery address, so they can pack and ship it. Sellers may use these details only to fulfil your order.",
+          "Delivery partners: the courier delivering your order receives your name, phone number and address.",
+          "Razorpay: our payment partner processes online payments under its own privacy policy and security standards.",
+          "Google: if you use Google sign-in. Our website also loads its fonts from Google, which receives your IP address when you visit.",
+          "Service providers: Amazon Web Services (AWS), which hosts our servers and database, and the email service that sends our account and order emails. They may use your information only to provide their service to us.",
+          "Authorities: when the law requires it, for example to comply with a court order or a lawful request from a government agency, or to protect the rights and safety of our users and Elitezaar.",
+          "A new owner: if Elitezaar is ever merged with or sold to another business, your information may pass to it, and this policy will continue to protect it."
+        ] }
+      ]
+    },
+    {
+      "id": "cookies",
+      "title": "Cookies and device storage",
+      "blocks": [
+        { "type": "p", "text": "Our website uses your browser's local storage, rather than tracking cookies, to keep your bag, wishlist and sign-in session. This information stays on your device. You can clear it from your browser settings at any time, but you'll be signed out and your bag will be emptied." },
+        { "type": "p", "text": "When you pay online, Razorpay's secure checkout may set its own cookies to process and protect your payment. These are covered by Razorpay's privacy policy." }
+      ]
+    },
+    {
+      "id": "mobile-app",
+      "title": "Our mobile app",
+      "blocks": [
+        { "type": "list", "items": [
+          "Photos: if you're a seller, the app asks for access to your photos so you can add pictures to your product listings. It uses only the photos you pick.",
+          "Secure storage: your sign-in session is kept in your phone's secure storage, and your bag and wishlist are stored on your device.",
+          "The app doesn't use your location, contacts, camera or microphone, and it doesn't contain advertising or analytics trackers."
+        ] }
+      ]
+    },
+    {
+      "id": "storage",
+      "title": "Where your information is stored",
+      "blocks": [
+        { "type": "p", "text": "Your information is stored on secure cloud servers run by Amazon Web Services (AWS). It may be stored or processed outside India, but only where Indian law allows, and always with the protections described in this policy." }
+      ]
+    },
+    {
+      "id": "security",
+      "title": "How we protect it",
+      "blocks": [
+        { "type": "list", "items": [
+          "All information travels between your device and our servers over encrypted connections (HTTPS).",
+          "Passwords are stored only as secure hashes, and payment details are handled entirely by Razorpay.",
+          "Access is limited by role: sellers see only their own orders, and only authorised staff can see account and order details.",
+          "We review our systems and practices regularly, in line with reasonable security practices under Indian law."
+        ] },
+        { "type": "p", "text": "No system is completely secure, but if a breach ever affects your personal information, we'll tell you and the authorities as the law requires, and explain what we're doing about it." },
+        { "type": "note", "text": "We'll never ask for your password, OTP, UPI PIN or card details by phone, email or message. If someone does, it isn't us. Please report it to our customer care team." }
+      ]
+    },
+    {
+      "id": "retention",
+      "title": "How long we keep it",
+      "blocks": [
+        { "type": "list", "items": [
+          "Account information: for as long as your account is open.",
+          "Order, payment and invoice records: for as long as tax and accounting laws require, which can be up to 8 years after the order, even if you close your account.",
+          "Technical logs: for a limited period, typically up to one year, to keep the Platform secure.",
+          "Reviews: until you delete them or close your account."
+        ] },
+        { "type": "p", "text": "When we no longer need your information, we delete it or anonymise it so it can no longer identify you." }
+      ]
+    },
+    {
+      "id": "your-rights",
+      "title": "Your rights",
+      "blocks": [
+        { "type": "p", "text": "Under the Digital Personal Data Protection Act, 2023, you have the right to:" },
+        { "type": "list", "items": [
+          "Access: get a summary of the personal information we hold about you and how we use it, and know who we've shared it with.",
+          "Correction: correct, complete or update inaccurate or incomplete information. You can update your profile and addresses yourself from your account.",
+          "Erasure: ask us to delete your personal information, except what the law requires us to keep.",
+          "Withdraw consent: at any time, for the future.",
+          "Grievance redressal: have your privacy complaints heard and resolved by us.",
+          "Nominate: name someone to exercise these rights for you in the event of your death or incapacity."
+        ] },
+        { "type": "p", "text": "To use any of these rights, contact us from the email address or phone number on your account, so we can confirm it's you. We'll acknowledge your request within 48 hours and respond within one month." }
+      ]
+    },
+    {
+      "id": "delete-account",
+      "title": "Deleting your account",
+      "blocks": [
+        { "type": "steps", "items": [
+          "Email support@elitezaar.com from the email address on your account, with the subject \"Delete my account\", or call our helpline.",
+          "We confirm your request within 48 hours, and may ask you to verify that the account is yours.",
+          "We delete your account, saved addresses, wishlist and reviews within 30 days, and confirm by email when it's done."
+        ] },
+        { "type": "p", "text": "Order and invoice records that tax and accounting laws require us to keep are retained only for that purpose, and deleted when the required period ends. If you have an order in progress, we'll complete it or cancel it before closing your account." }
+      ]
+    },
+    {
+      "id": "children",
+      "title": "Children's privacy",
+      "blocks": [
+        { "type": "p", "text": "The Platform is meant for adults. You must be at least 18 years old to create an account or place an order, unless a parent or guardian does so for you. We don't knowingly collect personal information from children without a parent's or guardian's verifiable consent, and we don't track children or show them targeted advertising. If you believe a child has given us personal information, contact us and we'll delete it." }
+      ]
+    },
+    {
+      "id": "messages",
+      "title": "Emails and messages",
+      "blocks": [
+        { "type": "p", "text": "We send messages about your account and orders, such as confirmations, delivery updates and password resets. These are part of the service, so you can't opt out of them while you have an account or an open order." },
+        { "type": "p", "text": "We don't send promotional messages at the moment. If we start, we'll ask for your permission first, and every promotional message will let you opt out." }
+      ]
+    },
+    {
+      "id": "other-services",
+      "title": "Other websites and services",
+      "blocks": [
+        { "type": "p", "text": "The Platform may link to services run by others, such as Razorpay's checkout or Google sign-in. Their own privacy policies apply to the information they collect, and we encourage you to read them." }
+      ]
+    },
+    {
+      "id": "changes",
+      "title": "Changes to this policy",
+      "blocks": [
+        { "type": "p", "text": "We may update this policy when our services or the law change. The new version applies from the \"last updated\" date at the top of this page. If a change significantly affects how we use your personal information, we'll tell you on the Platform or by email before it takes effect." }
+      ]
+    },
+    {
+      "id": "contact",
+      "title": "Grievance Officer and contact",
+      "contact": true,
+      "blocks": [
+        { "type": "p", "text": "For any question, request or complaint about your personal information, contact our Grievance Officer through our customer care team using the details below. We acknowledge every complaint within 48 hours and aim to resolve it within one month." },
+        { "type": "p", "text": "If you're not satisfied with our response, you can complain to the Data Protection Board of India under the Digital Personal Data Protection Act, 2023." }
+      ]
+    }
+  ]
+}

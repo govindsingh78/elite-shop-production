@@ -180,6 +180,7 @@ class GoogleSignInTest extends TestCase
         $this->assertSame('There’s no admin account for stranger@gmail.com.', $returned['error']);
         $this->assertSame(0, User::count());
 
+        config(['admin.emails' => ['meera@elitezaar.com']]); // admin roles need an approved address (config/admin.php)
         $admin = User::create(['name' => 'Meera', 'email' => 'meera@elitezaar.com', 'password' => 'secret123', 'role' => 'superadmin']);
         $this->googleReturns(['email' => 'meera@elitezaar.com', 'sub' => '1100000000000000002']);
         [$returned, $verifier] = $this->signInThroughGoogle('admin');
