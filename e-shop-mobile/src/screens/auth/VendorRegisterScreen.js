@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Pressable } from "react-native";
 import { router } from "expo-router";
 import AuthHero from "@/components/AuthHero";
+import { TermsNote } from "@/components/PolicyBits";
 import { Button, Notice, Row, Screen, T, TextField } from "@/components/ui";
 import { api } from "@/lib/api";
 import { colors } from "@/theme";
@@ -58,6 +59,7 @@ export default function VendorRegisterScreen() {
       <TextField label="Password" secure hint="At least 8 characters" value={values.password} onChangeText={(text) => change("password", text)} error={errors.password} icon="lock-closed-outline" />
       <TextField label="Confirm password" secure value={values.password_confirmation} onChangeText={(text) => change("password_confirmation", text)} error={errors.password_confirmation} icon="lock-closed-outline" />
       <Button title="Create seller account" icon="storefront-outline" loading={loading} onPress={submit} />
+      <TermsNote />
       <Row gap={6} style={{ justifyContent: "center", marginTop: 18 }}>
         <T variant="body">Already selling?</T>
         <Pressable onPress={() => router.replace({ pathname: "/login", params: { portal: "vendor" } })}><T variant="strong" color={colors.emerald}>Sign in</T></Pressable>

@@ -70,6 +70,10 @@ const Footer = () => {
                                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7L4 8.6" /><path d="M4 4v4.6h4.6" /></svg>
                                 Return &amp; Refund Policy
                             </Link>
+                            <Link className="store-footer-policy" to="/terms-and-conditions">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l4 4v14H7z" /><path d="M14 3v4h4M10 12h5M10 16h5" /></svg>
+                                Terms &amp; Conditions
+                            </Link>
                         </div>
                     </div>
                     <ul className="store-footer-perks">
@@ -87,6 +91,7 @@ const Footer = () => {
                             <nav aria-label="Footer">
                                 <Link to="/about">About us</Link>
                                 <Link to="/return-refund-policy">Returns &amp; refunds</Link>
+                                <Link to="/terms-and-conditions">Terms</Link>
                                 <Link to="/shop">Shop</Link>
                                 <Link to="/customer/orders">Track an order</Link>
                                 <a href={`tel:${SUPPORT_PHONES[0].tel}`}>Call support</a>

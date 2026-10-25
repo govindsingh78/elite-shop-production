@@ -1600,6 +1600,8 @@ a:hover > .brand-logo .brand-mark { transform: rotate(-6deg) scale(1.04); }
     li { position: relative; counter-increment: step; border-radius: 14px; padding: 12px 14px 12px 52px; background: #f6faf8; }
     li::before { position: absolute; top: 11px; left: 12px; display: grid; width: 28px; height: 28px; place-items: center; border-radius: 50%; color: #fff; background: #18372e; font-size: .8rem; font-weight: 700; content: counter(step); }
 }
+.pol-link a { display: inline-flex; gap: 6px; border-radius: 30px; padding: 8px 16px; color: #18372e; background: #eef6f3; font-weight: 700; text-decoration: none; }
+.pol-link a:hover { color: #fff; background: #18372e; }
 .pol-note { border-left: 3px solid #d9a441; border-radius: 0 12px 12px 0; padding: 10px 14px; background: #fdf7ec; color: #6e5a3a !important; font-size: .94rem !important; }
 .pol-contact {
     display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px;
@@ -1639,7 +1641,7 @@ a:hover > .brand-logo .brand-mark { transform: rotate(-6deg) scale(1.04); }
 .co-policy-check {
     display: flex; align-items: flex-start; gap: 10px; margin-top: 12px; border-top: 1px dashed #dbe5df; padding-top: 12px; color: #3d5248; font-size: .88rem; cursor: pointer;
     input { width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px; accent-color: #18372e; cursor: pointer; }
-    button { border: 0; padding: 0; color: #2f9aa6; background: none; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+    button, a { border: 0; padding: 0; color: #2f9aa6; background: none; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
 }
 .co-policy-error { margin: 8px 0 0; color: #b4483a; font-size: .82rem; font-weight: 600; }
 
@@ -1889,6 +1891,8 @@ a:hover > .brand-logo .brand-mark { transform: rotate(-6deg) scale(1.04); }
 .vendor-strength--1 { color: #b04343; }
 .vendor-strength--4 { color: #2f8a5a; }
 .vendor-terms { margin: 16px 0 18px; color: #8b968f; font-size: .82rem; }
+.vendor-terms a, .auth-terms a { color: #357d70; font-weight: 700; text-underline-offset: 2px; }
+.auth-terms { margin: 12px 0 0; color: #8b968f; font-size: .82rem; text-align: center; }
 .customer-auth-body {
     padding: 40px 44px;
     h1 { margin: 6px 0; color: #112a24; font-size: clamp(1.7rem, 2.6vw, 2.2rem); font-weight: 700; letter-spacing: -.035em; }

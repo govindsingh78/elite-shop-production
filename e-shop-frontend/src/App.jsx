@@ -5,6 +5,7 @@ import Home from './components/common/Home';
 import Shop from './components/common/Shop';
 import About from './components/common/About';
 import ReturnPolicy from './components/common/ReturnPolicy';
+import TermsConditions from './components/common/TermsConditions';
 import Wishlist from './components/common/Wishlist';
 import ManageReviews from './components/admin/reviews/ManageReviews';
 import { WishlistProvider } from './components/context/WishlistProvider';
@@ -61,6 +62,7 @@ function App() {
           <Route path="/shop" element={<Shop />} />
           <Route path="/about" element={<About />} />
           <Route path="/return-refund-policy" element={<ReturnPolicy />} />
+          <Route path="/terms-and-conditions" element={<TermsConditions />} />
           <Route path="/shop/:categorySlug" element={<Shop />} />
           <Route path="/product" element={<Product />} />
           <Route path="/product/:id" element={<Product />} />

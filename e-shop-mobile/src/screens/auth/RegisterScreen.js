@@ -3,6 +3,7 @@ import { Pressable } from "react-native";
 import { router } from "expo-router";
 import AddressFields, { EMPTY_ADDRESS } from "@/components/AddressFields";
 import AuthHero from "@/components/AuthHero";
+import { TermsNote } from "@/components/PolicyBits";
 import { Button, Card, Notice, Row, Screen, T, TextField } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
@@ -68,6 +69,7 @@ export default function RegisterScreen() {
       </Card>
 
       <Button title="Create account" icon="person-add-outline" loading={loading} onPress={submit} />
+      <TermsNote />
       <Row gap={6} style={{ justifyContent: "center", marginTop: 18 }}>
         <T variant="body">Already have an account?</T>
         <Pressable onPress={() => router.replace("/login")}><T variant="strong" color={colors.emerald}>Sign in</T></Pressable>

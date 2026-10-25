@@ -3,10 +3,10 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Button, Card, T } from "@/components/ui";
-import { RETURN_POLICY, usePolicy } from "@/lib/policy";
+import { POLICY_ROUTES, RETURN_POLICY, usePolicy } from "@/lib/policy";
 import { colors, fonts, radius } from "@/theme";
 
-const ICONS = { calendar: "calendar-outline", refund: "refresh-circle-outline", shield: "shield-checkmark-outline", support: "headset-outline" };
+const ICONS = { calendar: "calendar-outline", refund: "refresh-circle-outline", shield: "shield-checkmark-outline", support: "headset-outline", card: "card-outline" };
 
 /** The policy's key points. */
 export function PolicyHighlights({ policy, style }) {
@@ -62,6 +62,14 @@ export function PolicySections({ policy, after }) {
           if (block.type === "note") {
             return <View key={blockIndex} style={styles.note}><T variant="body" color="#6e5a3a">{block.text}</T></View>;
           }
+          if (block.type === "link") {
+            return (
+              <Pressable key={blockIndex} onPress={() => router.push(POLICY_ROUTES[block.to] || "/")} accessibilityRole="link" style={({ pressed }) => [styles.link, pressed && { opacity: 0.7 }]}>
+                <Text style={styles.linkText}>{block.text}</Text>
+                <Ionicons name="arrow-forward" size={16} color={colors.emerald} />
+              </Pressable>
+            );
+          }
           return <T key={blockIndex} variant="body" style={styles.paragraph}>{block.text}</T>;
         })}
       </Card>
@@ -95,9 +103,21 @@ export function PolicyConsent({ checked, onChange, error }) {
       <Ionicons name={checked ? "checkbox" : "square-outline"} size={22} color={error ? colors.danger : colors.emerald} />
       <Text style={[styles.consentText, error && { color: colors.danger }]}>
         I have read and agree to the{" "}
+        <Text style={styles.consentLink} onPress={() => router.push("/terms")}>Terms &amp; Conditions</Text>
+        {" "}and the{" "}
         <Text style={styles.consentLink} onPress={() => router.push("/return-policy")}>Return &amp; Refund Policy</Text>
       </Text>
     </Pressable>
+  );
+}
+
+/** "By creating an account, you agree to our Terms & Conditions." */
+export function TermsNote({ action = "creating an account", style }) {
+  return (
+    <Text style={[styles.termsNote, style]}>
+      By {action}, you agree to our{" "}
+      <Text style={styles.consentLink} onPress={() => router.push("/terms")}>Terms &amp; Conditions</Text>.
+    </Text>
   );
 }
 
@@ -120,4 +140,7 @@ const styles = StyleSheet.create({
   consent: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 10 },
   consentText: { flex: 1, color: colors.text, fontFamily: fonts.bodySemi, fontSize: 15 },
   consentLink: { color: colors.tealDark, fontFamily: fonts.bodyBold, textDecorationLine: "underline" },
+  link: { flexDirection: "row", alignItems: "center", gap: 8, alignSelf: "flex-start", marginTop: 4, borderRadius: radius.pill, paddingHorizontal: 16, paddingVertical: 10, backgroundColor: colors.mint },
+  linkText: { color: colors.emerald, fontFamily: fonts.bodyBold, fontSize: 15 },
+  termsNote: { marginTop: 12, color: colors.muted, fontFamily: fonts.body, fontSize: 13.5, lineHeight: 19, textAlign: "center" },
 });

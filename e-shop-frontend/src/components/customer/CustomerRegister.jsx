@@ -5,6 +5,7 @@ import { apiUrl } from "../common/http";
 import { AdminAuthContext } from "../context/AdminAuth";
 import CustomerAuthShell from "./CustomerAuthShell";
 import AddressFields from "./AddressFields";
+import { TermsNote } from "../common/PolicyBits";
 
 const initialForm = {
   name: "", email: "", phone: "", password: "", password_confirmation: "",
@@ -85,6 +86,7 @@ const CustomerRegister = () => {
         <div className="customer-form-step"><span>2</span>Delivery address <small className="customer-required-pill">Required</small></div>
         <AddressFields values={form} errors={errors} onChange={change} idPrefix="register" showRecipient={false} />
         <button type="submit" className="btn btn-primary btn-lg w-100 customer-submit mt-4" disabled={loading}>{loading ? "Creating your account…" : "Create account"}</button>
+        <TermsNote />
       </form>
       <p className="customer-auth-footnote">Already have an account? <Link to="/customer/login" state={location.state} className="customer-link">Sign in</Link></p>
     </CustomerAuthShell>

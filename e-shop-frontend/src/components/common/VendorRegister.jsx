@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { apiUrl } from "./http";
+import { TERMS_PATH } from "./policy";
 import CustomerAuthShell from "../customer/CustomerAuthShell";
 
 const VendorRegister = () => {
@@ -83,7 +84,7 @@ const VendorRegister = () => {
           </div>
           {input("password_confirmation", "Confirm password", { type: showPassword ? "text" : "password", autoComplete: "new-password", minLength: 8, wrapperClass: "col-md-6" })}
         </div>
-        <p className="vendor-terms">By creating an account you agree to list genuine products and ship orders on time.</p>
+        <p className="vendor-terms">By creating an account, you agree to our <a href={TERMS_PATH} target="_blank" rel="noreferrer">Terms &amp; Conditions</a>, including listing genuine products and shipping orders on time.</p>
         <button type="submit" className="btn btn-primary btn-lg w-100 customer-submit" disabled={loading}>{loading ? "Creating your seller account…" : "Create seller account"}</button>
       </form>
       <p className="customer-auth-footnote">Already selling with us? <Link to="/vendor/login" className="customer-link">Sign in to the seller hub</Link></p>

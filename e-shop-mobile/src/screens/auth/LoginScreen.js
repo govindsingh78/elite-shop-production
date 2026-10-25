@@ -106,6 +106,7 @@ export default function LoginScreen() {
         loading={googleLoading}
         disabled={loading}
         onPress={continueWithGoogle}
+        termsNote={portal !== "admin"}
       />
 
       <View style={{ marginTop: 22, alignItems: "center", gap: 10 }}>

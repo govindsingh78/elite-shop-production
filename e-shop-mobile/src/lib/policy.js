@@ -3,6 +3,10 @@ import { api } from "@/lib/api";
 
 /** Store policies come from the API (/api/storefront/policies/...), so the app and website always show the same text. */
 export const RETURN_POLICY = "return-refund";
+export const TERMS = "terms";
+
+/** Each policy's screen, for links from one policy to another. */
+export const POLICY_ROUTES = { [RETURN_POLICY]: "/return-policy", [TERMS]: "/terms" };
 
 const cache = new Map();
 

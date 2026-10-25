@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import Svg, { Path } from "react-native-svg";
+import { TermsNote } from "@/components/PolicyBits";
 import { fetchAuthProviders } from "@/lib/googleSignIn";
 import { colors, fonts, radius } from "@/theme";
 
@@ -16,8 +17,11 @@ function GoogleMark({ size = 20 }) {
   );
 }
 
-/** "Continue with Google" under an "or" divider. Renders nothing until the API says Google sign-in is set up. */
-export default function GoogleSignInButton({ title = "Continue with Google", onPress, loading, disabled }) {
+/**
+ * "Continue with Google" under an "or" divider. Renders nothing until the API says Google sign-in is set up.
+ * `termsNote` adds "By continuing, you agree to our Terms" where Google sign-in can create an account.
+ */
+export default function GoogleSignInButton({ title = "Continue with Google", onPress, loading, disabled, termsNote }) {
   const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
@@ -47,6 +51,7 @@ export default function GoogleSignInButton({ title = "Continue with Google", onP
         {loading ? <ActivityIndicator color={colors.body} size="small" /> : <GoogleMark />}
         <Text style={styles.text}>{title}</Text>
       </Pressable>
+      {termsNote ? <TermsNote action="continuing" /> : null}
     </View>
   );
 }

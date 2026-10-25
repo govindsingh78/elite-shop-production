@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { fetchAuthProviders, startGoogleSignIn } from "./googleSignIn";
+import { TermsNote } from "./PolicyBits";
 
 /** Google's four-colour "G", as its branding guidelines require on sign-in buttons. */
 const GoogleMark = () => (
@@ -50,6 +51,8 @@ const GoogleSignInButton = ({ portal, from, label = "Continue with Google", onEr
         <GoogleMark />
         <span>{starting ? "Opening Google…" : label}</span>
       </button>
+      {/* Google sign-in can create a shopper or seller account; admins are never created this way. */}
+      {portal !== "admin" && <TermsNote action="continuing" />}
     </>
   );
 };

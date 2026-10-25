@@ -34,7 +34,8 @@ function GuestAccount() {
       </Card>
       <Card style={{ marginTop: 16 }}>
         <ListRow icon="information-circle-outline" title="About Elitezaar" subtitle="Our story and what we promise" onPress={() => router.push("/about")} />
-        <ListRow icon="refresh-circle-outline" title="Return & refund policy" subtitle="Returns, refunds and cancellations" onPress={() => router.push("/return-policy")} last />
+        <ListRow icon="refresh-circle-outline" title="Return & refund policy" subtitle="Returns, refunds and cancellations" onPress={() => router.push("/return-policy")} />
+        <ListRow icon="document-text-outline" title="Terms & conditions" subtitle="The terms for shopping and selling" onPress={() => router.push("/terms")} last />
       </Card>
       <SupportCard style={{ marginTop: 16 }} />
     </Screen>
@@ -132,6 +133,7 @@ function CustomerDashboard() {
         <ListRow icon="key-outline" title="Change password" onPress={() => router.push("/change-password")} />
         <ListRow icon="information-circle-outline" title="About Elitezaar" subtitle="Our story and what we promise" onPress={() => router.push("/about")} />
         <ListRow icon="refresh-circle-outline" title="Return & refund policy" subtitle="Returns, refunds and cancellations" onPress={() => router.push("/return-policy")} />
+        <ListRow icon="document-text-outline" title="Terms & conditions" subtitle="The terms for shopping and selling" onPress={() => router.push("/terms")} />
         <ListRow icon="log-out-outline" title="Sign out" danger onPress={askSignOut} last />
       </Card>
       <SupportCard style={{ marginTop: 16 }} />
