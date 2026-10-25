@@ -1,10 +1,11 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Linking, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import SupportCard from "@/components/SupportCard";
 import { Card, ListRow, Row, Screen, T } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
-import { BRAND } from "@/lib/config";
+import { BRAND, SITE_URL } from "@/lib/config";
 import { confirmAction } from "@/lib/confirm";
 import { initials } from "@/lib/format";
 import { colors, fonts } from "@/theme";
@@ -40,11 +41,22 @@ export default function MoreScreen({ portal }) {
         {portal === "admin" ? (
           <>
             <ListRow icon="people-outline" title="Users" subtitle="Customers, sellers and staff" onPress={() => router.push("/admin/users")} />
+            <ListRow icon="pie-chart-outline" title="Commissions" subtitle="Seller earnings and payouts" onPress={() => router.push("/admin/commissions")} />
             <ListRow icon="albums-outline" title="Catalog" subtitle="Categories, brands and shipping" onPress={() => router.push("/admin/catalog")} />
           </>
         ) : (
-          <ListRow icon="add-circle-outline" title="Add a product" subtitle="List something new" onPress={() => router.push("/vendor/product-form")} />
+          <>
+            <ListRow icon="wallet-outline" title="Earnings" subtitle="What you’ve earned and been paid" onPress={() => router.push("/vendor/earnings")} />
+            <ListRow icon="add-circle-outline" title="Add a product" subtitle="List something new" onPress={() => router.push("/vendor/product-form")} />
+          </>
         )}
+        <ListRow
+          icon="cloud-upload-outline"
+          title="Bulk upload"
+          subtitle="Add many products from a spreadsheet, on the website"
+          right={<Ionicons name="open-outline" size={18} color={colors.muted} />}
+          onPress={() => Linking.openURL(`${SITE_URL}${portal === "admin" ? "/admin/bulk-products" : "/vendor/products/bulk"}`)}
+        />
         <ListRow icon="storefront-outline" title="View the store" subtitle="See Elitezaar as shoppers do" onPress={() => router.push("/")} />
         <ListRow icon="information-circle-outline" title="About Elitezaar" subtitle="Our story and what we promise" onPress={() => router.push("/about")} />
         <ListRow icon="refresh-circle-outline" title="Return & refund policy" subtitle="Returns, refunds and cancellations" onPress={() => router.push("/return-policy")} />

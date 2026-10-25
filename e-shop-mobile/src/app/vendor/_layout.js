@@ -8,6 +8,7 @@ export default function VendorLayout() {
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="product-form" options={{ title: "Product" }} />
       <Stack.Screen name="order/[id]" options={{ title: "Order" }} />
+      <Stack.Screen name="earnings" options={{ title: "Earnings" }} />
     </Stack>
   );
 }

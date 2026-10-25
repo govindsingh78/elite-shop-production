@@ -30,13 +30,31 @@ class ProductController extends AdminProductController
         $validated['is_featured'] = $product?->is_featured ?? 'no';
 
         // Seller listings stay off the storefront until an admin approves them. Saving a rejected listing resubmits it.
-        if (!$product || $product->approval_status !== Product::APPROVED || $this->changesListing($request, $validated, $product)) {
+        if (self::needsReview($validated, $product, !empty($request->input('gallery')))) {
             $validated['approval_status'] = Product::PENDING;
             $validated['review_note'] = null;
             $validated['reviewed_at'] = null;
         }
 
         return $validated;
+    }
+
+    /**
+     * Whether a seller's save sends the listing to review: new listings, listings not yet approved, and
+     * changes to what shoppers see (REVIEWED_FIELDS or new photos). Also used by bulk upload.
+     */
+    public static function needsReview(array $attributes, ?Product $product, bool $addsImages): bool
+    {
+        if (!$product || $product->approval_status !== Product::APPROVED || $addsImages) {
+            return true;
+        }
+        foreach (self::REVIEWED_FIELDS as $field) {
+            if (array_key_exists($field, $attributes) && (string) ($attributes[$field] ?? '') !== (string) ($product->{$field} ?? '')) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected function savedMessage(Product $product, bool $created): string
@@ -48,21 +66,6 @@ class ProductController extends AdminProductController
         return $created
             ? 'Product submitted for review. It goes live once our team approves it.'
             : 'Changes saved and sent for review. The listing is hidden until it is approved.';
-    }
-
-    private function changesListing(Request $request, array $validated, Product $product): bool
-    {
-        if (!empty($request->input('gallery'))) {
-            return true;
-        }
-
-        foreach (self::REVIEWED_FIELDS as $field) {
-            if (array_key_exists($field, $validated) && (string) ($validated[$field] ?? '') !== (string) ($product->{$field} ?? '')) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     protected function rules(?Product $product = null): array

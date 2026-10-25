@@ -71,6 +71,17 @@ const VendorDashboard = () => {
               </Link>
             )}
 
+            {stats && (stats.balance_due !== 0 || stats.pending_earnings > 0) && (
+              <Link to="/vendor/earnings" className="review-callout is-earnings">
+                <span className="review-callout-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="6" width="18" height="13" rx="2" /><path d="M3 10h18M16 15h2" /></svg></span>
+                <span className="review-callout-text">
+                  <strong>{formatPrice(stats.balance_due)} due to you</strong>
+                  <small>{stats.pending_earnings > 0 ? `${formatPrice(stats.pending_earnings)} more once your current orders are delivered. ` : ""}Elitezaar’s commission is {Number(stats.commission_rate).toLocaleString("en-IN", { maximumFractionDigits: 2 })}%.</small>
+                </span>
+                <span className="review-callout-cta">Earnings <span aria-hidden="true">→</span></span>
+              </Link>
+            )}
+
             <div className="row g-3 mb-4">
               {statTiles.map((tile, index) => (
                 <div className="col-6 col-xl-3" key={tile.key}>

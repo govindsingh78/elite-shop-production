@@ -4,11 +4,13 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import BrandLogo from "@/components/BrandLogo";
+import { DiwaliGreeting, Toran } from "@/components/Diwali";
 import ProductCard from "@/components/ProductCard";
 import { Button, Chip, IconButton, Notice, Screen, SectionHeader, T } from "@/components/ui";
 import { useCart } from "@/context/CartContext";
 import { api } from "@/lib/api";
 import { productImageUrl } from "@/lib/config";
+import { diwaliSeason } from "@/lib/festive";
 import { discountOf } from "@/lib/format";
 import { useLoad } from "@/lib/useLoad";
 import { colors, fonts, radius, shadow } from "@/theme";
@@ -56,6 +58,7 @@ export default function HomeScreen() {
   const { count } = useCart();
   const { width } = useWindowDimensions();
   const cardWidth = Math.min(200, (width - 32 - 14) / 2.15);
+  const [season] = useState(diwaliSeason);
 
   const offers = useMemo(() => (data?.latest || []).filter((product) => discountOf(product) > 0).sort((a, b) => discountOf(b) - discountOf(a)), [data]);
 
@@ -69,7 +72,8 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      <HeroSlider categories={data?.categories || []} />
+      {season ? <Toran width={width} style={styles.toran} /> : null}
+      <HeroSlider categories={data?.categories || []} season={season} />
 
       <View style={styles.stats}>
         {[[data?.total, "Pieces"], [data?.categories?.length, "Collections"], [data?.brands?.length, "Brands"]].map(([value, label]) => (
@@ -203,30 +207,34 @@ function ProductRail({ eyebrow, title, products, width, loading }) {
   );
 }
 
-/** Full-width photo slider with a caption per slide; the first slides link to the first collections. */
-function HeroSlider({ categories }) {
+/**
+ * Full-width photo slider with a caption per slide; the photo slides link to the first collections.
+ * In the Diwali season a "Happy Diwali" card leads it.
+ */
+function HeroSlider({ categories, season }) {
   const { width } = useWindowDimensions();
   const slideWidth = width - 32;
   const [active, setActive] = useState(0);
   const listRef = useRef(null);
+  const slides = useMemo(() => (season ? [{ festive: true }, ...HERO_SLIDES] : HERO_SLIDES), [season]);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setActive((current) => {
-        const next = (current + 1) % HERO_SLIDES.length;
+        const next = (current + 1) % slides.length;
         listRef.current?.scrollToOffset({ offset: next * (slideWidth + 12), animated: true });
         return next;
       });
     }, 5500);
     return () => clearInterval(timer);
-  }, [slideWidth]);
+  }, [slideWidth, slides.length]);
 
   return (
     <View>
       <FlatList
         ref={listRef}
         horizontal
-        data={HERO_SLIDES}
+        data={slides}
         keyExtractor={(_, index) => String(index)}
         showsHorizontalScrollIndicator={false}
         snapToInterval={slideWidth + 12}
@@ -234,7 +242,22 @@ function HeroSlider({ categories }) {
         contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
         onMomentumScrollEnd={(event) => setActive(Math.round(event.nativeEvent.contentOffset.x / (slideWidth + 12)))}
         renderItem={({ item, index }) => {
-          const category = categories[index];
+          if (item.festive) {
+            return (
+              <View style={[styles.hero, { width: slideWidth }]}>
+                <DiwaliGreeting width={slideWidth} height={HERO_HEIGHT} />
+                <LinearGradient colors={["rgba(20,4,10,0)", "rgba(20,4,10,0)", "rgba(20,4,10,0.7)"]} locations={[0, 0.7, 1]} style={StyleSheet.absoluteFill} pointerEvents="none" />
+                <View style={styles.heroCopy}>
+                  <View style={styles.festiveChip}>
+                    <Ionicons name="sparkles" size={13} color="#f6d58e" />
+                    <Text style={styles.festiveChipText}>{season.countdown}</Text>
+                  </View>
+                  <Button title="Shop the festive edit" variant="light" small block={false} iconRight="arrow-forward" onPress={() => router.push("/shop")} />
+                </View>
+              </View>
+            );
+          }
+          const category = categories[HERO_SLIDES.indexOf(item)];
           return (
             <View style={[styles.hero, { width: slideWidth }]}>
               <Image source={item.image} style={heroImageFrame(item, slideWidth)} resizeMode="cover" />
@@ -256,7 +279,7 @@ function HeroSlider({ categories }) {
         }}
       />
       <View style={styles.heroDots}>
-        {HERO_SLIDES.map((slide, index) => <View key={index} style={[styles.heroDot, index === active && styles.heroDotActive]} />)}
+        {slides.map((slide, index) => <View key={index} style={[styles.heroDot, index === active && styles.heroDotActive]} />)}
       </View>
     </View>
   );
@@ -269,6 +292,9 @@ const styles = StyleSheet.create({
   heroCopy: { padding: 22 },
   heroEyebrow: { color: "#e7cfa6", fontFamily: fonts.bodyBold, fontSize: 12, letterSpacing: 2.2, textTransform: "uppercase" },
   heroTitle: { marginTop: 8, marginBottom: 16, color: colors.white, fontFamily: fonts.heading, fontSize: 30, lineHeight: 33, letterSpacing: -0.8 },
+  toran: { marginTop: -10, marginBottom: 2 },
+  festiveChip: { flexDirection: "row", alignItems: "center", alignSelf: "flex-start", gap: 6, marginBottom: 12, borderWidth: 1, borderColor: "rgba(242,194,91,0.45)", borderRadius: radius.pill, paddingHorizontal: 11, paddingVertical: 5, backgroundColor: "rgba(36,5,15,0.55)" },
+  festiveChipText: { color: "#f6d58e", fontFamily: fonts.bodyBold, fontSize: 13, letterSpacing: 0.6 },
   heroDots: { flexDirection: "row", justifyContent: "center", gap: 6, marginTop: 12 },
   heroDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.line },
   heroDotActive: { width: 24, backgroundColor: colors.emerald },

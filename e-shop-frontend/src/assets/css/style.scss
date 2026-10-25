@@ -306,8 +306,9 @@ ul{
     .lp-slide-caption { right: 20px; bottom: 22px; left: 20px; }
     .lp-slider-controls { top: 36px; right: 16px; bottom: auto; }
     .lp-slider-controls button { width: 38px; height: 38px; }
-    .lp-hero-badge { top: auto; right: 16px; bottom: -18px; left: auto; }
-    .lp-spotlight { position: relative; top: auto; left: auto; width: 100%; margin-top: 34px; animation: none; }
+    /* Under the slider, ahead of the spotlight card (which would otherwise cover it). */
+    .lp-hero-badge { position: relative; top: auto; left: auto; width: fit-content; margin: 16px 0 0 auto; animation: none; }
+    .lp-spotlight { position: relative; top: auto; left: auto; width: 100%; margin-top: 12px; animation: none; }
     .lp-section { padding-top: 52px; }
     .lp-collections, .lp-collections--2, .lp-collections--3, .lp-collections--4 { grid-template-columns: 1fr; grid-auto-rows: 200px; }
     .lp-collections--4 .lp-collection.is-large { grid-column: auto; }
@@ -316,6 +317,72 @@ ul{
     .lp-seller { padding: 32px 24px; border-radius: 22px; }
     .lp-trust li { border-left: 0 !important; padding: 14px 4px; }
     .lp-section--warm > .container { border-radius: 0; }
+}
+
+/* ---------- Diwali festive banner (shown during the festival season, see festive.js) ---------- */
+.lp-hero.is-diwali {
+    padding: 104px 0 132px; color: #f7ead2;
+    background:
+        radial-gradient(ellipse at 15% 12%, rgba(255, 183, 77, .2), transparent 42%),
+        radial-gradient(ellipse at 88% 90%, rgba(214, 51, 108, .26), transparent 50%),
+        radial-gradient(ellipse at 50% 112%, rgba(255, 166, 43, .32), transparent 40%),
+        linear-gradient(160deg, #0f2f26 0%, #0a1f19 55%, #1e0b15 100%);
+    &::before { border-color: rgba(242, 194, 91, .12); box-shadow: 0 0 0 40px rgba(242, 194, 91, .025), 0 0 0 80px rgba(242, 194, 91, .018); }
+    .container { position: relative; z-index: 1; }
+    .lp-hero-copy h1 { color: #fff7e6; }
+    .lp-hero-copy h1 em { color: transparent; background: linear-gradient(180deg, #fff1c1 10%, #f2c25b 55%, #d08a2b 95%); -webkit-background-clip: text; background-clip: text; }
+    .lp-hero-copy > p { max-width: 430px; color: #d8ccb4; }
+    .lp-hero-eyebrow { border-color: rgba(242, 194, 91, .4); color: #f6d58e; background: rgba(255, 255, 255, .06); }
+    .lp-hero-eyebrow .dw-icon { width: 17px; height: 18px; margin: -3px 0 0 -2px; }
+    .lp-btn-ghost { border-color: #f2c25b; color: #f6d58e; }
+    .lp-btn-ghost:hover { border-color: #fff; color: #fff; }
+    .lp-hero-stats { border-top-color: rgba(242, 194, 91, .22);
+        div + div { border-left-color: rgba(242, 194, 91, .22); }
+        dt { color: #fff7e6; }
+        dd { color: #bcae95; }
+    }
+    .lp-hero-visual::before { border-color: rgba(242, 194, 91, .45); }
+    .lp-slider { box-shadow: 0 40px 90px rgba(0, 0, 0, .45), 0 0 0 1px rgba(242, 194, 91, .28); }
+}
+.lp-hero-stats .dw-countdown dt { color: #f6d58e; }
+.dw-toran { position: absolute; z-index: 2; top: 0; left: 0; width: 100%; height: 92px; pointer-events: none; filter: drop-shadow(0 6px 8px rgba(0, 0, 0, .35)); }
+.dw-ledge { position: absolute; z-index: 0; right: 0; bottom: 6px; left: 0; width: 100%; height: 110px; pointer-events: none; }
+.dw-lights { position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+    span { position: absolute; border-radius: 50%; background: radial-gradient(circle, rgba(255, 220, 130, .95), rgba(255, 170, 60, 0) 70%); opacity: 0; animation: dw-rise 10s ease-in-out infinite; }
+}
+/* The greeting slide is already dark, so it only needs a light shade behind its caption. */
+.lp-hero-swiper .swiper-slide.is-festive::after { background: linear-gradient(180deg, rgba(20, 4, 10, .28) 0%, rgba(20, 4, 10, 0) 16%, rgba(20, 4, 10, 0) 72%, rgba(20, 4, 10, .72) 100%); }
+.dw-flame { transform-box: fill-box; transform-origin: 50% 100%; animation: dw-flicker 1.7s ease-in-out infinite alternate; }
+.dw-glow { animation: dw-glow 2.6s ease-in-out infinite alternate; }
+.dw-swing { animation: dw-swing 5s ease-in-out infinite alternate; }
+.dw-twinkle { animation: dw-twinkle 2.8s ease-in-out infinite; }
+.dw-burst { transform-box: fill-box; transform-origin: center; animation: dw-burst 4.2s ease-out infinite both; }
+.dw-mandala { transform-box: fill-box; transform-origin: center; animation: dw-spin 140s linear infinite; }
+@keyframes dw-flicker {
+    0% { transform: scale(1, 1) skewX(0); }
+    35% { transform: scale(.93, 1.07) skewX(-2deg); }
+    70% { transform: scale(1.04, .95) skewX(2deg); }
+    100% { transform: scale(.97, 1.04) skewX(-1deg); }
+}
+@keyframes dw-glow { from { opacity: .7; } to { opacity: 1; } }
+@keyframes dw-swing { from { transform: rotate(-2.5deg); } to { transform: rotate(2.5deg); } }
+@keyframes dw-twinkle { 0%, 100% { opacity: .15; } 50% { opacity: 1; } }
+@keyframes dw-burst { 0% { opacity: 0; transform: scale(.3); } 12% { opacity: 1; } 55% { opacity: .9; transform: scale(1); } 85%, 100% { opacity: 0; transform: scale(1.06); } }
+@keyframes dw-spin { to { transform: rotate(360deg); } }
+@keyframes dw-rise { 0% { opacity: 0; transform: translateY(24px); } 35% { opacity: .85; } 100% { opacity: 0; transform: translateY(-70px); } }
+@media (prefers-reduced-motion: reduce) {
+    .dw-flame, .dw-glow, .dw-swing, .dw-twinkle, .dw-burst, .dw-mandala { animation: none; }
+    .dw-lights span { opacity: .6; animation: none; }
+}
+@media (max-width: 575.98px) {
+    .lp-hero.is-diwali { padding: 80px 0 104px; }
+    .dw-toran { height: 66px; }
+    .dw-ledge { height: 86px; }
+}
+
+.store-announcement.is-diwali { background: linear-gradient(90deg, #4a0c25 0%, #213b33 28%, #213b33 72%, #4a0c25 100%); }
+.store-announcement-festive { align-items: center; gap: 8px; color: #f6d58e;
+    .dw-icon { width: 15px; height: 16px; margin-top: -3px; }
 }
 
 
@@ -1803,6 +1870,69 @@ a:hover > .brand-logo .brand-mark { transform: rotate(-6deg) scale(1.04); }
 .review-callout { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; border: 1px solid #efdcb6; border-radius: 15px; padding: 15px 19px; color: inherit; background: linear-gradient(105deg, #fdf6e8, #fbfaf6); text-decoration: none; transition: border-color .2s ease, box-shadow .2s ease; }
 .review-callout:hover { border-color: #e0c48d; color: inherit; box-shadow: 0 10px 24px rgba(154, 101, 18, .1); }
 .review-callout.is-rejected { border-color: #f0d3cc; background: linear-gradient(105deg, #fcefec, #fbfaf6); }
+.review-callout.is-earnings { border-color: #cfe6dc; background: linear-gradient(105deg, #ebf6f1, #fbfaf6); }
+.review-callout.is-earnings .review-callout-icon { color: #1f6f63; background: #d6ede4; }
+
+/* Commissions (admin) and earnings (seller hub) */
+.commission-back { display: inline-flex; margin-bottom: 14px; color: #357d70; font-weight: 700; text-decoration: none; }
+.commission-pending { display: flex; align-items: center; gap: 10px; margin: 6px 0 4px; border-radius: 12px; padding: 10px 14px; color: #4f5f57; background: #f6faf8; font-size: .92rem; }
+.commission-pending strong { color: #0f241d; }
+.commission-rate { display: inline-flex; align-items: baseline; gap: 5px; border-radius: 30px; padding: 3px 10px; color: #18372e; background: #eef3f0; font-weight: 700; white-space: nowrap;
+    small { color: #7d8a82; font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+}
+.commission-rate.is-custom { color: #8a5a1e; background: #fbf0dc; small { color: #b98a55; } }
+.customer-hero .commission-rate { color: #fff; background: rgba(255, 255, 255, .14); small { color: #e0b77d; } }
+.commission-table {
+    margin-bottom: 0; font-size: .93rem;
+    thead th { border-bottom-width: 1px; color: #7d8a82; font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+    tr.is-cancelled td { color: #a6ada7; text-decoration: line-through; }
+    tr.is-cancelled td:last-child { text-decoration: none; }
+}
+.commission-owed { color: #1f6f63 !important; }
+.commission-seller-link { color: #0f241d; font-weight: 700; text-decoration: none; }
+.commission-seller-link:hover { color: #357d70; text-decoration: underline; }
+.commission-settings { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px 40px; align-items: start;
+    .commission-rules { margin-top: 6px; }
+}
+@media (max-width: 991.98px) { .commission-settings { grid-template-columns: 1fr; } }
+.commission-rate-form { margin-bottom: 18px; }
+.commission-rules { display: grid; gap: 10px; margin: 0; padding-left: 18px; color: #55645c; font-size: .9rem; line-height: 1.55;
+    li::marker { color: #43c3d1; }
+}
+.commission-help { margin: 16px 0 0; color: #7d8a82; font-size: .85rem; }
+
+/* Bulk product upload */
+.bulk-step { display: flex; gap: 18px; margin-top: 18px; }
+.bulk-step-number { display: grid; width: 38px; height: 38px; flex-shrink: 0; place-items: center; border-radius: 50%; color: #fff; background: #18372e; font-family: "Outfit", sans-serif; font-weight: 800; }
+.bulk-done .bulk-step-number { background: #22774b; }
+.bulk-step-body { min-width: 0; flex: 1; }
+.bulk-hint { margin: 12px 0 0; color: #7d8a82; font-size: .86rem; }
+.bulk-drop {
+    position: relative; display: flex; min-height: 132px; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border: 2px dashed #cddbd3; border-radius: 16px; padding: 18px; color: #1f3029; background: #f8fbf9; text-align: center; cursor: pointer; transition: border-color .15s, background-color .15s;
+    &:hover { border-color: #43c3d1; background: #f1fafb; }
+    > input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    strong { font-family: "Outfit", sans-serif; font-size: 1.05rem; word-break: break-all; }
+    small { color: #7d8a82; }
+    &.is-photos { cursor: default; }
+    &.is-done { border-style: solid; border-color: #9fd3c3; background: #eef8f3; }
+}
+.bulk-summary {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;
+    > button, > span { border: 1px solid #dfe7df; border-radius: 30px; padding: 6px 14px; color: #3d5248; background: #fff; font-size: .88rem; }
+    > button.is-active { border-color: #18372e; box-shadow: inset 0 0 0 1px #18372e; }
+    > .is-ready strong { color: #22774b; }
+    > .is-error strong { color: #b4483a; }
+}
+.bulk-table-wrap { max-height: 520px; overflow-y: auto; border: 1px solid #eef1ee; border-radius: 14px; }
+.bulk-table { thead th { position: sticky; top: 0; z-index: 1; background: #fff; } tr.has-errors td { background: #fdf6f4; } }
+.bulk-issues { margin: 0; padding-left: 16px; color: #9a6512; font-size: .84rem; &.is-error { color: #b4483a; } }
+.bulk-ok { color: #22774b; font-weight: 700; white-space: nowrap; }
+.bulk-progress { display: grid; gap: 8px; margin-top: 16px; color: #3d5248; font-weight: 600; .progress { height: 10px; } }
+.bulk-saved { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none;
+    li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+    a { color: #18372e; font-weight: 700; }
+    small { color: #7d8a82; }
+}
 .review-callout-icon { display: grid; width: 40px; height: 40px; flex-shrink: 0; place-items: center; border-radius: 12px; color: #9a6512; background: #f6e6c6; }
 .review-callout.is-rejected .review-callout-icon { color: #a63d2f; background: #f7dcd6; }
 .review-callout-icon svg { width: 20px; height: 20px; }

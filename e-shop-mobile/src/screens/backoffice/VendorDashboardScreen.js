@@ -6,7 +6,8 @@ import { OrderCard } from "@/components/OrderBits";
 import SupportCard from "@/components/SupportCard";
 import { Button, Card, ListRow, Loader, Notice, Pill, Row, Screen, SectionHeader, Stat, T } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
-import { firstName, formatPriceShort } from "@/lib/format";
+import { formatRate } from "@/components/EarningsBits";
+import { firstName, formatPrice, formatPriceShort } from "@/lib/format";
 import { useLoad } from "@/lib/useLoad";
 import { colors, fonts, radius } from "@/theme";
 
@@ -39,6 +40,15 @@ export default function VendorDashboardScreen() {
                   stats.rejected ? `${stats.rejected} need${stats.rejected === 1 ? "s" : ""} changes` : null,
                 ].filter(Boolean).join(" · ")}
                 message={stats.rejected ? "See our team’s note, update the listing and save to resubmit." : "They appear in the store as soon as our team approves them."}
+              />
+            </Pressable>
+          ) : null}
+          {stats.balance_due !== 0 || stats.pending_earnings > 0 ? (
+            <Pressable onPress={() => router.push("/vendor/earnings")} style={({ pressed }) => [{ marginTop: 14 }, pressed && { opacity: 0.85 }]}>
+              <Notice
+                tone="success"
+                title={`${formatPrice(stats.balance_due)} due to you`}
+                message={`${stats.pending_earnings > 0 ? `${formatPrice(stats.pending_earnings)} more once your current orders are delivered. ` : ""}Elitezaar’s commission is ${formatRate(stats.commission_rate)}. Tap to see your earnings.`}
               />
             </Pressable>
           ) : null}

@@ -15,6 +15,8 @@ import BannerImage2 from "../../assets/images/banner-2.jpg";
 import founderPhoto from "../../assets/images/founder.jpg";
 import { AdminAuthContext } from "../context/AdminAuth";
 import { useSeo } from "./seo";
+import { diwaliSeason } from "./festive";
+import { DiwaliArt, DiyaIcon, DiyaLedge, FestiveLights, Toran } from "./Diwali";
 
 /** "Good evening, Asha" for a signed-in shopper, by the time of day where they are. */
 const greetingFor = (name) => {
@@ -52,11 +54,13 @@ const SectionHead = ({ eyebrow, title, copy, link, linkLabel }) => (
 
 /* ---------- Hero ---------- */
 const HERO_SLIDES = [
-  { image: BannerImage1, eyebrow: "The new edit", title: "Clean lines, easy fits" },
-  { image: BannerImage2, eyebrow: "Just landed", title: "Fresh pieces, every week" },
+  { key: "edit", image: BannerImage1, eyebrow: "The new edit", title: "Clean lines, easy fits" },
+  { key: "landed", image: BannerImage2, eyebrow: "Just landed", title: "Fresh pieces, every week" },
 ];
+// Leads the slider during the Diwali season (see festive.js).
+const DIWALI_SLIDE = { key: "diwali", festive: true, eyebrow: "Festive edit", title: "Gifts that glow", cta: "Shop the festive edit" };
 
-const HeroSlider = ({ categories }) => {
+const HeroSlider = ({ slides, categories }) => {
   const [swiper, setSwiper] = useState(null);
   const [active, setActive] = useState(0);
   const progressRef = useRef(null);
@@ -76,27 +80,30 @@ const HeroSlider = ({ categories }) => {
         onAutoplayTimeLeft={(instance, time, progress) => progressRef.current?.style.setProperty("--lp-progress", `${(1 - progress) * 100}%`)}
         className="lp-hero-swiper"
       >
-        {HERO_SLIDES.map((slide, index) => {
-          const category = categories[index];
+        {slides.map((slide, index) => {
+          // Photo slides link to the first collections, in order.
+          const category = categories[HERO_SLIDES.indexOf(slide)];
           return (
-            <SwiperSlide key={slide.image}>
-              <img src={slide.image} alt="" className="lp-hero-image" />
+            <SwiperSlide key={slide.key} className={slide.festive ? "is-festive" : undefined}>
+              {slide.festive
+                ? <><DiwaliArt className="lp-hero-image d-none d-sm-block" /><DiwaliArt compact className="lp-hero-image d-sm-none" /></>
+                : <img src={slide.image} alt="" className="lp-hero-image" />}
               <div className="lp-slide-caption">
                 <small>{pad(index + 1)} <i aria-hidden="true" /> {slide.eyebrow}</small>
                 <strong>{slide.title}</strong>
-                <Link to={category ? `/shop/${category.slug}` : "/shop"}>{category ? `Shop ${category.name}` : "Shop now"} <span aria-hidden="true">→</span></Link>
+                <Link to={category ? `/shop/${category.slug}` : "/shop"}>{slide.cta || (category ? `Shop ${category.name}` : "Shop now")} <span aria-hidden="true">→</span></Link>
               </div>
             </SwiperSlide>
           );
         })}
       </Swiper>
       <div className="lp-slider-progress" ref={progressRef} aria-hidden="true">
-        {HERO_SLIDES.map((slide, index) => (
-          <span key={slide.image} className={index < active ? "is-done" : index === active ? "is-active" : ""}><i /></span>
+        {slides.map((slide, index) => (
+          <span key={slide.key} className={index < active ? "is-done" : index === active ? "is-active" : ""}><i /></span>
         ))}
       </div>
       <div className="lp-slider-controls">
-        <span className="lp-slider-count"><b>{pad(active + 1)}</b> / {pad(HERO_SLIDES.length)}</span>
+        <span className="lp-slider-count"><b>{pad(active + 1)}</b> / {pad(slides.length)}</span>
         <button type="button" aria-label="Previous slide" onClick={() => swiper?.slidePrev()}>←</button>
         <button type="button" aria-label="Next slide" onClick={() => swiper?.slideNext()}>→</button>
       </div>
@@ -104,24 +111,45 @@ const HeroSlider = ({ categories }) => {
   );
 };
 
-const Hero = ({ stats, spotlight, categories, shopperName }) => {
+/** "Happy Diwali, Asha" for a signed-in shopper; guests see the festive edit until Dhanteras, then the day's greeting. */
+const festiveEyebrow = (festive, shopperName) => {
+  if (shopperName) return `${festive.greeting}, ${shopperName}`;
+  return festive.festivalDays ? festive.greeting : `THE DIWALI EDIT · ${festive.year}`;
+};
+
+const Hero = ({ stats, spotlight, categories, shopperName, festive }) => {
   const firstCategory = categories[0];
+  const slides = festive ? [DIWALI_SLIDE, ...HERO_SLIDES] : HERO_SLIDES;
   return (
-  <section className="lp-hero">
+  <section className={`lp-hero${festive ? " is-diwali" : ""}`}>
+    {festive && <><FestiveLights /><Toran className="dw-toran" /></>}
     <div className="container">
       <div className="row g-4 g-xl-5 align-items-center">
         <div className="col-lg-6">
           <div className="lp-hero-copy">
-            <span className="lp-hero-eyebrow"><i aria-hidden="true" /> {shopperName ? greetingFor(shopperName) : `NEW SEASON · ${new Date().getFullYear()}`}</span>
-            <h1>Everyday style,<br /><em>elevated.</em></h1>
-            <p>Thoughtfully picked pieces from independent sellers — delivered to your door, with live tracking from checkout to doorstep.</p>
+            {festive ? (
+              <>
+                <span className="lp-hero-eyebrow"><DiyaIcon /> {festiveEyebrow(festive, shopperName)}</span>
+                <h1>Shine bright<br />this <em>Diwali.</em></h1>
+                <p>Festive looks and thoughtful gifts from independent sellers — packed with care, tracked to your door.</p>
+              </>
+            ) : (
+              <>
+                <span className="lp-hero-eyebrow"><i aria-hidden="true" /> {shopperName ? greetingFor(shopperName) : `NEW SEASON · ${new Date().getFullYear()}`}</span>
+                <h1>Everyday style,<br /><em>elevated.</em></h1>
+                <p>Thoughtfully picked pieces from independent sellers — delivered to your door, with live tracking from checkout to doorstep.</p>
+              </>
+            )}
             <div className="lp-hero-actions">
-              <Link to="/shop" className="btn btn-primary lp-btn">Shop the collection <span aria-hidden="true">↗</span></Link>
+              <Link to="/shop" className={`btn lp-btn ${festive ? "lp-btn-gold" : "btn-primary"}`}>{festive ? "Shop the festive edit" : "Shop the collection"} <span aria-hidden="true">↗</span></Link>
               {firstCategory
                 ? <Link to={`/shop/${firstCategory.slug}`} className="lp-btn-ghost">Explore {firstCategory.name}</Link>
                 : <a href="#collections" className="lp-btn-ghost">Browse collections</a>}
             </div>
             <dl className="lp-hero-stats">
+              {festive?.daysToGo >= 0 && (
+                <div className="dw-countdown"><dt>{festive.daysToGo || "Today"}</dt><dd>{festive.daysToGo === 0 ? "is Diwali" : festive.daysToGo === 1 ? "Day to Diwali" : "Days to Diwali"}</dd></div>
+              )}
               <div><dt>{stats.products ?? "—"}</dt><dd>Pieces in stock</dd></div>
               <div><dt>{stats.categories ?? "—"}</dt><dd>Collections</dd></div>
               <div><dt>{stats.brands ?? "—"}</dt><dd>Brands</dd></div>
@@ -130,7 +158,7 @@ const Hero = ({ stats, spotlight, categories, shopperName }) => {
         </div>
         <div className="col-lg-6">
           <div className="lp-hero-visual">
-            <HeroSlider categories={categories} />
+            <HeroSlider slides={slides} categories={categories} />
             <div className="lp-hero-badge" aria-hidden="true"><Icon><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3Z" /><path d="m9 12 2 2 4-4" /></Icon>Secure checkout</div>
             {spotlight && (
               <Link to={`/product/${spotlight.id}`} className="lp-spotlight">
@@ -147,6 +175,7 @@ const Hero = ({ stats, spotlight, categories, shopperName }) => {
         </div>
       </div>
     </div>
+    {festive && <DiyaLedge />}
   </section>
   );
 };
@@ -329,6 +358,7 @@ const HomeContent = () => {
   const { user } = useContext(AdminAuthContext);
   const shopperName = user?.portal === "customer" ? (user.user?.name || "").trim().split(/\s+/)[0] : "";
   useSeo({ path: "/" });
+  const [festive] = useState(diwaliSeason);
   const [latest, setLatest] = useState(null);
   const [featured, setFeatured] = useState([]);
   const [online, setOnline] = useState(false);
@@ -373,7 +403,7 @@ const HomeContent = () => {
 
   return (
     <main className="lp-page">
-      <Hero stats={stats} spotlight={featured[0] || latestProducts[0]} categories={categories} shopperName={shopperName} />
+      <Hero stats={stats} spotlight={featured[0] || latestProducts[0]} categories={categories} shopperName={shopperName} festive={festive} />
       <TrustBar online={online} />
       {error && <div className="container"><div className="lp-error" role="status"><span aria-hidden="true">⚠</span>{error}</div></div>}
       {!latest && !error && (

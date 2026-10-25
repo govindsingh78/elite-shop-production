@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderTrackingEvent;
 use App\Models\Product;
+use App\Services\Commissions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -24,6 +25,7 @@ class OrderController extends Controller
         $soldItems = OrderItem::query()
             ->where('vendor_id', $vendorId)
             ->whereHas('order', fn ($query) => $query->where('status', '!=', 'cancelled'));
+        $earnings = Commissions::summary($request->user());
 
         return response()->json([
             'stats' => [
@@ -36,6 +38,9 @@ class OrderController extends Controller
                 'to_ship' => $this->vendorOrders($vendorId)->whereIn('status', ['pending', 'processing'])->count(),
                 'revenue' => round((float) (clone $soldItems)->sum('line_total'), 2),
                 'units_sold' => (int) (clone $soldItems)->sum('quantity'),
+                'commission_rate' => $earnings['effective_rate'],
+                'balance_due' => $earnings['balance'],
+                'pending_earnings' => $earnings['pending_earnings'],
             ],
             'recent_orders' => $this->withVendorTotals($this->vendorOrders($vendorId), $vendorId)
                 ->with('latestTrackingEvent')->orderByDesc('id')->limit(5)->get(),

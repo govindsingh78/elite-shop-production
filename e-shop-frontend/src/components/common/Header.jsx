@@ -9,6 +9,8 @@ import { HeartIcon } from "./WishlistButton";
 import AccountMenu from "./AccountMenu";
 import { formatPrice } from "./currency";
 import { SUPPORT_PHONES } from "./support";
+import { diwaliSeason } from "./festive";
+import { DiyaIcon } from "./Diwali";
 
 /** "Categories" dropdown in the main menu: every category with its subcategories underneath. Desktop only; phones list them in the menu. */
 const CategoriesMenu = ({ categories, onNavigate }) => {
@@ -88,14 +90,17 @@ const Header = () => {
   const { count: savedCount } = useWishlist();
   const [expanded, setExpanded] = useState(false);
   const { pathname } = useLocation();
+  const [festive] = useState(diwaliSeason);
 
   const closeMenu = () => setExpanded(false);
 
   return (
     <>
-      <div className="store-announcement">
+      <div className={`store-announcement${festive ? " is-diwali" : ""}`}>
         <div className="container d-flex justify-content-between align-items-center">
-          <span className="d-none d-lg-inline">Thoughtfully picked. Made to be worn on repeat.</span>
+          {festive
+            ? <span className="d-none d-lg-inline-flex store-announcement-festive"><DiyaIcon /> Shubh Deepavali! {festive.countdown}. Festive picks, packed with care.</span>
+            : <span className="d-none d-lg-inline">Thoughtfully picked. Made to be worn on repeat.</span>}
           <span className="store-helpline">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" /></svg>
             <span className="d-none d-sm-inline">Helpline</span>
@@ -106,7 +111,7 @@ const Header = () => {
               </React.Fragment>
             ))}
           </span>
-          <Link to="/shop" className="store-announcement-link d-none d-md-inline">Explore the edit <span aria-hidden="true">↗</span></Link>
+          <Link to="/shop" className="store-announcement-link d-none d-md-inline">{festive ? "Shop the festive edit" : "Explore the edit"} <span aria-hidden="true">↗</span></Link>
         </div>
       </div>
       <header className="store-header sticky-top">

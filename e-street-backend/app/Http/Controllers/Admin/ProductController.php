@@ -6,9 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
+use App\Services\ProductImages;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
 use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
@@ -204,33 +204,6 @@ class ProductController extends Controller
 
     private function attachGallery(Product $product, array $galleryIds): void
     {
-        foreach ($galleryIds as $tempImageId) {
-            $tempImage = DB::table('temp_images')->where('id', $tempImageId)->first();
-            if (!$tempImage) {
-                continue;
-            }
-
-            $source = public_path('uploads/temp/original/' . basename($tempImage->name));
-            if (!File::isFile($source)) {
-                continue;
-            }
-
-            $extension = pathinfo($source, PATHINFO_EXTENSION);
-            $imageName = $product->id . '-' . uniqid('', true) . '.' . $extension;
-            $largePath = public_path('uploads/products/large/' . $imageName);
-            $smallPath = public_path('uploads/products/small/' . $imageName);
-            File::ensureDirectoryExists(dirname($largePath));
-            File::ensureDirectoryExists(dirname($smallPath));
-
-            if (!File::copy($source, $largePath) || !File::copy($source, $smallPath)) {
-                continue;
-            }
-
-            $product->images()->create(['image' => $imageName]);
-            if (!$product->image) {
-                $product->image = $imageName;
-                $product->save();
-            }
-        }
+        ProductImages::attachTempImages($product, $galleryIds);
     }
 }

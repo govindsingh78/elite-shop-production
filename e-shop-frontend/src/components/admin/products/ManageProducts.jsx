@@ -106,7 +106,10 @@ const ManageProducts = ({ portal = "admin" }) => {
                 <h2 className="mb-1">{isVendor ? "My Products" : "Manage Products"}</h2>
                 <p className="text-muted mb-0">{isVendor ? "New listings go live once the Elitezaar team approves them." : "Create products and review the listings sellers submit."}</p>
               </div>
-              <button className="btn btn-primary" onClick={() => navigate(config.createProductPath)}>Add product</button>
+              <div className="d-flex flex-wrap gap-2">
+                <button className="btn btn-outline-primary" onClick={() => navigate(config.bulkProductsPath)}>Bulk upload</button>
+                <button className="btn btn-primary" onClick={() => navigate(config.createProductPath)}>Add product</button>
+              </div>
             </div>
 
             <div className="product-review-tabs" role="tablist" aria-label="Review status">

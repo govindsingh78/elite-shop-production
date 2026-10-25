@@ -9,6 +9,8 @@ use App\Models\OrderItem;
 use App\Models\OrderTrackingEvent;
 use App\Models\Product;
 use App\Models\ShippingMethod;
+use App\Models\User;
+use App\Services\Commissions;
 use App\Services\Razorpay;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -121,6 +123,7 @@ class OrderController extends Controller
 
             $subtotal = 0;
             $items = [];
+            $sellerRates = [];
             foreach ($validated['items'] as $requestedItem) {
                 $product = Product::query()->lockForUpdate()->findOrFail($requestedItem['product_id']);
                 if (!$product->isOnStorefront()) {
@@ -136,6 +139,10 @@ class OrderController extends Controller
                 $unitPrice = (float) $product->price;
                 $lineTotal = round($unitPrice * $requestedItem['quantity'], 2);
                 $subtotal += $lineTotal;
+                // A seller's product carries Elitezaar's commission at the seller's current rate; our own products don't.
+                $commissionRate = $product->vendor_id
+                    ? ($sellerRates[$product->vendor_id] ??= ($seller = User::find($product->vendor_id)) ? Commissions::rateFor($seller) : Commissions::defaultRate())
+                    : null;
                 $items[] = [
                     'product_id' => $product->id,
                     'vendor_id' => $product->vendor_id,
@@ -144,6 +151,8 @@ class OrderController extends Controller
                     'quantity' => $requestedItem['quantity'],
                     'unit_price' => $unitPrice,
                     'line_total' => $lineTotal,
+                    'commission_rate' => $commissionRate,
+                    'commission_amount' => $commissionRate !== null ? Commissions::amount($lineTotal, $commissionRate) : null,
                 ];
             }
 
