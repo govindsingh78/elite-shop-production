@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "bootstrap": "^5.3.3",
-    "exceljs": "^4.4.0",
+    "exceljs": "^3.4.0",
     "react": "^19.0.0",
     "react-bootstrap": "^2.10.9",
     "react-dom": "^19.0.0",
@@ -19,7 +19,7 @@
     "react-router-dom": "^7.4.0",
     "react-simple-star-rating": "^5.1.7",
     "react-toastify": "^11.0.5",
-    "swiper": "^11.2.6"
+    "swiper": "^14.3.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
