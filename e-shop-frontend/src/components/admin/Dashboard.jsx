@@ -39,9 +39,15 @@ const Dashboard = () => {
   const [statsError, setStatsError] = useState("");
   const [pendingReview, setPendingReview] = useState(0);
   const [pendingSellers, setPendingSellers] = useState(0);
+  const [serverIssues, setServerIssues] = useState([]);
 
   useEffect(() => {
     const controller = new AbortController();
+    // Server & health: anything urgent or needing attention (a filling disk, new problems, slow pages…).
+    fetch(`${apiUrl}/admin/server`, { headers: { Accept: "application/json", Authorization: `Bearer ${localStorage.getItem("adminToken") || ""}` }, signal: controller.signal })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => setServerIssues((data?.attention || []).filter((item) => item.severity !== "info")))
+      .catch(() => {});
     const loadStats = async () => {
       const token = localStorage.getItem("adminToken");
       if (!token) return;
@@ -81,6 +87,16 @@ const Dashboard = () => {
               <Link to="/admin/create-product" className="btn btn-primary admin-dashboard-create">＋ Add a product</Link>
             </div>
             {statsError && <p className="small text-muted mb-3" role="status">{statsError}</p>}
+            {serverIssues.length > 0 && (
+              <Link to="/admin/server" className={`review-callout${serverIssues.some((item) => item.severity === "critical") ? " is-rejected" : ""}`}>
+                <span className="review-callout-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="7" rx="1.5" /><rect x="3" y="13" width="18" height="7" rx="1.5" /><path d="M7 7.5h.01M7 16.5h.01" /></svg></span>
+                <span className="review-callout-text">
+                  <strong>Server: {serverIssues[0].title}</strong>
+                  <small>{serverIssues.length > 1 ? `And ${serverIssues.length - 1} more ${serverIssues.length === 2 ? "thing needs" : "things need"} your attention.` : serverIssues[0].detail}</small>
+                </span>
+                <span className="review-callout-cta">Server & health <span aria-hidden="true">→</span></span>
+              </Link>
+            )}
             {pendingSellers > 0 && (
               <Link to="/admin/sellers?status=pending" className="review-callout">
                 <span className="review-callout-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 10V5h18v5M5 10v10h14V10M9 20v-6h6v6" /><path d="M3 10a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0" /></svg></span>

@@ -22,6 +22,8 @@ use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\CommissionController;
 use App\Http\Controllers\Admin\SellerController;
+use App\Http\Controllers\Admin\ServerController;
+use App\Http\Controllers\MonitorController;
 use App\Http\Controllers\Vendor\EarningsController as VendorEarningsController;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureCustomer;
@@ -65,6 +67,9 @@ Route::get('/sitemap.xml', [SitemapController::class, 'index'])->middleware('thr
 // The printable invoice, from a signed link (order pages, the app and emails), so no sign-in is needed.
 Route::get('/invoices/{invoice}/print', [InvoiceController::class, 'print'])
     ->name('invoices.print')->middleware(['signed:relative', 'throttle:60,1'])->whereNumber('invoice');
+// The website and app report crashes people run into, and how fast pages loaded, for Server & health.
+Route::post('/monitor/client-errors', [MonitorController::class, 'clientError'])->middleware('throttle:10,1,client-errors');
+Route::post('/monitor/page-speed', [MonitorController::class, 'pageSpeed'])->middleware('throttle:30,1,page-speed');
 Route::get('/storefront/policies/{policy}', [PolicyController::class, 'show'])->where('policy', '[a-z-]+');
 Route::get('/storefront/products', [ProductController::class, 'storefrontIndex']);
 // A product's readable address (/product/classic-linen-shirt), an earlier one, or its id for old links.
@@ -168,6 +173,16 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('admin/gst/settings', [GstController::class, 'updateSettings']);
         Route::get('admin/gst/report', [InvoiceController::class, 'report'])->middleware('throttle:20,1,gst-report');
         Route::post('admin/orders/{order}/invoices', [AdminOrderController::class, 'issueInvoices']);
+        Route::get('admin/server', [ServerController::class, 'overview']);
+        Route::get('admin/server/problems', [ServerController::class, 'problems']);
+        Route::post('admin/server/problems/resolve-all', [ServerController::class, 'resolveAll']);
+        Route::get('admin/server/problems/{problem}', [ServerController::class, 'problem'])->whereNumber('problem');
+        Route::patch('admin/server/problems/{problem}', [ServerController::class, 'updateProblem'])->whereNumber('problem');
+        Route::delete('admin/server/problems/{problem}', [ServerController::class, 'destroyProblem'])->whereNumber('problem');
+        Route::get('admin/server/speed', [ServerController::class, 'speed']);
+        Route::get('admin/server/storage', [ServerController::class, 'storage']);
+        Route::post('admin/server/cleanup', [ServerController::class, 'cleanup'])->middleware('throttle:60,1,server-cleanup');
+        Route::get('admin/server/logs', [ServerController::class, 'logs']);
         Route::get('admin/sellers', [SellerController::class, 'index']);
         Route::get('admin/sellers/{seller}', [SellerController::class, 'show'])->whereNumber('seller');
         Route::patch('admin/sellers/{seller}/status', [SellerController::class, 'updateStatus'])->whereNumber('seller');

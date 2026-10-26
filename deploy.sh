@@ -22,6 +22,16 @@ sudo chown -R ubuntu:www-data storage bootstrap/cache
 sudo chmod -R 775 storage bootstrap/cache
 sudo systemctl reload php8.5-fpm
 
+# Laravel's scheduler runs Admin › Server & health's checks (alerts about a full disk or new problems, and
+# nightly clean-ups). It runs as the web server's user, so the logs and files it writes stay writable by PHP.
+# Added on the first deploy; later deploys leave the crontab as it is.
+CRON_LINE="* * * * * cd $BACKEND_DIR && php artisan schedule:run >> /dev/null 2>&1"
+CURRENT_CRON=$(sudo crontab -u www-data -l 2>/dev/null || true)
+if ! grep -qF "artisan schedule:run" <<< "$CURRENT_CRON"; then
+  printf '%s\n%s\n' "$CURRENT_CRON" "$CRON_LINE" | sed '/^$/d' | sudo crontab -u www-data -
+  echo "Scheduler added to www-data's crontab."
+fi
+
 php artisan up
 trap - EXIT
 

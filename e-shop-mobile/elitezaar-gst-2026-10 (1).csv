@@ -1,0 +1,2 @@
+﻿"Invoice number",Date,Type,Status,Order,Supplier,"Supplier GSTIN",Buyer,"Buyer GSTIN","Place of supply",Description,HSN/SAC,Quantity,"GST rate %","Taxable value",CGST,SGST,IGST,Total
+S2/2627/0001,26-10-2026,"Bill of supply",issued,25,Nishu,,Customer,,08-Rajasthan,"Invalid Product (size 3XL)",,1,0,900,0,0,0,900

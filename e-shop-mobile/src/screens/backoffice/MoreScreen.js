@@ -42,6 +42,7 @@ export default function MoreScreen({ portal }) {
         {portal === "admin" ? (
           <>
             <ListRow icon="people-outline" title="Users" subtitle="Customers, sellers and staff" onPress={() => router.push("/admin/users")} />
+            <ListRow icon="pulse-outline" title="Server & health" subtitle="Disk space, problems and speed" onPress={() => router.push("/admin/server")} />
             <ListRow icon="storefront-outline" title="Sellers" subtitle="Approve new sellers, deactivate accounts" onPress={() => router.push("/admin/sellers")} />
             <ListRow icon="pie-chart-outline" title="Commissions" subtitle="Seller earnings and payouts" onPress={() => router.push("/admin/commissions")} />
             <ListRow icon="albums-outline" title="Catalog" subtitle="Categories, brands and shipping" onPress={() => router.push("/admin/catalog")} />

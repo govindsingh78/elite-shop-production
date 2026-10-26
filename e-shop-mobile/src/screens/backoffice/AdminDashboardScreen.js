@@ -21,7 +21,7 @@ export default function AdminDashboardScreen() {
   const { request, user } = useAuth();
   const { data, loading, refreshing, error, reload } = useLoad(async () => {
     const total = (path, query) => request(path, { query }).then((page) => Number(page.total || 0));
-    const [orders, users, productPage, pending, processing, shipped, sellerPage] = await Promise.all([
+    const [orders, users, productPage, pending, processing, shipped, sellerPage, server] = await Promise.all([
       request("/admin/orders"),
       total("/admin/users"),
       request("/admin/products"),
@@ -29,6 +29,8 @@ export default function AdminDashboardScreen() {
       total("/admin/orders", { status: "processing" }),
       total("/admin/orders", { status: "shipped" }),
       request("/admin/sellers", { query: { status: "pending", per_page: 1 } }),
+      // Server & health is extra: the dashboard still loads if it can't be checked.
+      request("/admin/server").catch(() => null),
     ]);
     return {
       orders: Number(orders.total || 0),
@@ -37,6 +39,7 @@ export default function AdminDashboardScreen() {
       products: Number(productPage.total || 0),
       awaitingReview: Number(productPage.approval_counts?.pending || 0),
       sellersWaiting: Number(sellerPage.counts?.pending || 0),
+      serverIssues: (server?.attention || []).filter((item) => item.severity !== "info"),
       queue: { pending, processing, shipped },
     };
   }, [request], { refocus: true });
@@ -61,6 +64,15 @@ export default function AdminDashboardScreen() {
       {error ? <Notice tone="error" message={error} style={{ marginTop: 14 }} /> : null}
       {loading ? <Loader /> : data ? (
         <>
+          {data.serverIssues.length ? (
+            <Pressable onPress={() => router.push("/admin/server")} style={({ pressed }) => [{ marginTop: 14 }, pressed && { opacity: 0.85 }]}>
+              <Notice
+                tone={data.serverIssues.some((item) => item.severity === "critical") ? "error" : "warning"}
+                title={`Server: ${data.serverIssues[0].title}`}
+                message={data.serverIssues.length > 1 ? `And ${data.serverIssues.length - 1} more. Tap to see what to do.` : "Tap to see what to do."}
+              />
+            </Pressable>
+          ) : null}
           {data.sellersWaiting ? (
             <Pressable onPress={() => router.push({ pathname: "/admin/sellers", params: { status: "pending" } })} style={({ pressed }) => [{ marginTop: 14 }, pressed && { opacity: 0.85 }]}>
               <Notice tone="warning" title={`${data.sellersWaiting} new seller${data.sellersWaiting === 1 ? "" : "s"} waiting for approval`} message="They can’t list products until you approve them. Tap to review." />

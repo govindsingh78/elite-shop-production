@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef } from "react";
+import { Pressable, Text, View } from "react-native";
 import { Stack, router, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
@@ -11,7 +12,9 @@ import { CartProvider } from "@/context/CartContext";
 import { ToastProvider } from "@/context/ToastContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { stackHeader } from "@/lib/navigation";
+import { installCrashReporting, reportError, setMonitorScreen, setMonitorToken } from "@/lib/monitor";
 import { useNotificationTaps } from "@/lib/push";
+import { colors, fonts } from "@/theme";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -40,9 +43,40 @@ export default function RootLayout() {
   );
 }
 
+/** A screen crashed: a friendly way out instead of a blank screen, and the admins are told. */
+export function ErrorBoundary({ error, retry }) {
+  useEffect(() => {
+    reportError(error);
+  }, [error]);
+
+  return (
+    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 28, backgroundColor: colors.cream }}>
+      <Text style={{ color: colors.ink, fontFamily: fonts.heading, fontSize: 22, textAlign: "center" }}>Something went wrong</Text>
+      <Text style={{ marginTop: 8, color: colors.muted, fontFamily: fonts.body, fontSize: 16, textAlign: "center" }}>Sorry about that — our team has been told. Trying again usually fixes it.</Text>
+      <Pressable onPress={retry} accessibilityRole="button" style={{ marginTop: 20, borderRadius: 999, paddingHorizontal: 26, paddingVertical: 13, backgroundColor: colors.emerald }}>
+        <Text style={{ color: colors.white, fontFamily: fonts.heading, fontSize: 16 }}>Try again</Text>
+      </Pressable>
+      <Pressable onPress={() => router.replace("/")} accessibilityRole="button" style={{ marginTop: 12, padding: 8 }}>
+        <Text style={{ color: colors.emerald, fontFamily: fonts.heading, fontSize: 15 }}>Go to the shop</Text>
+      </Pressable>
+    </View>
+  );
+}
+
 function RootNavigator({ fontsReady }) {
-  const { ready, portal, request } = useAuth();
+  const { ready, portal, request, session } = useAuth();
   const segments = useSegments();
+
+  // Crash reports say which screen and which kind of user (shopper, seller or admin) ran into them.
+  useEffect(() => {
+    installCrashReporting();
+  }, []);
+  useEffect(() => {
+    setMonitorScreen(segments);
+  }, [segments]);
+  useEffect(() => {
+    setMonitorToken(session?.token);
+  }, [session?.token]);
   const sentStaffHome = useRef(false);
   const loaded = ready && fontsReady;
 

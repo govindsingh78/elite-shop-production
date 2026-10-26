@@ -16,6 +16,7 @@ const adminLinks = [
   { label: "Brands", to: "/admin/manage-brands", icon: <><path d="m12 3 2.2 5 5.5.6-4.1 3.7 1.2 5.4-4.8-2.8-4.8 2.8 1.2-5.4-4.1-3.7 5.5-.6L12 3Z" /></> },
   { label: "Sizes", to: "/admin/manage-sizes", icon: <><path d="M3 8h18v8H3z" /><path d="M7 8v3M11 8v4M15 8v3M19 8v4" /></> },
   { label: "Customers", to: "/admin/manage-users", icon: <><circle cx="9" cy="8" r="3" /><path d="M3.5 19c.4-3.2 2.2-5 5.5-5s5.1 1.8 5.5 5M16 5.3a3 3 0 0 1 0 5.8M17 14c2.2.7 3.4 2.3 3.6 5" /></> },
+  { label: "Server & health", to: "/admin/server", icon: <><rect x="3" y="4" width="18" height="7" rx="1.5" /><rect x="3" y="13" width="18" height="7" rx="1.5" /><path d="M7 7.5h.01M7 16.5h.01M11 7.5h6M11 16.5h6" /></> },
   { label: "Shipping", to: "/admin/manage-shipping", icon: <><path d="M3 6h11v12H3zM14 10h4l3 3v5h-7z" /><circle cx="7.5" cy="18" r="1.5" /><circle cx="18" cy="18" r="1.5" /></> },
 ];
 

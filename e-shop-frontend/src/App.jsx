@@ -11,6 +11,7 @@ import Wishlist from './components/common/Wishlist';
 import ManageReviews from './components/admin/reviews/ManageReviews';
 import ManageCommissions from './components/admin/commissions/ManageCommissions';
 import ManageSellers from './components/admin/sellers/ManageSellers';
+import ServerHealth from './components/admin/server/ServerHealth';
 import SellerCommission from './components/admin/commissions/SellerCommission';
 import VendorEarnings from './components/admin/commissions/VendorEarnings';
 import BulkProducts from './components/admin/bulk/BulkProducts';
@@ -142,6 +143,7 @@ function App() {
           <Route path="/vendor/products/bulk" element={<AdminRequireAuth role="vendor"><BulkProducts portal="vendor" /></AdminRequireAuth>} />
           <Route path="/admin/bulk-products" element={<AdminRequireAuth><BulkProducts portal="admin" /></AdminRequireAuth>} />
           <Route path="/admin/sellers" element={<AdminRequireAuth><ManageSellers /></AdminRequireAuth>} />
+          <Route path="/admin/server" element={<AdminRequireAuth><ServerHealth /></AdminRequireAuth>} />
           <Route path="/admin/commissions" element={<AdminRequireAuth><ManageCommissions /></AdminRequireAuth>} />
           <Route path="/admin/manage-sizes" element={<AdminRequireAuth><ManageSizes /></AdminRequireAuth>} />
           <Route path="/admin/invoices" element={<AdminRequireAuth><InvoiceList portal="admin" /></AdminRequireAuth>} />

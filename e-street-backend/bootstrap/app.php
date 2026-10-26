@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\RecordRequestTiming;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -12,7 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        // Times every API call for Admin › Server & health › Speed.
+        $middleware->api(append: [RecordRequestTiming::class]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
