@@ -181,7 +181,7 @@ class MessagingTest extends TestCase
             && $message->body() === 'We’ve paid you ₹1,000.00 by UPI on 20 Oct 2026. Reference: UTR42.');
 
         $this->postJson('/api/vendor/register', ['name' => 'Kids Corner', 'email' => 'kids@example.com', 'password' => 'secret123', 'password_confirmation' => 'secret123'])->assertCreated();
-        Notification::assertSentTo($this->admin, SellerJoined::class, fn (SellerJoined $message) => $message->title() === 'New seller: Kids Corner');
+        Notification::assertSentTo($this->admin, SellerJoined::class, fn (SellerJoined $message) => $message->title() === 'New seller to approve: Kids Corner');
     }
 
     public function test_the_inbox_lists_messages_and_marks_them_read(): void

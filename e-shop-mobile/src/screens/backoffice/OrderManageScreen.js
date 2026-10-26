@@ -3,6 +3,7 @@ import { View } from "react-native";
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { AddressBlock, MilestoneBar, OrderItemRow, OrderStatusPill, PaymentStatusPill, TrackingTimeline } from "@/components/OrderBits";
 import { Button, Card, Divider, EmptyState, KeyValue, Loader, Notice, Row, Screen, SelectField, T, TextField } from "@/components/ui";
+import InvoiceLinks from "@/components/InvoiceLinks";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { confirmAction } from "@/lib/confirm";
@@ -118,10 +119,14 @@ export default function OrderManageScreen({ portal: portalKey }) {
             <>
               <KeyValue label="Subtotal" value={formatPrice(order.subtotal)} />
               <KeyValue label="Delivery" value={Number(order.shipping_amount) > 0 ? formatPrice(order.shipping_amount) : "Free"} />
-              <KeyValue label="Total" value={formatPrice(order.total)} strong last />
+              <KeyValue label="Total" value={formatPrice(order.total)} strong last={!(Number(order.tax_total) > 0)} />
+              {Number(order.tax_total) > 0 ? <KeyValue label="Includes GST" value={formatPrice(order.tax_total)} last /> : null}
             </>
           ) : <KeyValue label="Your items" value={formatPrice(order.vendor_subtotal)} strong last />}
+          {order.billing_gstin ? <T variant="small" style={{ marginTop: 8 }}>Bill to {order.billing_name} · GSTIN {order.billing_gstin}</T> : null}
         </Card>
+
+        <InvoiceLinks invoices={order.invoice_links} emptyText="Issued automatically when the order ships." style={{ marginTop: 12 }} />
 
         {!canManage ? (
           <Notice tone="info" title="Shipping is handled by the store team" message="This order includes items from other sellers, so the store team manages its shipping and tracking." style={{ marginTop: 12 }} />

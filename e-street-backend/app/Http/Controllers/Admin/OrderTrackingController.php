@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderTrackingEvent;
+use App\Services\Invoices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -70,6 +71,7 @@ class OrderTrackingController extends Controller
 
     protected function present(Request $request, Order $order): Order
     {
-        return $order->load(['items', 'trackingEvents']);
+        // Shipping can issue invoices, so the order page gets the latest ones back.
+        return $order->load(['items', 'trackingEvents'])->setAttribute('invoice_links', Invoices::linksFor($order));
     }
 }

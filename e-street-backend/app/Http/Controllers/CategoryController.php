@@ -139,6 +139,11 @@ class CategoryController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'status' => ['sometimes', 'integer', 'in:0,1'],
             'parent_id' => $parent,
+            // GST for the category's products (subcategories without their own use the parent's); see App\Services\Gst.
+            'hsn_code' => ['sometimes', 'nullable', 'regex:/^\d{4,8}$/'],
+            'gst_rate' => ['sometimes', 'nullable', 'numeric', 'min:0', 'max:40'],
+            'gst_rate_high' => ['sometimes', 'nullable', 'numeric', 'min:0', 'max:40', 'required_with:gst_threshold'],
+            'gst_threshold' => ['sometimes', 'nullable', 'numeric', 'min:1', 'required_with:gst_rate_high'],
         ];
     }
 
@@ -147,6 +152,9 @@ class CategoryController extends Controller
         return [
             'parent_id.exists' => 'Choose a top-level category as the parent.',
             'parent_id.not_in' => 'A category can’t be its own parent.',
+            'hsn_code.regex' => 'An HSN code has 4 to 8 digits, like 6205.',
+            'gst_rate_high.required_with' => 'Add the higher rate that applies above the price.',
+            'gst_threshold.required_with' => 'Add the price above which the higher rate applies.',
         ];
     }
 }

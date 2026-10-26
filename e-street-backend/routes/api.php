@@ -3,6 +3,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DeviceTokenController;
+use App\Http\Controllers\GstController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\GeoController;
 use App\Http\Controllers\GoogleAuthController;
@@ -19,9 +21,11 @@ use App\Http\Controllers\SizeController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\CommissionController;
+use App\Http\Controllers\Admin\SellerController;
 use App\Http\Controllers\Vendor\EarningsController as VendorEarningsController;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureCustomer;
+use App\Http\Middleware\EnsureSellerCanSell;
 use App\Http\Middleware\EnsureVendor;
 use App\Http\Controllers\Vendor\ProductController as VendorProductController;
 use App\Http\Controllers\Vendor\OrderController as VendorOrderController;
@@ -58,6 +62,9 @@ Route::middleware('throttle:20,1')->group(function () {
 Route::post('/payments/razorpay/webhook', [PaymentController::class, 'webhook']);
 Route::get('/storefront/categories', [CategoryController::class, 'navigation']);
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->middleware('throttle:30,1');
+// The printable invoice, from a signed link (order pages, the app and emails), so no sign-in is needed.
+Route::get('/invoices/{invoice}/print', [InvoiceController::class, 'print'])
+    ->name('invoices.print')->middleware(['signed:relative', 'throttle:60,1'])->whereNumber('invoice');
 Route::get('/storefront/policies/{policy}', [PolicyController::class, 'show'])->where('policy', '[a-z-]+');
 Route::get('/storefront/products', [ProductController::class, 'storefrontIndex']);
 // A product's readable address (/product/classic-linen-shirt), an earlier one, or its id for old links.
@@ -87,20 +94,30 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     Route::apiResource('temp-images', TempImageController::class);
 
+    // Every seller account can look around and keep its business details up to date, including one waiting
+    // for approval or deactivated (they still need their orders, earnings and invoices).
     Route::middleware(EnsureVendor::class)->prefix('vendor')->group(function () {
         Route::get('dashboard', [VendorOrderController::class, 'dashboard']);
         Route::get('product-options', [VendorProductController::class, 'options']);
         Route::get('earnings', [VendorEarningsController::class, 'index']);
+        Route::get('business', [GstController::class, 'business']);
+        Route::put('business', [GstController::class, 'updateBusiness']);
+        Route::get('gst/report', [InvoiceController::class, 'report'])->middleware('throttle:20,1,gst-report');
         Route::get('bulk-products/template', [BulkProductController::class, 'template']);
         Route::get('bulk-products/export', [BulkProductController::class, 'export']);
-        Route::post('bulk-products/check', [BulkProductController::class, 'check'])->middleware('throttle:30,1,bulk-products');
-        Route::post('bulk-products/import', [BulkProductController::class, 'import'])->middleware('throttle:10,1,bulk-products-import');
-        Route::apiResource('products', VendorProductController::class)->except(['create', 'edit'])->names('vendor.products');
+        Route::apiResource('products', VendorProductController::class)->only(['index', 'show'])->names('vendor.products');
         Route::get('orders', [VendorOrderController::class, 'index']);
         Route::get('orders/{order}', [VendorOrderController::class, 'show']);
-        Route::put('orders/{order}', [VendorOrderController::class, 'update']);
-        Route::post('orders/{order}/tracking', [VendorOrderTrackingController::class, 'store']);
-        Route::delete('orders/{order}/tracking/{event}', [VendorOrderTrackingController::class, 'destroy']);
+
+        // Listing products and handling orders: approved sellers only.
+        Route::middleware(EnsureSellerCanSell::class)->group(function () {
+            Route::post('bulk-products/check', [BulkProductController::class, 'check'])->middleware('throttle:30,1,bulk-products');
+            Route::post('bulk-products/import', [BulkProductController::class, 'import'])->middleware('throttle:10,1,bulk-products-import');
+            Route::apiResource('products', VendorProductController::class)->only(['store', 'update', 'destroy'])->names('vendor.products');
+            Route::put('orders/{order}', [VendorOrderController::class, 'update']);
+            Route::post('orders/{order}/tracking', [VendorOrderTrackingController::class, 'store']);
+            Route::delete('orders/{order}/tracking/{event}', [VendorOrderTrackingController::class, 'destroy']);
+        });
     });
 
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -112,6 +129,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('device-tokens', [DeviceTokenController::class, 'destroy']);
     });
     Route::get('notifications', [NotificationController::class, 'index']);
+    Route::get('invoices', [InvoiceController::class, 'index']);
     Route::post('notifications/read-all', [NotificationController::class, 'readAll']);
     Route::patch('notifications/{notification}/read', [NotificationController::class, 'read'])->whereUuid('notification');
 
@@ -146,6 +164,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('admin/bulk-products/export', [BulkProductController::class, 'export']);
         Route::post('admin/bulk-products/check', [BulkProductController::class, 'check'])->middleware('throttle:30,1,bulk-products');
         Route::post('admin/bulk-products/import', [BulkProductController::class, 'import'])->middleware('throttle:10,1,bulk-products-import');
+        Route::get('admin/gst/settings', [GstController::class, 'settings']);
+        Route::put('admin/gst/settings', [GstController::class, 'updateSettings']);
+        Route::get('admin/gst/report', [InvoiceController::class, 'report'])->middleware('throttle:20,1,gst-report');
+        Route::post('admin/orders/{order}/invoices', [AdminOrderController::class, 'issueInvoices']);
+        Route::get('admin/sellers', [SellerController::class, 'index']);
+        Route::get('admin/sellers/{seller}', [SellerController::class, 'show'])->whereNumber('seller');
+        Route::patch('admin/sellers/{seller}/status', [SellerController::class, 'updateStatus'])->whereNumber('seller');
         Route::get('admin/commissions', [CommissionController::class, 'index']);
         Route::put('admin/commissions/settings', [CommissionController::class, 'updateSettings']);
         Route::get('admin/commissions/sellers/{seller}', [CommissionController::class, 'show'])->whereNumber('seller');

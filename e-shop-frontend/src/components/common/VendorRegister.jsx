@@ -41,7 +41,7 @@ const VendorRegister = () => {
       }
       if (response.status === 429) throw new Error("Too many attempts. Please wait a minute and try again.");
       if (!response.ok) throw new Error(data.message || "Unable to create your seller account.");
-      navigate("/vendor/login", { replace: true, state: { message: "Your seller account is ready — sign in to start listing products." } });
+      navigate("/vendor/login", { replace: true, state: { message: "Your seller account is created. Sign in to add your business details — you can list products once our team approves your account." } });
     } catch (requestError) {
       setError(requestError instanceof TypeError ? "Cannot reach the API server. Make sure the backend is running." : requestError.message);
     } finally {

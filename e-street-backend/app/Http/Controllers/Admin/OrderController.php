@@ -12,6 +12,8 @@ use App\Models\ProductSize;
 use App\Models\ShippingMethod;
 use App\Models\User;
 use App\Services\Commissions;
+use App\Services\Gst;
+use App\Services\Invoices;
 use App\Services\Messenger;
 use App\Services\Razorpay;
 use Illuminate\Http\Request;
@@ -50,7 +52,16 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        return response()->json($order->load(['items', 'trackingEvents']), 200);
+        return response()->json($order->load(['items', 'trackingEvents'])->setAttribute('invoice_links', Invoices::linksFor($order)), 200);
+    }
+
+    /** Issues the order's invoices now, e.g. for an order that shipped before invoices existed. */
+    public function issueInvoices(Order $order)
+    {
+        abort_if(in_array($order->status, ['pending', 'cancelled'], true), 422, 'Invoices are issued once an order is confirmed, and not for cancelled orders.');
+        Invoices::issue($order);
+
+        return response()->json(['message' => 'Invoices issued.', 'invoice_links' => Invoices::linksFor($order)], 200);
     }
 
     public function store(Request $request)
@@ -75,9 +86,16 @@ class OrderController extends Controller
             'items.*.quantity' => ['required', 'integer', 'min:1', 'max:999'],
             // Required for products sold in sizes; checked against the product below.
             'items.*.size_id' => ['nullable', 'integer'],
+            // Business buyers can have their GSTIN on the invoice, to claim input tax credit.
+            'billing_gstin' => ['nullable', 'string', 'max:15', Gst::gstinRule()],
+            'billing_name' => ['nullable', 'required_with:billing_gstin', 'string', 'max:255'],
             // Shoppers must agree to the Return & Refund Policy; the version they saw is kept on the order.
             'accept_policy' => ['accepted'],
-        ], ['accept_policy.accepted' => 'Please read and accept the Return & Refund Policy to place your order.']);
+        ], [
+            'accept_policy.accepted' => 'Please read and accept the Return & Refund Policy to place your order.',
+            'billing_name.required_with' => 'Add the business name registered with this GSTIN.',
+        ]);
+        $placeOfSupply = Gst::placeOfSupply($validated['state'] ?? null, $validated['country'] ?? null);
 
         if ($validated['payment_method'] === 'razorpay' && !app(Razorpay::class)->configured()) {
             throw ValidationException::withMessages(['payment_method' => 'Online payment is not available right now. Please choose cash on delivery.']);
@@ -85,7 +103,7 @@ class OrderController extends Controller
 
         $customerToken = null;
         $customer = null;
-        $order = DB::transaction(function () use ($request, &$validated, &$customerToken, &$customer) {
+        $order = DB::transaction(function () use ($request, &$validated, &$customerToken, &$customer, $placeOfSupply) {
             $customerAction = $validated['customer_action'] ?? 'guest';
             $customer = null;
 
@@ -128,6 +146,8 @@ class OrderController extends Controller
             $subtotal = 0;
             $items = [];
             $sellerRates = [];
+            $sellers = [];
+            $taxTotal = 0.0;
             foreach ($validated['items'] as $requestedItem) {
                 $product = Product::query()->lockForUpdate()->findOrFail($requestedItem['product_id']);
                 if (!$product->isOnStorefront()) {
@@ -160,11 +180,16 @@ class OrderController extends Controller
                 $unitPrice = (float) $product->price;
                 $lineTotal = round($unitPrice * $requestedItem['quantity'], 2);
                 $subtotal += $lineTotal;
+                $seller = $product->vendor_id ? ($sellers[$product->vendor_id] ??= User::find($product->vendor_id)) : null;
                 // A seller's product carries Elitezaar's commission at the seller's current rate; our own products don't.
                 $commissionRate = $product->vendor_id
-                    ? ($sellerRates[$product->vendor_id] ??= ($seller = User::find($product->vendor_id)) ? Commissions::rateFor($seller) : Commissions::defaultRate())
+                    ? ($sellerRates[$product->vendor_id] ??= $seller ? Commissions::rateFor($seller) : Commissions::defaultRate())
                     : null;
+                // GST included in the price, worked out for the supplier (the seller, or Elitezaar) and delivery state.
+                $tax = Gst::forLine($product, $unitPrice, $lineTotal, $seller, $placeOfSupply);
+                $taxTotal += $tax['cgst'] + $tax['sgst'] + $tax['igst'];
                 $items[] = [
+                    ...$tax,
                     'product_id' => $product->id,
                     'size_id' => $size?->size_id,
                     'size' => $size?->name,
@@ -183,6 +208,11 @@ class OrderController extends Controller
                 ? ShippingMethod::query()->where('status', 1)->findOrFail($validated['shipping_method_id'])
                 : null;
             $shippingAmount = (float) ($shippingMethod?->price ?? 0);
+            // Delivery is charged by Elitezaar, so it carries GST only if the store is registered.
+            [$storeRegistered, $storeState] = Gst::supplier(null);
+            $shippingRate = $storeRegistered && $shippingAmount > 0 ? (float) Gst::store()['shipping_rate'] : null;
+            $shippingTax = $shippingRate !== null ? Gst::split($shippingAmount, $shippingRate, $storeState !== null && $storeState === $placeOfSupply) : null;
+            $shippingTaxTotal = $shippingTax ? round($shippingTax['cgst'] + $shippingTax['sgst'] + $shippingTax['igst'], 2) : 0.0;
 
             $order = Order::create([
                 // The route is public, so read an optional bearer token to link signed-in customers.
@@ -205,6 +235,12 @@ class OrderController extends Controller
                 'notes' => $validated['notes'] ?? null,
                 'policy_version' => PolicyController::version(PolicyController::RETURN_REFUND),
                 'policy_accepted_at' => now(),
+                'billing_name' => ($validated['billing_gstin'] ?? null) ? $validated['billing_name'] : null,
+                'billing_gstin' => ($validated['billing_gstin'] ?? null) ? strtoupper(trim($validated['billing_gstin'])) : null,
+                'place_of_supply' => $placeOfSupply,
+                'tax_total' => round($taxTotal + $shippingTaxTotal, 2),
+                'shipping_gst_rate' => $shippingRate,
+                'shipping_tax' => $shippingTaxTotal,
             ]);
 
             foreach ($items as $item) {
@@ -268,7 +304,7 @@ class OrderController extends Controller
 
         return response()->json([
             'message' => 'Order updated successfully.',
-            'data' => $order->refresh()->load(['items', 'trackingEvents']),
+            'data' => $order->refresh()->load(['items', 'trackingEvents'])->setAttribute('invoice_links', Invoices::linksFor($order)),
         ], 200);
     }
 

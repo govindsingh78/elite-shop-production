@@ -6,6 +6,7 @@ import { formatPrice } from "../common/currency";
 import { AdminAuthContext } from "../context/AdminAuth";
 import VendorSidebar from "./VendorSidebar";
 import OrderStatus from "../customer/OrderStatus";
+import { SellerAccountBanner } from "./sellers/SellerBits";
 
 const statTiles = [
   { key: "revenue", label: "Sales", accent: "violet", money: true, icon: <><rect x="3" y="6" width="18" height="13" rx="2" /><path d="M3 10h18M7 15h3" /></> },
@@ -39,6 +40,8 @@ const VendorDashboard = () => {
   }, []);
 
   const stats = data?.stats;
+  // Until approved (or once deactivated) a seller can look around but not list products.
+  const canSell = data?.account?.can_sell !== false;
 
   return (
     <Layout>
@@ -52,12 +55,13 @@ const VendorDashboard = () => {
                 <h1>Welcome, {vendor?.name?.split(" ")[0] || "Seller"}<span>.</span></h1>
                 <p>{stats ? `${stats.units_sold.toLocaleString()} units sold · ${stats.total_products} products listed` : "Loading your store…"}</p>
               </div>
-              <Link to="/vendor/products/create" className="customer-hero-cta">＋ List a product</Link>
+              {canSell && <Link to="/vendor/products/create" className="customer-hero-cta">＋ List a product</Link>}
             </section>
 
             {error && <div className="alert alert-danger" role="alert">{error}</div>}
+            <SellerAccountBanner account={data?.account} />
 
-            {stats && (stats.pending_review > 0 || stats.rejected > 0) && (
+            {canSell && stats && (stats.pending_review > 0 || stats.rejected > 0) && (
               <Link to={`/vendor/products?approval=${stats.rejected ? "rejected" : "pending"}`} className={`review-callout${stats.rejected ? " is-rejected" : ""}`}>
                 <span className="review-callout-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M7 3h10M7 21h10M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9" /></svg></span>
                 <span className="review-callout-text">
@@ -107,7 +111,7 @@ const VendorDashboard = () => {
                       <span aria-hidden="true">🧾</span>
                       <h3>No orders yet</h3>
                       <p>Once customers buy your products, their orders show up here.</p>
-                      <Link to="/vendor/products" className="btn btn-primary">Review your products</Link>
+                      {canSell && <Link to="/vendor/products" className="btn btn-primary">Review your products</Link>}
                     </div>
                   )}
                   {data?.recent_orders.length > 0 && (
@@ -150,7 +154,7 @@ const VendorDashboard = () => {
                 </section>
 
                 <section className="customer-quick-links">
-                  <Link to="/vendor/products/create"><span>＋</span>List a new product</Link>
+                  {canSell ? <Link to="/vendor/products/create"><span>＋</span>List a new product</Link> : <Link to="/vendor/business"><span>🏢</span>Business & GST details</Link>}
                   <Link to="/vendor/products"><span>📦</span>My products ({stats?.total_products ?? "–"})</Link>
                   <Link to="/vendor/orders"><span>🚚</span>Orders to ship ({stats?.to_ship ?? "–"})</Link>
                   <Link to="/vendor/change-password"><span>🔒</span>Change password</Link>

@@ -4,6 +4,7 @@ import Layout from "../../common/Layout";
 import Sidebar from "../../common/Sidebar";
 import { apiUrl } from "../../common/http";
 import TrackingManager from "./TrackingManager";
+import OrderInvoices from "../gst/OrderInvoices";
 import { portalConfig, portalToken } from "../portal";
 
 const orderStatuses = ["pending", "processing", "shipped", "delivered", "cancelled"];
@@ -127,6 +128,7 @@ const OrderDetails = ({ portal = "admin" }) => {
                           <div className={`d-flex justify-content-between${isVendor ? " text-muted small mt-2" : ""}`}><span>{isVendor ? "Order subtotal" : "Subtotal"}</span><span>{money(order.subtotal)}</span></div>
                           <div className={`d-flex justify-content-between${isVendor ? " text-muted small" : ""}`}><span>Shipping</span><span>{money(order.shipping_amount)}</span></div>
                           {!isVendor && <div className="d-flex justify-content-between border-top mt-2 pt-2 fw-bold"><span>Total</span><span>{money(order.total)}</span></div>}
+                          {!isVendor && Number(order.tax_total) > 0 && <div className="d-flex justify-content-between small text-muted"><span>Includes GST</span><span>{money(order.tax_total)}</span></div>}
                         </>}
                       </div>
                     </section>
@@ -137,6 +139,7 @@ const OrderDetails = ({ portal = "admin" }) => {
                         <p className="mb-1">{order.customer_email}</p>
                         {order.customer_phone && <p className="mb-2">{order.customer_phone}</p>}
                         <address className="mb-0">{order.address}<br />{order.city}{order.state ? `, ${order.state}` : ""} {order.postal_code || ""}<br />{order.country}</address>
+                        {order.billing_gstin && <p className="mt-2 mb-0"><span className="text-muted">Bill to:</span> {order.billing_name} · GSTIN {order.billing_gstin}</p>}
                         {isVendor && order.notes && <p className="mt-3 mb-0"><span className="text-muted">Delivery notes:</span> {order.notes}</p>}
                         {!isVendor && order.policy_accepted_at && (
                           <p className="small text-muted mt-3 mb-0">Accepted the Return &amp; Refund Policy (version {order.policy_version}) on {new Date(order.policy_accepted_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}.</p>
@@ -144,6 +147,7 @@ const OrderDetails = ({ portal = "admin" }) => {
                       </div>
                     </section>
                     <TrackingManager portal={portal} order={order} onOrderChange={applyOrder} readOnly={!canEdit} />
+                    <OrderInvoices portal={portal} order={order} onChange={(links) => setOrder((current) => ({ ...current, invoice_links: links }))} />
                   </div>
 
                   <div className="col-lg-5">

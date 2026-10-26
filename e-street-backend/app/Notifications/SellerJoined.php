@@ -4,7 +4,7 @@ namespace App\Notifications;
 
 use App\Models\User;
 
-/** To the store admins: someone opened a seller account. */
+/** To the store admins: someone opened a seller account and needs approving. */
 class SellerJoined extends StoreMessage
 {
     public function __construct(public User $seller)
@@ -18,26 +18,26 @@ class SellerJoined extends StoreMessage
 
     public function title(): string
     {
-        return "New seller: {$this->seller->name}";
+        return "New seller to approve: {$this->seller->name}";
     }
 
     public function body(): string
     {
-        return "{$this->seller->email} just opened a seller account. Their listings will come to you for review.";
+        return "{$this->seller->email} just opened a seller account and is waiting for your approval. They can’t list products until you approve them.";
     }
 
     public function webPath(): ?string
     {
-        return '/admin/manage-users';
+        return '/admin/sellers';
     }
 
     public function appPath(): ?string
     {
-        return '/admin/users';
+        return '/admin/sellers';
     }
 
     protected function actionLabel(): string
     {
-        return 'See sellers';
+        return 'Review the application';
     }
 }

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { apiUrl } from "../../common/http";
 import { portalConfig, portalToken } from "../portal";
+import GstFields from "../gst/GstFields";
 
 const apiOrigin = apiUrl.replace(/\/api\/?$/, "");
 
@@ -16,6 +17,8 @@ const ProductForm = ({
   errors = {},
   loading,
   submitLabel,
+  // Saving isn't possible (a seller waiting for approval, or deactivated); the page says why.
+  blocked = false,
 }) => {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
@@ -204,6 +207,8 @@ const ProductForm = ({
         )}
       </section>
 
+      <GstFields kind="product" values={{ hsn_code: values.hsn_code, gst_rate: values.gst_rate }} onChange={(next) => setValues((current) => ({ ...current, ...next }))} errors={errors} />
+
       <div className="row">
         <div className="col-md-4 mb-3">
           <label htmlFor="status" className="form-label">Status</label>
@@ -235,7 +240,7 @@ const ProductForm = ({
       )}
 
       {errors.general && <div className="alert alert-danger" role="alert">{errors.general}</div>}
-      <button type="submit" className="btn btn-primary" disabled={loading || uploading}>
+      <button type="submit" className="btn btn-primary" disabled={loading || uploading || blocked}>
         {loading ? "Saving..." : submitLabel}
       </button>
     </form>

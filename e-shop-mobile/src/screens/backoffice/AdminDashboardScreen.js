@@ -21,13 +21,14 @@ export default function AdminDashboardScreen() {
   const { request, user } = useAuth();
   const { data, loading, refreshing, error, reload } = useLoad(async () => {
     const total = (path, query) => request(path, { query }).then((page) => Number(page.total || 0));
-    const [orders, users, productPage, pending, processing, shipped] = await Promise.all([
+    const [orders, users, productPage, pending, processing, shipped, sellerPage] = await Promise.all([
       request("/admin/orders"),
       total("/admin/users"),
       request("/admin/products"),
       total("/admin/orders", { status: "pending" }),
       total("/admin/orders", { status: "processing" }),
       total("/admin/orders", { status: "shipped" }),
+      request("/admin/sellers", { query: { status: "pending", per_page: 1 } }),
     ]);
     return {
       orders: Number(orders.total || 0),
@@ -35,6 +36,7 @@ export default function AdminDashboardScreen() {
       users,
       products: Number(productPage.total || 0),
       awaitingReview: Number(productPage.approval_counts?.pending || 0),
+      sellersWaiting: Number(sellerPage.counts?.pending || 0),
       queue: { pending, processing, shipped },
     };
   }, [request], { refocus: true });
@@ -59,6 +61,11 @@ export default function AdminDashboardScreen() {
       {error ? <Notice tone="error" message={error} style={{ marginTop: 14 }} /> : null}
       {loading ? <Loader /> : data ? (
         <>
+          {data.sellersWaiting ? (
+            <Pressable onPress={() => router.push({ pathname: "/admin/sellers", params: { status: "pending" } })} style={({ pressed }) => [{ marginTop: 14 }, pressed && { opacity: 0.85 }]}>
+              <Notice tone="warning" title={`${data.sellersWaiting} new seller${data.sellersWaiting === 1 ? "" : "s"} waiting for approval`} message="They can’t list products until you approve them. Tap to review." />
+            </Pressable>
+          ) : null}
           {data.awaitingReview ? (
             <Pressable onPress={() => router.push({ pathname: "/admin/products", params: { approval: "pending" } })} style={({ pressed }) => [{ marginTop: 14 }, pressed && { opacity: 0.85 }]}>
               <Notice tone="warning" title={`${data.awaitingReview} seller product${data.awaitingReview === 1 ? "" : "s"} awaiting review`} message="They stay hidden from shoppers until you approve them. Tap to review." />

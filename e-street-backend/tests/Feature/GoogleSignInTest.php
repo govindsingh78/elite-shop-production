@@ -170,7 +170,9 @@ class GoogleSignInTest extends TestCase
         $this->postJson('/api/auth/google/exchange', ['code' => $returned['code'], 'code_verifier' => $verifier])
             ->assertCreated()
             ->assertJsonPath('portal', 'vendor')
-            ->assertJsonPath('user.role', 'seller');
+            ->assertJsonPath('user.role', 'seller')
+            // Like a seller who signs up with a password, they wait for an admin's approval.
+            ->assertJsonPath('user.seller_status', User::SELLER_PENDING);
     }
 
     public function test_admin_sign_in_only_matches_existing_admins(): void

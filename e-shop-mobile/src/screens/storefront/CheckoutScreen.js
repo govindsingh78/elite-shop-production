@@ -13,7 +13,8 @@ import { formatPrice } from "@/lib/format";
 import { colors, fonts, radius } from "@/theme";
 
 const POLICY_REQUIRED = "Please read and accept the Return & Refund Policy to place your order.";
-const EMPTY_FORM = { customer_name: "", customer_email: "", customer_phone: "", address: "", city: "", state: "", postal_code: "", country: "India", notes: "" };
+// billing_name and billing_gstin put a business buyer's GSTIN on the invoice.
+const EMPTY_FORM = { customer_name: "", customer_email: "", customer_phone: "", address: "", city: "", state: "", postal_code: "", country: "India", notes: "", billing_name: "", billing_gstin: "" };
 
 const PAYMENT_OPTIONS = [
   { value: "upi", title: "UPI", copy: "GPay, PhonePe, Paytm or any UPI app", icon: "phone-portrait-outline", online: true },
@@ -47,6 +48,7 @@ export default function CheckoutScreen() {
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
+  const [wantsGstInvoice, setWantsGstInvoice] = useState(false);
   const [acceptPolicy, setAcceptPolicy] = useState(false);
 
   useEffect(() => {
@@ -133,6 +135,8 @@ export default function CheckoutScreen() {
       payment_method: payment === "cod" ? "cod" : "razorpay",
       shipping_method_id: shippingId || null,
       accept_policy: acceptPolicy,
+      billing_name: wantsGstInvoice ? form.billing_name.trim() : null,
+      billing_gstin: wantsGstInvoice ? form.billing_gstin.trim() : null,
       items: items.map(({ id, quantity, size_id: sizeId }) => ({ product_id: id, quantity, ...(sizeId ? { size_id: sizeId } : {}) })),
     };
 
@@ -272,6 +276,13 @@ export default function CheckoutScreen() {
         ))}
         {payment !== "cod" ? <T variant="small" style={{ marginTop: 4 }}>You’ll complete the payment securely with Razorpay after placing the order.</T> : null}
         <TextField label="Order notes (optional)" placeholder="Delivery instructions, gift note…" multiline value={form.notes} onChangeText={(value) => change("notes", value)} style={{ marginTop: 14 }} />
+        <SwitchRow label="Buying for a business?" hint="Add your GSTIN to the invoice to claim input tax credit" value={wantsGstInvoice} onValueChange={setWantsGstInvoice} />
+        {wantsGstInvoice ? (
+          <>
+            <TextField label="Business name (as registered)" value={form.billing_name} onChangeText={(value) => change("billing_name", value)} error={fieldErrors.billing_name} />
+            <TextField label="GSTIN" autoCapitalize="characters" maxLength={15} placeholder="e.g. 08ABCDE1234F1Z5" value={form.billing_gstin} onChangeText={(value) => change("billing_gstin", value.toUpperCase())} error={fieldErrors.billing_gstin} />
+          </>
+        ) : null}
       </Step>
 
       <PolicySummaryCard style={{ marginBottom: 14 }} />

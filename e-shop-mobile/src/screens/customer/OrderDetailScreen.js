@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef } from "react";
 import { View } from "react-native";
 import { Stack, router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import InvoiceLinks from "@/components/InvoiceLinks";
 import SupportCard from "@/components/SupportCard";
 import { AddressBlock, MilestoneBar, OrderItemRow, OrderStatusPill, PaymentStatusPill, TrackingTimeline } from "@/components/OrderBits";
 import { Card, EmptyState, KeyValue, Loader, Notice, Row, Screen, T } from "@/components/ui";
@@ -102,8 +103,11 @@ export default function CustomerOrderDetailScreen() {
           <KeyValue label="Subtotal" value={formatPrice(order.subtotal)} />
           <KeyValue label={order.shipping_method?.name ? `Delivery · ${order.shipping_method.name}` : "Delivery"} value={Number(order.shipping_amount) > 0 ? formatPrice(order.shipping_amount) : "Free"} />
           <KeyValue label="Payment" value={paymentMethodLabel(order.payment_method)} />
-          <KeyValue label="Total" value={formatPrice(order.total)} strong last />
+          <KeyValue label="Total" value={formatPrice(order.total)} strong last={!(Number(order.tax_total) > 0)} />
+          {Number(order.tax_total) > 0 ? <KeyValue label="Includes GST" value={formatPrice(order.tax_total)} last /> : null}
         </Card>
+
+        {order.status !== "cancelled" || order.invoice_links?.length ? <InvoiceLinks invoices={order.invoice_links} style={{ marginTop: 12 }} /> : null}
 
         {order.payment_method === "razorpay" && order.payment_status !== "paid" ? (
           <Notice tone="warning" title="Payment pending" message="This order hasn’t been paid online yet. You can pay in cash when it arrives." style={{ marginTop: 12 }} />

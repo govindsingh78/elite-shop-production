@@ -8,11 +8,12 @@ import ProductForm from "./ProductForm";
 import { portalConfig, portalToken } from "../portal";
 import { SellerReviewNotice } from "./ReviewBits";
 import { productPayload, sizesProblem } from "./productPayload";
+import { SellerRestriction } from "../sellers/SellerBits";
 
 const initialValues = {
   title: "", price: "", compare_price: "", description: "", short_description: "",
   category_id: "", brand_id: "", sku: "", barcode: "", qty: "0", status: "1",
-  is_featured: "no", gallery: [], hasSizes: false, sizes: [],
+  is_featured: "no", gallery: [], hasSizes: false, sizes: [], hsn_code: "", gst_rate: "",
 };
 
 const CreateProduct = ({ portal = "admin" }) => {
@@ -21,6 +22,7 @@ const CreateProduct = ({ portal = "admin" }) => {
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
   const [sizeOptions, setSizeOptions] = useState([]);
+  const [sellerRestriction, setSellerRestriction] = useState(null);
   const [loadingOptions, setLoadingOptions] = useState(true);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -37,6 +39,7 @@ const CreateProduct = ({ portal = "admin" }) => {
         setCategories(data.categories || []);
         setBrands(data.brands || []);
         setSizeOptions(data.sizes || []);
+        setSellerRestriction(data.seller_restriction || null);
       } catch (error) {
         setErrors({ general: error.message || "Unable to load product options." });
       } finally {
@@ -87,8 +90,8 @@ const CreateProduct = ({ portal = "admin" }) => {
         <h2 className="mb-4">{portal === "vendor" ? "List a new product" : "Create Product"}</h2>
         {loadingOptions ? <p role="status">Loading categories and brands...</p> : (
           <div className="card shadow-sm"><div className="card-body">
-            {portal === "vendor" && <SellerReviewNotice status="new" />}
-            <ProductForm portal={portal} values={values} setValues={setValues} categories={categories} brands={brands} sizeOptions={sizeOptions} onSubmit={handleSubmit} errors={errors} loading={loading} submitLabel={portal === "vendor" ? "Submit for review" : "Create product"} />
+            {sellerRestriction ? <SellerRestriction message={sellerRestriction} /> : portal === "vendor" && <SellerReviewNotice status="new" />}
+            <ProductForm blocked={Boolean(sellerRestriction)} portal={portal} values={values} setValues={setValues} categories={categories} brands={brands} sizeOptions={sizeOptions} onSubmit={handleSubmit} errors={errors} loading={loading} submitLabel={portal === "vendor" ? "Submit for review" : "Create product"} />
           </div></div>
         )}
       </main></div></div>

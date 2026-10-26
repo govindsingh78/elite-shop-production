@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Invoices;
 use App\Services\Messenger;
 use Illuminate\Database\Eloquent\Model;
 
@@ -11,6 +12,7 @@ class Order extends Model
         'user_id', 'customer_name', 'customer_email', 'customer_phone', 'address',
         'city', 'state', 'postal_code', 'country', 'subtotal', 'shipping_amount',
         'shipping_method_id', 'total', 'payment_method', 'payment_status', 'status', 'tracking_number', 'courier_name', 'estimated_delivery_date', 'notes',
+        'billing_name', 'billing_gstin', 'place_of_supply', 'tax_total', 'shipping_gst_rate', 'shipping_tax',
         'policy_version', 'policy_accepted_at',
     ];
 
@@ -19,6 +21,8 @@ class Order extends Model
 
     protected $casts = [
         'paid_at' => 'datetime',
+        'tax_total' => 'decimal:2',
+        'shipping_tax' => 'decimal:2',
         'policy_accepted_at' => 'datetime',
         'estimated_delivery_date' => 'date:Y-m-d',
         'subtotal' => 'decimal:2',
@@ -71,6 +75,12 @@ class Order extends Model
         ]);
 
         $this->syncStatusWithTracking();
+        // Invoices go out when the order ships (before the message, so it can link to them); cancelling cancels them.
+        if (in_array($this->status, ['shipped', 'delivered'], true)) {
+            Invoices::issue($this);
+        } elseif ($this->status === 'cancelled') {
+            Invoices::cancel($this);
+        }
         Messenger::orderProgress($this, $event);
 
         return $event;
@@ -84,6 +94,11 @@ class Order extends Model
         if ($status && $this->status !== $status) {
             $this->forceFill(['status' => $status])->save();
         }
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class);
     }
 
     public function user()

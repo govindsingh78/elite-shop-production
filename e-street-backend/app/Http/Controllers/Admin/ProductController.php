@@ -19,7 +19,8 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $products = $this->productQuery($request)
-            ->with(['category:id,name,parent_id', 'category.parent:id,name', 'brand:id,name', 'vendor:id,name'])
+            // The seller's status, so a product hidden because its seller is inactive can say so.
+            ->with(['category:id,name,parent_id', 'category.parent:id,name', 'brand:id,name', 'vendor:id,name,seller_status'])
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->string('search')->trim()->toString();
                 $query->where(function ($query) use ($search) {
@@ -77,12 +78,14 @@ class ProductController extends Controller
         ], 200);
     }
 
-    public function options()
+    public function options(Request $request)
     {
         $categories = Category::query()->where('status', 1)->orderBy('name')->get(['id', 'name', 'parent_id']);
         $children = $categories->whereNotNull('parent_id')->groupBy('parent_id');
 
         return response()->json([
+            // Why a seller can't save products yet (waiting for approval, or deactivated), so the form can say so up front.
+            'seller_restriction' => $request->user()->sellerRestriction(),
             // Each category followed by its subcategories, labelled "Kids › Toys" for the product form.
             'categories' => $categories->whereNull('parent_id')->flatMap(fn (Category $parent) => [
                 ['id' => $parent->id, 'name' => $parent->name, 'label' => $parent->name, 'parent_id' => null],
@@ -244,6 +247,9 @@ class ProductController extends Controller
             'sizes' => ['sometimes', 'nullable', 'array', 'max:40'],
             'sizes.*.size_id' => ['required', 'integer', 'distinct', 'exists:sizes,id'],
             'sizes.*.qty' => ['nullable', 'integer', 'min:0', 'max:1000000'],
+            // Only when this product's GST differs from its category's.
+            'hsn_code' => ['sometimes', 'nullable', 'regex:/^\d{4,8}$/'],
+            'gst_rate' => ['sometimes', 'nullable', 'numeric', 'min:0', 'max:40'],
         ];
     }
 
@@ -252,6 +258,7 @@ class ProductController extends Controller
         'sizes.*.size_id.exists' => 'That size is no longer available. Refresh the page and pick again.',
         'sizes.*.qty.integer' => 'Stock for each size must be a whole number.',
         'sizes.*.qty.min' => 'Stock can’t be less than 0.',
+        'hsn_code.regex' => 'An HSN code has 4 to 8 digits, like 6205.',
     ];
 
     private function attachGallery(Product $product, array $galleryIds): void

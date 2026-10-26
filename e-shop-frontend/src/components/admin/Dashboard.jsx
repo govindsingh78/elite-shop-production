@@ -38,6 +38,7 @@ const Dashboard = () => {
   const [stats, setStats] = useState({ users: null, products: null, orders: null });
   const [statsError, setStatsError] = useState("");
   const [pendingReview, setPendingReview] = useState(0);
+  const [pendingSellers, setPendingSellers] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -45,7 +46,7 @@ const Dashboard = () => {
       const token = localStorage.getItem("adminToken");
       if (!token) return;
       const headers = { Accept: "application/json", Authorization: `Bearer ${token}` };
-      const resources = ["admin/users", "admin/products", "admin/orders"];
+      const resources = ["admin/users", "admin/products", "admin/orders", "admin/sellers"];
       try {
         const results = await Promise.all(resources.map(async (resource) => {
           const response = await fetch(`${apiUrl}/${resource}?per_page=1`, { headers, signal: controller.signal });
@@ -56,6 +57,7 @@ const Dashboard = () => {
         const total = (data) => Number(data.total ?? data.meta?.total ?? (Array.isArray(data) ? data.length : 0));
         setStats({ users: total(results[0]), products: total(results[1]), orders: total(results[2]) });
         setPendingReview(Number(results[1].approval_counts?.pending || 0));
+        setPendingSellers(Number(results[3].counts?.pending || 0));
       } catch (error) {
         if (error.name !== "AbortError") setStatsError("Live totals are temporarily unavailable.");
       }
@@ -79,6 +81,13 @@ const Dashboard = () => {
               <Link to="/admin/create-product" className="btn btn-primary admin-dashboard-create">＋ Add a product</Link>
             </div>
             {statsError && <p className="small text-muted mb-3" role="status">{statsError}</p>}
+            {pendingSellers > 0 && (
+              <Link to="/admin/sellers?status=pending" className="review-callout">
+                <span className="review-callout-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 10V5h18v5M5 10v10h14V10M9 20v-6h6v6" /><path d="M3 10a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0" /></svg></span>
+                <span className="review-callout-text"><strong>{pendingSellers} new {pendingSellers === 1 ? "seller is" : "sellers are"} waiting for approval</strong><small>They can’t list products until you approve them.</small></span>
+                <span className="review-callout-cta">Review now <span aria-hidden="true">→</span></span>
+              </Link>
+            )}
             {pendingReview > 0 && (
               <Link to="/admin/manage-products?approval=pending" className="review-callout">
                 <span className="review-callout-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M7 3h10M7 21h10M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9" /></svg></span>

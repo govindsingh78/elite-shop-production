@@ -22,6 +22,8 @@ const PAYMENT_OPTIONS = [
 const initialForm = {
   customer_name: "", customer_email: "", customer_phone: "", address: "", city: "",
   state: "", postal_code: "", country: DEFAULT_COUNTRY, notes: "",
+  // For a GST invoice in the buyer's business name.
+  billing_name: "", billing_gstin: "",
 };
 
 const ADDRESS_LABELS = ["Home", "Work", "Other"];
@@ -56,6 +58,7 @@ const Checkout = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
+  const [wantsGstInvoice, setWantsGstInvoice] = useState(false);
   const [onlineAvailable, setOnlineAvailable] = useState(false);
   const [paymentChoice, setPaymentChoice] = useState("cod");
   // An online order that has been created but not yet paid: { order, token, method }.
@@ -273,6 +276,8 @@ const Checkout = () => {
         payment_method: paymentChoice === "cod" ? "cod" : "razorpay",
         shipping_method_id: shippingMethodId ? Number(shippingMethodId) : null,
         accept_policy: acceptPolicy,
+        billing_name: wantsGstInvoice ? form.billing_name.trim() : null,
+        billing_gstin: wantsGstInvoice ? form.billing_gstin.trim().toUpperCase() : null,
         items: items.map(({ id, quantity, size_id: sizeId }) => ({ product_id: id, quantity, ...(sizeId ? { size_id: sizeId } : {}) })),
       };
       const response = await fetch(`${apiUrl}/orders`, {
@@ -343,7 +348,7 @@ const Checkout = () => {
       {options.multiline ? (
         <textarea id={name} name={name} rows={options.rows || 2} autoComplete={options.autoComplete} placeholder={options.placeholder} className={`form-control ${fieldErrors[name] ? "is-invalid" : ""}`} value={form[name]} onChange={changeField} required={options.required} />
       ) : (
-        <input id={name} name={name} type={options.type || "text"} autoComplete={options.autoComplete} placeholder={options.placeholder} className={`form-control ${fieldErrors[name] ? "is-invalid" : ""}`} value={form[name]} onChange={changeField} required={options.required} />
+        <input id={name} name={name} type={options.type || "text"} autoComplete={options.autoComplete} placeholder={options.placeholder} maxLength={options.maxLength} className={`form-control ${options.className || ""} ${fieldErrors[name] ? "is-invalid" : ""}`} value={form[name]} onChange={changeField} required={options.required} />
       )}
       {fieldErrors[name] && <div className="invalid-feedback">{fieldErrors[name]}</div>}
     </div>
@@ -495,6 +500,18 @@ const Checkout = () => {
                     )}
                   </>}
                   {input("notes", "Delivery notes (optional)", { multiline: true, placeholder: "Landmark, preferred time, gate code…" })}
+                  <div className="co-gst">
+                    <label className="form-check">
+                      <input type="checkbox" className="form-check-input" checked={wantsGstInvoice} onChange={(event) => setWantsGstInvoice(event.target.checked)} />
+                      <span className="form-check-label">Buying for a business? Add your GSTIN to the invoice to claim input tax credit.</span>
+                    </label>
+                    {wantsGstInvoice && (
+                      <div className="row mt-2">
+                        <div className="col-md-7">{input("billing_name", "Business name (as registered)", { autoComplete: "organization", required: true })}</div>
+                        <div className="col-md-5">{input("billing_gstin", "GSTIN", { placeholder: "e.g. 08ABCDE1234F1Z5", required: true, maxLength: 15, className: "text-uppercase" })}</div>
+                      </div>
+                    )}
+                  </div>
                 </>, awaitingSignIn)}
 
                 {section(3, "Delivery method", "Every option includes live order tracking.", loadingShipping ? (
@@ -554,6 +571,7 @@ const Checkout = () => {
                     <div><dt>Delivery{shipping ? ` · ${shipping.name}` : ""}</dt><dd className={shippingAmount === 0 ? "is-free" : ""}>{shippingAmount === 0 ? "Free" : formatPrice(shippingAmount)}</dd></div>
                     <div className="cart-summary-total"><dt>Total</dt><dd>{formatPrice(total)}</dd></div>
                   </dl>
+                  <p className="co-gst-note">Prices include GST. Your invoice is emailed when the order ships.</p>
                   {usingSavedAddress && <div className="checkout-ship-to small mt-3"><span className="text-muted">Delivering to</span><strong>{selectedAddress.full_name}, {selectedAddress.city} {selectedAddress.postal_code}</strong></div>}
                   {pendingPayment ? (
                     <div className="co-pending">

@@ -42,12 +42,14 @@ export default function MoreScreen({ portal }) {
         {portal === "admin" ? (
           <>
             <ListRow icon="people-outline" title="Users" subtitle="Customers, sellers and staff" onPress={() => router.push("/admin/users")} />
+            <ListRow icon="storefront-outline" title="Sellers" subtitle="Approve new sellers, deactivate accounts" onPress={() => router.push("/admin/sellers")} />
             <ListRow icon="pie-chart-outline" title="Commissions" subtitle="Seller earnings and payouts" onPress={() => router.push("/admin/commissions")} />
             <ListRow icon="albums-outline" title="Catalog" subtitle="Categories, brands and shipping" onPress={() => router.push("/admin/catalog")} />
           </>
         ) : (
           <>
             <ListRow icon="wallet-outline" title="Earnings" subtitle="What you’ve earned and been paid" onPress={() => router.push("/vendor/earnings")} />
+            <ListRow icon="briefcase-outline" title="Business & GST" subtitle="GSTIN and address for your invoices" onPress={() => router.push("/vendor/business")} />
             <ListRow icon="add-circle-outline" title="Add a product" subtitle="List something new" onPress={() => router.push("/vendor/product-form")} />
           </>
         )}

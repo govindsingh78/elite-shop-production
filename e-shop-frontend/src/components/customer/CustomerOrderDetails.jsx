@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { formatPrice } from "../common/currency";
 import { orderItemPath } from "../common/productPath";
+import { invoiceUrl } from "../admin/gst/gst";
 import { currentMilestone, formatDateTime, lastKnownLocation, MILESTONES, timeAgo, trackingLabel } from "../common/tracking";
 import CustomerShell from "./CustomerShell";
 import { customerRequest, formatDate } from "./customerApi";
@@ -165,7 +166,16 @@ const CustomerOrderDetails = () => {
                   <div><dt>Subtotal</dt><dd>{formatPrice(order.subtotal)}</dd></div>
                   <div><dt>Shipping{order.shipping_method ? ` · ${order.shipping_method.name}` : ""}</dt><dd>{Number(order.shipping_amount) ? formatPrice(order.shipping_amount) : "Free"}</dd></div>
                   <div className="customer-totals-grand"><dt>Total</dt><dd>{formatPrice(order.total)}</dd></div>
+                  {Number(order.tax_total) > 0 && <div className="customer-totals-gst"><dt>Includes GST</dt><dd>{formatPrice(order.tax_total)}</dd></div>}
                 </dl>
+                <div className="customer-invoices">
+                  {order.invoice_links?.length ? order.invoice_links.map((invoice) => (
+                    <a key={invoice.id} href={invoiceUrl(invoice)} target="_blank" rel="noreferrer" className="customer-invoice">
+                      <span aria-hidden="true">⤓</span>
+                      <span><strong>{invoice.status === "cancelled" ? "Cancelled invoice" : "Download invoice"} {invoice.number}</strong><small>From {invoice.supplier_name}{order.invoice_links.length > 1 ? " · one invoice per seller" : ""}</small></span>
+                    </a>
+                  )) : order.status !== "cancelled" && <p className="text-muted small mb-0">Your GST invoice will be here once the order ships.</p>}
+                </div>
               </section>
             </div>
             <div className="col-lg-5 d-flex flex-column gap-4">

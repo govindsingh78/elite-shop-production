@@ -119,6 +119,7 @@ const OrderConfirmation = () => {
                         <div><dt>Subtotal</dt><dd>{formatPrice(order.subtotal)}</dd></div>
                         <div><dt>Delivery</dt><dd className={Number(order.shipping_amount) === 0 ? "is-free" : ""}>{Number(order.shipping_amount) === 0 ? "Free" : formatPrice(order.shipping_amount)}</dd></div>
                         <div className="cart-summary-total"><dt>Total</dt><dd>{formatPrice(order.total)}</dd></div>
+                        {Number(order.tax_total) > 0 && <div className="co-gst-line"><dt>Includes GST</dt><dd>{formatPrice(order.tax_total)}</dd></div>}
                       </dl>
                       {order.payment_method === "razorpay" && order.payment_status === "paid" && (
                         <div className="oc-cod oc-paid">

@@ -27,7 +27,9 @@ async function preparePhoto(asset) {
   return image.saveAsync({ compress: 0.82, format: SaveFormat.JPEG });
 }
 
-const EMPTY = { title: "", price: "", compare_price: "", sku: "", barcode: "", qty: "", category_id: "", brand_id: "", short_description: "", description: "", status: true, is_featured: false, hasSizes: false, sizes: [] };
+const GST_RATE_OPTIONS = [{ value: "", label: "Same as category" }, ...[0, 3, 5, 12, 18, 28, 40].map((rate) => ({ value: String(rate), label: `${rate}%` }))];
+
+const EMPTY = { title: "", price: "", compare_price: "", sku: "", barcode: "", qty: "", category_id: "", brand_id: "", short_description: "", description: "", status: true, is_featured: false, hasSizes: false, sizes: [], hsn_code: "", gst_rate: "" };
 
 /** Create or edit a product. Vendors manage their own listings, which an admin reviews before they go live; only admins can feature a product. */
 export default function ProductFormScreen({ portal: portalKey }) {
@@ -38,7 +40,8 @@ export default function ProductFormScreen({ portal: portalKey }) {
   const editing = !!id;
 
   const [values, setValues] = useState(EMPTY);
-  const [options, setOptions] = useState({ categories: [], brands: [], sizes: [] });
+  // sellerRestriction: why a seller can't save products yet (waiting for approval, or deactivated).
+  const [options, setOptions] = useState({ categories: [], brands: [], sizes: [], sellerRestriction: null });
   const [existingImages, setExistingImages] = useState([]);
   const [review, setReview] = useState(null);
   const [uploads, setUploads] = useState([]);
@@ -53,7 +56,7 @@ export default function ProductFormScreen({ portal: portalKey }) {
       request(portal.productOptions),
       editing ? request(`${portal.products}/${id}`) : Promise.resolve(null),
     ]).then(([optionData, product]) => {
-      setOptions({ categories: optionData.categories || [], brands: optionData.brands || [], sizes: optionData.sizes || [] });
+      setOptions({ categories: optionData.categories || [], brands: optionData.brands || [], sizes: optionData.sizes || [], sellerRestriction: optionData.seller_restriction || null });
       if (product) {
         setValues({
           title: product.title || "",
@@ -68,6 +71,8 @@ export default function ProductFormScreen({ portal: portalKey }) {
           description: product.description || "",
           status: !!product.status,
           is_featured: product.is_featured === "yes",
+          hsn_code: product.hsn_code || "",
+          gst_rate: product.gst_rate == null ? "" : String(Number(product.gst_rate)),
           hasSizes: (product.sizes || []).length > 0,
           sizes: (product.sizes || []).map((size) => ({ size_id: size.size_id, qty: size.qty == null ? "" : String(size.qty) })),
         });
@@ -143,6 +148,9 @@ export default function ProductFormScreen({ portal: portalKey }) {
       status: values.status ? 1 : 0,
       is_featured: values.is_featured ? "yes" : "no",
       gallery: uploads.map((upload) => upload.id),
+      // Blank = the category's GST.
+      hsn_code: values.hsn_code.trim() || null,
+      gst_rate: values.gst_rate === "" ? null : Number(values.gst_rate),
     };
     try {
       const result = await request(editing ? `${portal.products}/${id}` : portal.products, { method: editing ? "PUT" : "POST", body });
@@ -184,12 +192,13 @@ export default function ProductFormScreen({ portal: portalKey }) {
   return (
     <>
       <Stack.Screen options={{ title: editing ? "Edit product" : "New product" }} />
-      <Screen keyboard footer={<Button title={saveTitle} icon="checkmark" loading={saving} disabled={uploading} onPress={save} />}>
+      <Screen keyboard footer={<Button title={saveTitle} icon="checkmark" loading={saving} disabled={uploading || Boolean(options.sellerRestriction)} onPress={save} />}>
         {error ? <Notice tone="error" message={error} style={{ marginBottom: 12 }} /> : null}
         {!isVendor && review && (review.vendor_id || review.approval_status !== "approved") ? (
           <ReviewCard product={review} onDone={(message) => { toast(message); router.back(); }} />
         ) : null}
-        {isVendor ? <SellerReviewNotice status={editing ? review?.approval_status : "new"} note={review?.review_note} /> : null}
+        {options.sellerRestriction ? <Notice tone="warning" message={options.sellerRestriction} style={styles.card} /> : null}
+        {isVendor && !options.sellerRestriction ? <SellerReviewNotice status={editing ? review?.approval_status : "new"} note={review?.review_note} /> : null}
 
         <Card style={styles.card}>
           <T variant="h3" style={{ marginBottom: 4 }}>Photos</T>
@@ -230,6 +239,11 @@ export default function ProductFormScreen({ portal: portalKey }) {
             <TextField label="Stock qty" keyboardType="number-pad" value={values.hasSizes ? sizeTotal : values.qty} onChangeText={(text) => change("qty", text.replace(/[^0-9]/g, ""))} error={errors.qty} style={{ flex: 1 }} hint={values.hasSizes ? "Added up from sizes" : "Blank = unlimited"} editable={!values.hasSizes} />
           </Row>
           <TextField label="Barcode (optional)" value={values.barcode} onChangeText={(text) => change("barcode", text)} error={errors.barcode} />
+          <Row gap={10} align="flex-start">
+            <TextField label="HSN code" keyboardType="number-pad" maxLength={8} placeholder="From category" value={values.hsn_code} onChangeText={(text) => change("hsn_code", text.replace(/[^0-9]/g, ""))} error={errors.hsn_code} style={{ flex: 1 }} />
+            <SelectField label="GST rate" value={values.gst_rate} options={GST_RATE_OPTIONS} onChange={(value) => change("gst_rate", value)} error={errors.gst_rate} style={{ flex: 1 }} />
+          </Row>
+          <T variant="small" style={{ marginTop: -6, marginBottom: 6 }}>Leave these to use the category’s GST. Prices include GST.</T>
         </Card>
 
         <Card style={styles.card}>

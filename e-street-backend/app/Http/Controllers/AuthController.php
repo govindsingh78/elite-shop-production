@@ -127,7 +127,7 @@ class AuthController extends Controller
         ], 201);
     }
 
-    /** Register a vendor account. New vendors are sellers and await review. */
+    /** Register a vendor account. New sellers wait for an admin to approve them before they can list products. */
     public function registerVendor(Request $request)
     {
         $validated = $request->validate([
@@ -136,18 +136,25 @@ class AuthController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
-        $user = User::create([
+        $user = self::createSeller([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'role' => 'seller',
         ]);
-        Messenger::send(User::storeAdmins(), new SellerJoined($user));
 
         return response()->json([
-            'message' => 'Vendor account created. You can now sign in to the vendor portal.',
+            'message' => 'Seller account created. Sign in to add your business details; you can list products once our team approves your account.',
             'user' => $user,
         ], 201);
+    }
+
+    /** A seller who signed up themselves (with a password or Google): waiting for approval, and the admins are told. */
+    public static function createSeller(array $attributes): User
+    {
+        $user = User::forceCreate([...$attributes, 'role' => 'seller', 'seller_status' => User::SELLER_PENDING, 'seller_status_at' => now()]);
+        Messenger::send(User::storeAdmins(), new SellerJoined($user));
+
+        return $user;
     }
 
     public function forgotPassword(Request $request)

@@ -5,15 +5,16 @@ import Sidebar from "../../common/Sidebar";
 import { apiUrl } from "../../common/http";
 import { toast } from "react-toastify";
 import ProductForm from "./ProductForm";
+import { SellerRestriction } from "../sellers/SellerBits";
 import { portalConfig, portalToken } from "../portal";
 import { ReviewPanel, SellerReviewNotice } from "./ReviewBits";
-import { productPayload, sizeValues, sizesProblem } from "./productPayload";
+import { gstValues, productPayload, sizeValues, sizesProblem } from "./productPayload";
 
 const apiOrigin = apiUrl.replace(/\/api\/?$/, "");
 const emptyValues = {
   title: "", price: "", compare_price: "", description: "", short_description: "",
   category_id: "", brand_id: "", sku: "", barcode: "", qty: "0", status: "1",
-  is_featured: "no", gallery: [], hasSizes: false, sizes: [],
+  is_featured: "no", gallery: [], hasSizes: false, sizes: [], hsn_code: "", gst_rate: "",
 };
 
 const EditProduct = ({ portal = "admin" }) => {
@@ -26,6 +27,7 @@ const EditProduct = ({ portal = "admin" }) => {
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
   const [sizeOptions, setSizeOptions] = useState([]);
+  const [sellerRestriction, setSellerRestriction] = useState(null);
   const [loadingData, setLoadingData] = useState(true);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -48,6 +50,7 @@ const EditProduct = ({ portal = "admin" }) => {
         setCategories(optionsData.categories || []);
         setBrands(optionsData.brands || []);
         setSizeOptions(optionsData.sizes || []);
+        setSellerRestriction(optionsData.seller_restriction || null);
         setValues({
           ...emptyValues,
           title: productData.title || "",
@@ -65,6 +68,7 @@ const EditProduct = ({ portal = "admin" }) => {
           is_featured: productData.is_featured || "no",
           gallery: [],
           ...sizeValues(productData),
+          ...gstValues(productData),
         });
         const images = productData.images?.length
           ? productData.images.map((image) => image.image)
@@ -130,6 +134,7 @@ const EditProduct = ({ portal = "admin" }) => {
         )}
         {loadingData ? <p role="status">Loading product...</p> : (
           <div className="card shadow-sm"><div className="card-body">
+            {sellerRestriction && <SellerRestriction message={sellerRestriction} />}
             {portal === "vendor" && review && <SellerReviewNotice status={review.approval_status} note={review.review_note} />}
             {currentImages.length > 0 && (
               <div className="mb-4">
@@ -142,7 +147,7 @@ const EditProduct = ({ portal = "admin" }) => {
                 <p className="form-text">Existing images are retained. Add more images below if needed.</p>
               </div>
             )}
-            <ProductForm portal={portal} values={values} setValues={setValues} categories={categories} brands={brands} sizeOptions={sizeOptions} onSubmit={handleSubmit} errors={errors} loading={loading} submitLabel={portal === "vendor" && review?.approval_status === "rejected" ? "Save & resubmit" : "Save changes"} />
+            <ProductForm blocked={Boolean(sellerRestriction)} portal={portal} values={values} setValues={setValues} categories={categories} brands={brands} sizeOptions={sizeOptions} onSubmit={handleSubmit} errors={errors} loading={loading} submitLabel={portal === "vendor" && review?.approval_status === "rejected" ? "Save & resubmit" : "Save changes"} />
           </div></div>
         )}
         {!loadingData && errors.general && <button className="btn btn-link mt-2" onClick={() => navigate(config.productsPath)}>Back to products</button>}

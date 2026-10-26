@@ -29,6 +29,12 @@ class User extends Authenticatable
         return $this->hasMany(Order::class);
     }
 
+    /** A seller's own products. */
+    public function products()
+    {
+        return $this->hasMany(Product::class, 'vendor_id');
+    }
+
     /** The account roles each sign-in portal accepts. */
     public const PORTAL_ROLES = [
         'admin' => ['admin', 'superadmin'],
@@ -37,6 +43,48 @@ class User extends Authenticatable
     ];
 
     public const ADMIN_ROLES = ['admin', 'superadmin'];
+
+    /**
+     * A seller account's standing. Sellers who sign up themselves start pending; an admin approves them,
+     * declines them (rejected), or later deactivates them. Only approved sellers can list products and handle
+     * orders, and only their products are in the store. The others can still sign in to see where they stand.
+     */
+    public const SELLER_PENDING = 'pending';
+    public const SELLER_APPROVED = 'approved';
+    public const SELLER_REJECTED = 'rejected';
+    public const SELLER_DEACTIVATED = 'deactivated';
+    public const SELLER_STATUSES = [self::SELLER_PENDING, self::SELLER_APPROVED, self::SELLER_REJECTED, self::SELLER_DEACTIVATED];
+    public const INACTIVE_SELLER_STATUSES = [self::SELLER_PENDING, self::SELLER_REJECTED, self::SELLER_DEACTIVATED];
+
+    protected static function booted(): void
+    {
+        // A seller made any other way than signing up (by an admin, or a role change) starts approved.
+        static::saving(function (User $user) {
+            if ($user->role === 'seller' && $user->seller_status === null) {
+                $user->seller_status = self::SELLER_APPROVED;
+                $user->seller_status_at = now();
+            }
+        });
+    }
+
+    /** Whether this account's products may be in the store (always true for accounts that aren't sellers). */
+    public function canSell(): bool
+    {
+        return !in_array($this->seller_status, self::INACTIVE_SELLER_STATUSES, true);
+    }
+
+    /** Why a seller can't list products or handle orders yet, or null if they can. */
+    public function sellerRestriction(): ?string
+    {
+        $reason = $this->seller_status_note ? ': ' . rtrim($this->seller_status_note, '. ') . '.' : '.';
+
+        return match ($this->seller_status) {
+            self::SELLER_PENDING => 'Your seller account is waiting for approval. You can list products once our team approves it — add your business and GST details to help us verify you.',
+            self::SELLER_REJECTED => "Your seller application wasn’t approved{$reason} Contact Elitezaar support if you have questions.",
+            self::SELLER_DEACTIVATED => "Your seller account has been deactivated{$reason} Your products are hidden from the store. Contact Elitezaar support if you have questions.",
+            default => null,
+        };
+    }
 
     /** Admin roles are reserved for the addresses in config/admin.php. */
     public static function isApprovedAdminEmail(?string $email): bool
@@ -85,6 +133,10 @@ class User extends Authenticatable
         'phone',
         'role',
         'password',
+        'legal_name',
+        'gstin',
+        'business_address',
+        'business_state',
     ];
 
     /**
@@ -109,6 +161,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'commission_rate' => 'decimal:2',
+            'seller_status_at' => 'datetime',
         ];
     }
 }

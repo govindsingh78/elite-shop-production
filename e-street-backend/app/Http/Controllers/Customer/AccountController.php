@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CustomerAddressRequest;
 use App\Models\Order;
+use App\Services\Invoices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -68,7 +69,7 @@ class AccountController extends Controller
     {
         $order = $this->ordersFor($request)->with(['items.product:id,image,slug', 'shippingMethod:id,name', 'trackingEvents'])->findOrFail($order);
 
-        return response()->json($order);
+        return response()->json($order->setAttribute('invoice_links', Invoices::linksFor($order)));
     }
 
     public function addresses(Request $request)

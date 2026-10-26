@@ -82,6 +82,12 @@ class OrderProgress extends StoreMessage
         foreach ($this->order->items as $item) {
             $mail->line(self::itemLine($item));
         }
+        // Invoices are issued when the order ships.
+        if (in_array($this->milestone, ['dispatched', 'delivered'], true)) {
+            foreach ($this->order->invoices()->where('status', 'issued')->orderBy('id')->get() as $invoice) {
+                $mail->line("[Download invoice {$invoice->number}](" . self::siteUrl($invoice->printPath()) . ") from {$invoice->supplier['name']}");
+            }
+        }
 
         return $mail;
     }

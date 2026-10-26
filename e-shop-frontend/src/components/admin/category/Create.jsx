@@ -5,6 +5,8 @@ import Sidebar from "../../common/Sidebar";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { apiUrl } from "../../common/http";
+import GstFields from "../gst/GstFields";
+import { gstFieldValues, gstPayload } from "../gst/gst";
 
 const Create = () => {
   const [searchParams] = useSearchParams();
@@ -13,6 +15,8 @@ const Create = () => {
   const [parents, setParents] = useState([]); // Main categories that can hold subcategories
   const [status, setStatus] = useState("1"); // State for category status (default: Active)
   const [loading, setLoading] = useState(false); // State for loading
+  const [gst, setGst] = useState(gstFieldValues); // HSN code and GST rate for the category's products
+  const [gstErrors, setGstErrors] = useState({});
 
   // Only main categories can hold subcategories (one level deep).
   useEffect(() => {
@@ -40,15 +44,18 @@ const Create = () => {
           name,
           status,
           parent_id: parentId ? Number(parentId) : null,
+          ...gstPayload(gst),
         }),
       });
 
       const data = await response.json();
+      setGstErrors(Object.fromEntries(Object.entries(data.errors || {}).map(([field, messages]) => [field, messages[0]])));
 
       if (response.ok) {
         toast.success(parentId ? "Subcategory created successfully!" : "Category created successfully!");
         setName(""); // Clear the form
         setStatus("1"); // Reset status to Active
+        setGst(gstFieldValues());
         // The parent stays selected so several subcategories can be added in a row.
         if (!parentId && data.data) setParents((current) => [...current, data.data].sort((a, b) => a.name.localeCompare(b.name)));
       } else {
@@ -125,6 +132,8 @@ const Create = () => {
                 <option value="0">Blocked</option>
               </select>
             </div>
+
+            <GstFields values={gst} onChange={setGst} errors={gstErrors} />
 
             <button
               type="submit"

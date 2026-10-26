@@ -2619,3 +2619,78 @@ a.sp-card-quick { display: flex; align-items: center; justify-content: center; g
     .btn { margin-right: 4px; }
 }
 .size-chip { display: inline-block; min-width: 44px; border: 1.5px solid #dce5dd; border-radius: 10px; padding: 3px 10px; text-align: center; }
+
+/* ---------- GST & invoices ---------- */
+.gst-fields { margin: 0 0 1.25rem; border: 1px solid #e3e9e5; border-radius: 14px; padding: 14px 16px; background: #fbfcfa;
+    legend { float: none; width: auto; margin: 0 0 8px; padding: 0; color: #13291f; font-size: 1rem; font-weight: 700; }
+}
+.inv-filters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; margin-bottom: 16px;
+    label, .inv-search { display: flex; flex-direction: column; gap: 4px; margin: 0; }
+    span { color: #66756c; font-size: .82rem; font-weight: 600; }
+    .inv-search { flex: 1; min-width: 240px; }
+}
+.inv-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 0 0 16px;
+    div { border: 1px solid #e3e9e5; border-radius: 12px; padding: 10px 14px; background: #fff; }
+    dt { color: #66756c; font-size: .78rem; font-weight: 600; }
+    dd { margin: 2px 0 0; color: #13291f; font-size: 1.1rem; font-weight: 700; }
+    .is-grand { border-color: #18372e; background: #f3f8f5; }
+}
+.inv-table {
+    td small { display: block; color: #8b968f; font-size: .75rem; }
+    tr.is-cancelled td { color: #a6ada7; }
+}
+.order-invoices { margin: 0; padding: 0; list-style: none;
+    li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 0; }
+    li + li { border-top: 1px solid #edf0eb; }
+    strong, small { display: block; }
+    small { color: #8b968f; }
+}
+.co-gst { margin: 4px 0 6px; border-top: 1px dashed #dfe5e1; padding-top: 12px; }
+.co-gst-note { margin: 10px 0 0; color: #8b968f; font-size: .82rem; }
+.co-gst-line, .customer-totals-gst { color: #8b968f; font-size: .86rem; }
+.customer-invoices { display: grid; gap: 8px; margin-top: 16px; }
+.customer-invoice { display: flex; align-items: center; gap: 12px; border: 1px solid #dfe7df; border-radius: 12px; padding: 10px 14px; color: #13291f; text-decoration: none; transition: border-color .15s ease;
+    > span:first-child { display: grid; width: 34px; height: 34px; flex-shrink: 0; place-items: center; border-radius: 10px; color: #2f6f63; background: #e8f4f0; font-weight: 700; }
+    strong, small { display: block; }
+    small { color: #8b968f; }
+    &:hover { border-color: #18372e; }
+}
+
+/* ---------- Sellers: approval and deactivation ---------- */
+.seller-status { display: inline-block; vertical-align: middle; border-radius: 999px; padding: 2px 10px; font-size: .74rem; font-weight: 700; letter-spacing: .01em;
+    &.is-pending { color: #9a6512; background: #fdf0d6; }
+    &.is-approved { color: #1f6f63; background: #dcefe8; }
+    &.is-rejected, &.is-deactivated { color: #a63d2f; background: #fbe4df; }
+}
+.seller-search { display: flex; gap: 8px; max-width: 560px; margin-bottom: 16px; }
+.seller-list { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
+.seller-card { border: 1px solid rgba(26, 45, 38, .08); border-left: 4px solid #cfe1d9; border-radius: 16px; padding: 18px 20px; background: #fff; box-shadow: 0 9px 25px rgba(25, 47, 40, .045);
+    &.is-pending { border-left-color: #e0a458; }
+    &.is-rejected, &.is-deactivated { border-left-color: #d9877a; background: #fffdfc; }
+}
+.seller-card-head { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+.seller-avatar { display: grid; width: 44px; height: 44px; flex-shrink: 0; place-items: center; border-radius: 14px; color: #9a6512; background: #f6e6c6; font-weight: 800; }
+.seller-card-title { flex: 1; min-width: 200px;
+    h2 { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; color: #13291f; font-size: 1.08rem; font-weight: 700; }
+    p { margin: 2px 0 0; color: #78847e; font-size: .86rem; overflow-wrap: anywhere; }
+}
+.seller-card-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.seller-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px 18px; margin: 14px 0 0; border-top: 1px solid #edf0eb; padding-top: 12px;
+    dt { color: #8b968f; font-size: .76rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+    dd { margin: 2px 0 0; color: #223a31; overflow-wrap: anywhere; }
+}
+.seller-address { margin: 10px 0 0; color: #66756c; font-size: .88rem; white-space: pre-line; }
+.seller-note { margin: 12px 0 0; border-radius: 10px; padding: 9px 12px; color: #7c3328; background: #fcefec; font-size: .9rem; }
+.seller-reason { margin-top: 14px; border: 1px solid #f0d3cc; border-radius: 12px; padding: 14px; background: #fffaf8; }
+.seller-reason-help { margin: 8px 0 0; color: #66756c; font-size: .86rem;
+    strong { color: #7c3328; font-weight: 600; }
+}
+.seller-card-link { display: inline-block; margin-top: 12px; color: #357d70; font-size: .86rem; font-weight: 700; text-decoration: none;
+    &:hover { color: #1c594e; }
+}
+@media (max-width: 575.98px) {
+    .seller-card { padding: 16px; }
+    .seller-card-actions { width: 100%;
+        .btn { flex: 1; }
+    }
+}

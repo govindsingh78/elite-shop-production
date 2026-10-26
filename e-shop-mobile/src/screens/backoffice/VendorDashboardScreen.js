@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { OrderCard } from "@/components/OrderBits";
+import { SellerAccountNotice } from "@/components/SellerBits";
 import SupportCard from "@/components/SupportCard";
 import { Button, Card, ListRow, Loader, Notice, Pill, Row, Screen, SectionHeader, Stat, T } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
@@ -15,6 +16,8 @@ export default function VendorDashboardScreen() {
   const { request, user } = useAuth();
   const { data, loading, refreshing, error, reload } = useLoad(() => request("/vendor/dashboard"), [request], { refocus: true });
   const stats = data?.stats;
+  // Until approved (or once deactivated) a seller can look around but not list products.
+  const canSell = data?.account?.can_sell !== false;
 
   return (
     <Screen refreshing={refreshing} onRefresh={reload}>
@@ -23,15 +26,16 @@ export default function VendorDashboardScreen() {
         <Text style={styles.heroTitle}>Hello, {firstName(user?.name)}</Text>
         <T variant="body" color="#c9d3c7">{stats ? (stats.to_ship ? `${stats.to_ship} order${stats.to_ship === 1 ? "" : "s"} waiting to ship.` : "You’re all caught up on shipping.") : "Here’s how your store is doing."}</T>
         <Row gap={10} style={{ marginTop: 16 }}>
-          <Button title="Add product" variant="gold" icon="add" small block={false} onPress={() => router.push("/vendor/product-form")} />
+          {canSell ? <Button title="Add product" variant="gold" icon="add" small block={false} onPress={() => router.push("/vendor/product-form")} /> : null}
           <Button title="Orders" variant="light" icon="receipt-outline" small block={false} onPress={() => router.push("/vendor/orders")} />
         </Row>
       </LinearGradient>
 
       {error ? <Notice tone="error" message={error} style={{ marginTop: 14 }} /> : null}
+      <SellerAccountNotice account={data?.account} style={{ marginTop: 14 }} />
       {loading ? <Loader /> : stats ? (
         <>
-          {stats.pending_review || stats.rejected ? (
+          {canSell && (stats.pending_review || stats.rejected) ? (
             <Pressable onPress={() => router.push({ pathname: "/vendor/products", params: { approval: stats.rejected ? "rejected" : "pending" } })} style={({ pressed }) => [{ marginTop: 14 }, pressed && { opacity: 0.85 }]}>
               <Notice
                 tone={stats.rejected ? "error" : "warning"}

@@ -10,7 +10,9 @@ class Category extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'status', 'parent_id'];
+    protected $fillable = ['name', 'status', 'parent_id', 'hsn_code', 'gst_rate', 'gst_rate_high', 'gst_threshold'];
+
+    protected $casts = ['gst_rate' => 'float', 'gst_rate_high' => 'float', 'gst_threshold' => 'float'];
 
     protected $hidden = [];
 

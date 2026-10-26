@@ -3,6 +3,7 @@ import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import PagedList from "@/components/PagedList";
+import { SELLER_STATUSES } from "@/components/SellerBits";
 import { Chip, EmptyState, IconButton, Pill, T } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import { productImageUrl } from "@/lib/config";
@@ -88,6 +89,7 @@ function ProductRow({ product, onPress, portalKey }) {
       <View style={{ flex: 1 }}>
         <T variant="title" numberOfLines={2}>{product.title}</T>
         <T variant="small" numberOfLines={1}>SKU {product.sku}{product.category?.name ? ` · ${[product.category.parent?.name, product.category.name].filter(Boolean).join(" › ")}` : ""}{showVendor && product.vendor?.name ? ` · ${product.vendor.name}` : ""}</T>
+        {showVendor && product.vendor?.seller_status && product.vendor.seller_status !== "approved" ? <T variant="small" color={colors.danger}>Seller {SELLER_STATUSES[product.vendor.seller_status]?.label.toLowerCase()} · hidden from store</T> : null}
         <View style={styles.rowBottom}>
           <Text style={styles.price}>{formatPrice(product.price)}</Text>
           {approval ? <Pill label={approvalLabel} color={approval.color} background={approval.background} /> : null}

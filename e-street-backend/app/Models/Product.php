@@ -96,6 +96,8 @@ class Product extends Model
         'approval_status',
         'review_note',
         'reviewed_at',
+        'hsn_code',
+        'gst_rate',
     ];
 
     protected $casts = [
@@ -106,15 +108,17 @@ class Product extends Model
         'reviewed_at' => 'datetime',
     ];
 
-    /** Products shoppers can see and buy: switched on and approved by an admin. */
+    /** Products shoppers can see and buy: switched on, approved by an admin, and not from an inactive seller. */
     public function scopeOnStorefront($query)
     {
-        return $query->where('status', 1)->where('approval_status', self::APPROVED);
+        return $query->where('status', 1)->where('approval_status', self::APPROVED)
+            ->whereDoesntHave('vendor', fn ($vendor) => $vendor->whereIn('seller_status', User::INACTIVE_SELLER_STATUSES));
     }
 
     public function isOnStorefront(): bool
     {
-        return (int) $this->status === 1 && $this->approval_status === self::APPROVED;
+        return (int) $this->status === 1 && $this->approval_status === self::APPROVED
+            && ($this->vendor_id === null || $this->vendor?->canSell() !== false);
     }
 
     public function vendor()

@@ -142,13 +142,13 @@ class GoogleAuthController extends Controller
             throw new RuntimeException("There’s no admin account for {$profile['email']}.");
         }
 
-        $user = User::create([
+        $attributes = [
             'name' => $profile['name'],
             'email' => $profile['email'],
             // Never used: they sign in with Google, or set a password with "Forgot password".
             'password' => Str::random(40),
-            'role' => $portal === 'vendor' ? 'seller' : 'customer',
-        ]);
+        ];
+        $user = $portal === 'vendor' ? AuthController::createSeller($attributes) : User::create([...$attributes, 'role' => 'customer']);
         $user->forceFill(['google_id' => $profile['sub'], 'email_verified_at' => now()])->save();
 
         return [$user, true];

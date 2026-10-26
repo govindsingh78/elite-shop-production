@@ -8,6 +8,7 @@ use App\Models\OrderItem;
 use App\Models\OrderTrackingEvent;
 use App\Models\Product;
 use App\Services\Commissions;
+use App\Services\Invoices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -25,9 +26,19 @@ class OrderController extends Controller
         $soldItems = OrderItem::query()
             ->where('vendor_id', $vendorId)
             ->whereHas('order', fn ($query) => $query->where('status', '!=', 'cancelled'));
-        $earnings = Commissions::summary($request->user());
+        $seller = $request->user();
+        $earnings = Commissions::summary($seller);
 
         return response()->json([
+            // Where the seller stands: until approved (or once deactivated) they can look but not sell.
+            'account' => [
+                'status' => $seller->seller_status,
+                'note' => $seller->seller_status_note,
+                'changed_at' => $seller->seller_status_at,
+                'can_sell' => $seller->sellerRestriction() === null,
+                'restriction' => $seller->sellerRestriction(),
+                'business_details_added' => filled($seller->gstin) || filled($seller->business_address),
+            ],
             'stats' => [
                 'total_products' => (clone $products)->count(),
                 'active_products' => (clone $products)->onStorefront()->count(),
@@ -115,8 +126,9 @@ class OrderController extends Controller
         $order->setAttribute('vendor_subtotal', round((float) $vendorItems->sum('line_total'), 2));
         $order->setAttribute('can_manage_shipping', $ownsWholeOrder);
         if (!$ownsWholeOrder) {
-            $order->makeHidden(['subtotal', 'shipping_amount', 'total']);
+            $order->makeHidden(['subtotal', 'shipping_amount', 'total', 'tax_total', 'shipping_tax']);
         }
+        $order->setAttribute('invoice_links', Invoices::linksFor($order, $vendorId));
 
         return $order;
     }

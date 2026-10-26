@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { portalConfig, portalToken } from "../portal";
 import { ApprovalBadge } from "./ReviewBits";
 import { reviewProduct } from "./review";
+import { SELLER_STATUSES, sellerIsInactive } from "../sellers/sellers";
 
 const ManageProducts = ({ portal = "admin" }) => {
   const config = portalConfig(portal);
@@ -151,7 +152,12 @@ const ManageProducts = ({ portal = "admin" }) => {
                             {product.approval_status === "rejected" && product.review_note && <div className="small text-danger mt-1">{isVendor ? "Changes needed: " : "Note: "}{product.review_note}</div>}
                           </td>
                           <td>{product.sku}</td>
-                          {!isVendor && <td>{product.vendor?.name || <span className="text-muted">Store</span>}</td>}
+                          {!isVendor && (
+                            <td>
+                              {product.vendor?.name || <span className="text-muted">Store</span>}
+                              {sellerIsInactive(product.vendor?.seller_status) && <small className="d-block text-danger">Seller {SELLER_STATUSES[product.vendor.seller_status].short} · hidden from store</small>}
+                            </td>
+                          )}
                           <td>{product.category ? [product.category.parent?.name, product.category.name].filter(Boolean).join(" › ") : "—"}</td>
                           <td>{product.brand?.name || "—"}</td>
                           <td>{Number(product.price).toFixed(2)}</td>

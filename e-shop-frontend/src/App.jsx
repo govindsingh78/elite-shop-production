@@ -10,10 +10,14 @@ import PrivacyPolicy from './components/common/PrivacyPolicy';
 import Wishlist from './components/common/Wishlist';
 import ManageReviews from './components/admin/reviews/ManageReviews';
 import ManageCommissions from './components/admin/commissions/ManageCommissions';
+import ManageSellers from './components/admin/sellers/ManageSellers';
 import SellerCommission from './components/admin/commissions/SellerCommission';
 import VendorEarnings from './components/admin/commissions/VendorEarnings';
 import BulkProducts from './components/admin/bulk/BulkProducts';
 import ManageSizes from './components/admin/sizes/ManageSizes';
+import InvoiceList from './components/admin/gst/InvoiceList';
+import GstSettings from './components/admin/gst/GstSettings';
+import SellerBusiness from './components/admin/gst/SellerBusiness';
 import { WishlistProvider } from './components/context/WishlistProvider';
 import Product from './components/common/Product';
 import Cart from './components/common/Cart';
@@ -137,8 +141,13 @@ function App() {
           <Route path="/vendor/earnings" element={<AdminRequireAuth role="vendor"><VendorEarnings /></AdminRequireAuth>} />
           <Route path="/vendor/products/bulk" element={<AdminRequireAuth role="vendor"><BulkProducts portal="vendor" /></AdminRequireAuth>} />
           <Route path="/admin/bulk-products" element={<AdminRequireAuth><BulkProducts portal="admin" /></AdminRequireAuth>} />
+          <Route path="/admin/sellers" element={<AdminRequireAuth><ManageSellers /></AdminRequireAuth>} />
           <Route path="/admin/commissions" element={<AdminRequireAuth><ManageCommissions /></AdminRequireAuth>} />
           <Route path="/admin/manage-sizes" element={<AdminRequireAuth><ManageSizes /></AdminRequireAuth>} />
+          <Route path="/admin/invoices" element={<AdminRequireAuth><InvoiceList portal="admin" /></AdminRequireAuth>} />
+          <Route path="/admin/gst" element={<AdminRequireAuth><GstSettings /></AdminRequireAuth>} />
+          <Route path="/vendor/invoices" element={<AdminRequireAuth role="vendor"><InvoiceList portal="vendor" /></AdminRequireAuth>} />
+          <Route path="/vendor/business" element={<AdminRequireAuth role="vendor"><SellerBusiness /></AdminRequireAuth>} />
           <Route path="/admin/commissions/:id" element={<AdminRequireAuth><SellerCommission /></AdminRequireAuth>} />
           <Route path="/vendor/products/create" element={<AdminRequireAuth role="vendor"><CreateProduct portal="vendor" /></AdminRequireAuth>} />
           <Route path="/vendor/products/:id/edit" element={<AdminRequireAuth role="vendor"><EditProduct portal="vendor" /></AdminRequireAuth>} />

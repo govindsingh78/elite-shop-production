@@ -9,6 +9,7 @@ export default function VendorLayout() {
       <Stack.Screen name="product-form" options={{ title: "Product" }} />
       <Stack.Screen name="order/[id]" options={{ title: "Order" }} />
       <Stack.Screen name="earnings" options={{ title: "Earnings" }} />
+      <Stack.Screen name="business" options={{ title: "Business & GST" }} />
     </Stack>
   );
 }
