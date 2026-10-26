@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Messenger;
 use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
@@ -42,6 +43,9 @@ class Order extends Model
             'paid_at' => now(),
             'payment_token' => null,
         ])->save();
+
+        // Online orders are confirmed to the shopper, sellers and admins once paid, not when created.
+        Messenger::orderPlaced($this);
     }
 
     /** Newest first, so the first event is the current position of the parcel. */
@@ -67,6 +71,7 @@ class Order extends Model
         ]);
 
         $this->syncStatusWithTracking();
+        Messenger::orderProgress($this, $event);
 
         return $event;
     }

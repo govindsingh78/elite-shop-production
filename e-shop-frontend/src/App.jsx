@@ -13,6 +13,7 @@ import ManageCommissions from './components/admin/commissions/ManageCommissions'
 import SellerCommission from './components/admin/commissions/SellerCommission';
 import VendorEarnings from './components/admin/commissions/VendorEarnings';
 import BulkProducts from './components/admin/bulk/BulkProducts';
+import ManageSizes from './components/admin/sizes/ManageSizes';
 import { WishlistProvider } from './components/context/WishlistProvider';
 import Product from './components/common/Product';
 import Cart from './components/common/Cart';
@@ -71,7 +72,7 @@ function App() {
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/shop/:categorySlug" element={<Shop />} />
           <Route path="/product" element={<Product />} />
-          <Route path="/product/:id" element={<Product />} />
+          <Route path="/product/:handle" element={<Product />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/checkout" element={<Checkout />} />
@@ -137,6 +138,7 @@ function App() {
           <Route path="/vendor/products/bulk" element={<AdminRequireAuth role="vendor"><BulkProducts portal="vendor" /></AdminRequireAuth>} />
           <Route path="/admin/bulk-products" element={<AdminRequireAuth><BulkProducts portal="admin" /></AdminRequireAuth>} />
           <Route path="/admin/commissions" element={<AdminRequireAuth><ManageCommissions /></AdminRequireAuth>} />
+          <Route path="/admin/manage-sizes" element={<AdminRequireAuth><ManageSizes /></AdminRequireAuth>} />
           <Route path="/admin/commissions/:id" element={<AdminRequireAuth><SellerCommission /></AdminRequireAuth>} />
           <Route path="/vendor/products/create" element={<AdminRequireAuth role="vendor"><CreateProduct portal="vendor" /></AdminRequireAuth>} />
           <Route path="/vendor/products/:id/edit" element={<AdminRequireAuth role="vendor"><EditProduct portal="vendor" /></AdminRequireAuth>} />

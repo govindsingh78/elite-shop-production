@@ -6,6 +6,7 @@ import AuthHero from "@/components/AuthHero";
 import SupportCard from "@/components/SupportCard";
 import { MilestoneBar, OrderCard, OrderStatusPill } from "@/components/OrderBits";
 import { Button, Card, ListRow, Loader, Notice, Row, Screen, SectionHeader, Stat, T } from "@/components/ui";
+import NotificationsRow from "@/components/NotificationsRow";
 import { useAuth } from "@/context/AuthContext";
 import { confirmAction } from "@/lib/confirm";
 import { firstName, formatPriceShort, initials } from "@/lib/format";
@@ -129,6 +130,7 @@ function CustomerDashboard() {
 
       <Card style={{ marginTop: 16 }}>
         <ListRow icon="receipt-outline" title="My orders" subtitle="Track deliveries and view past orders" onPress={() => router.push("/customer/orders")} />
+        <NotificationsRow />
         <ListRow icon="location-outline" title="Addresses" subtitle={`${stats?.saved_addresses ?? "Your"} saved address${stats?.saved_addresses === 1 ? "" : "es"}`} onPress={() => router.push("/customer/addresses")} />
         <ListRow icon="person-outline" title="Profile" subtitle="Name and phone number" onPress={() => router.push("/customer/profile")} />
         <ListRow icon="key-outline" title="Change password" onPress={() => router.push("/change-password")} />

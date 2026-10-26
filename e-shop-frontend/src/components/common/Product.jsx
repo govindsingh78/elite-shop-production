@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import Layout from "./Layout";
@@ -11,6 +11,7 @@ import WishlistButton from "./WishlistButton";
 import ProductReviews from "./ProductReviews";
 import { Stars } from "./ReviewBits";
 import { ORGANIZATION_ID, SITE_URL, breadcrumbs, summarize, useSeo } from "./seo";
+import { productPath } from "./productPath";
 
 const imageBase = apiUrl.replace(/\/api\/?$/, "");
 const LOW_STOCK = 5;
@@ -18,7 +19,7 @@ const largeImage = (name) => `${imageBase}/uploads/products/large/${encodeURICom
 
 /** schema.org Product, so search results can show the price, stock and rating. */
 const productSchema = (product, images) => {
-  const url = `${SITE_URL}/product/${product.id}`;
+  const url = `${SITE_URL}${productPath(product)}`;
   const reviews = Number(product.reviews_count || 0);
   return {
     "@type": "Product",
@@ -60,15 +61,22 @@ const perks = [
 ];
 
 const Product = () => {
-  const { id: routeId } = useParams();
+  // What follows /product/: the product's readable name, or an id or older name from an old link.
+  const { handle: routeHandle } = useParams();
   const [searchParams] = useSearchParams();
-  const id = routeId || searchParams.get("id");
+  const handle = routeHandle || searchParams.get("id");
+  // The address the page last loaded, so moving the URL on to the product's own name doesn't load it again.
+  const loadedFor = useRef(null);
   const navigate = useNavigate();
   const { addItem } = useCart();
   const [product, setProduct] = useState(null);
   const [images, setImages] = useState([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  // The chosen size, for products sold in sizes; sizeMissing flags "Add to bag" pressed before choosing one.
+  const [sizeId, setSizeId] = useState(null);
+  const [sizeMissing, setSizeMissing] = useState(false);
+  const sizePickerRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [related, setRelated] = useState([]);
@@ -78,6 +86,7 @@ const Product = () => {
   const [ratingSummary, setRatingSummary] = useState(null);
 
   useEffect(() => {
+    if (handle && handle === loadedFor.current) return undefined;
     const controller = new AbortController();
     const loadProduct = async () => {
       setLoading(true);
@@ -85,16 +94,23 @@ const Product = () => {
       setQuantity(1);
       setSelectedIndex(0);
       try {
-        if (!id) throw new Error("No product was selected.");
-        const response = await fetch(`${apiUrl}/storefront/products/${encodeURIComponent(id)}`, {
+        if (!handle) throw new Error("No product was selected.");
+        const response = await fetch(`${apiUrl}/storefront/products/${encodeURIComponent(handle)}`, {
           headers: { Accept: "application/json" },
           signal: controller.signal,
         });
         const result = await response.json();
         if (!response.ok) throw new Error(result.message || "Could not load this product.");
         const item = result.data;
+        loadedFor.current = item.slug;
         setProduct(item);
+        // A product in a single size (say Free Size) needs no choosing.
+        const sizes = item.sizes || [];
+        setSizeId(sizes.length === 1 && sizes[0].in_stock ? sizes[0].size_id : null);
+        setSizeMissing(false);
         setImages([...new Set([item.image, ...(item.images || []).map((image) => image.image)].filter(Boolean))]);
+        // Old links (/product/12, a name from before a rename) move on to the product's current address.
+        if (item.slug && handle !== item.slug) navigate(`${productPath(item)}${window.location.hash}`, { replace: true });
       } catch (requestError) {
         if (requestError.name !== "AbortError") setError(requestError.message || "Could not load this product.");
       } finally {
@@ -104,7 +120,7 @@ const Product = () => {
     loadProduct();
     window.scrollTo({ top: 0 });
     return () => controller.abort();
-  }, [id]);
+  }, [handle, navigate]);
 
   // "You may also like": other products from the same category.
   useEffect(() => {
@@ -117,8 +133,12 @@ const Product = () => {
     return () => controller.abort();
   }, [product]);
 
-  const stock = product?.qty;
-  const soldOut = stock === 0;
+  const sizes = product?.sizes || [];
+  const selectedSize = sizes.find((size) => size.size_id === sizeId) || null;
+  // With sizes, the product's own stock is the total of them; the chosen size has its own.
+  const totalStock = product?.qty;
+  const stock = selectedSize ? selectedSize.qty : totalStock;
+  const soldOut = totalStock === 0;
   const maxQuantity = stock ?? 999;
   const compare = Number(product?.compare_price || 0);
   const price = Number(product?.price || 0);
@@ -128,7 +148,7 @@ const Product = () => {
   useSeo(product ? {
     title: `${product.title}${product.brand?.name ? ` by ${product.brand.name}` : ""}`,
     description: summarize(`${product.short_description || product.description || ""} Buy ${product.title} for ${formatPrice(price)} on Elitezaar, with cash on delivery and live order tracking.`),
-    path: `/product/${product.id}`,
+    path: productPath(product),
     image: images[0] ? largeImage(images[0]) : undefined,
     type: "product",
     extraMeta: [["product:price:amount", price.toFixed(2)], ["product:price:currency", "INR"], ["product:availability", soldOut ? "out of stock" : "in stock"]],
@@ -139,22 +159,39 @@ const Product = () => {
         ["Shop", "/shop"],
         ...(product.category?.parent ? [[product.category.parent.name, `/shop/${product.category.parent.slug}`]] : []),
         ...(product.category ? [[product.category.name, `/shop/${product.category.slug}`]] : []),
-        [product.title, `/product/${product.id}`],
+        [product.title, productPath(product)],
       ]),
     ],
   } : error ? { title: "Product not found", noindex: true } : { ready: false });
 
   const changeQuantity = (next) => setQuantity(Math.min(Math.max(1, next), Math.max(1, maxQuantity)));
 
+  const chooseSize = (size) => {
+    setSizeId(size.size_id);
+    setSizeMissing(false);
+    setQuantity((current) => Math.max(1, Math.min(current, size.qty ?? 999)));
+  };
+
+  /** Products sold in sizes can't go in the bag until a size is chosen. */
+  const sizeChosen = () => {
+    if (!sizes.length || selectedSize) return true;
+    setSizeMissing(true);
+    sizePickerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    sizePickerRef.current?.querySelector("input:not(:disabled)")?.focus({ preventScroll: true });
+    return false;
+  };
+
   const addToBag = () => {
-    addItem(product, quantity);
+    if (!sizeChosen()) return;
+    addItem(product, quantity, selectedSize);
     setAdded(true);
     window.setTimeout(() => setAdded(false), 2200);
-    toast.success(<span>Added to your bag. <Link to="/cart">View bag</Link></span>);
+    toast.success(<span>{selectedSize ? `Size ${selectedSize.name} added` : "Added"} to your bag. <Link to="/cart">View bag</Link></span>);
   };
 
   const buyNow = () => {
-    addItem(product, quantity);
+    if (!sizeChosen()) return;
+    addItem(product, quantity, selectedSize);
     navigate("/checkout");
   };
 
@@ -244,13 +281,39 @@ const Product = () => {
                     </>}
                   </div>
 
-                  {stock != null && (
+                  {(soldOut || (stock != null && (!sizes.length || selectedSize))) && (
                     <p className={`pd-stock ${soldOut ? "is-out" : stock <= LOW_STOCK ? "is-low" : "is-in"}`}>
-                      <i aria-hidden="true" />{soldOut ? "Sold out" : stock <= LOW_STOCK ? `Hurry — only ${stock} left` : "In stock, ready to ship"}
+                      <i aria-hidden="true" />
+                      {soldOut
+                        ? (sizes.length > 1 ? "Sold out in every size" : "Sold out")
+                        : stock <= LOW_STOCK ? `Hurry — only ${stock} left${selectedSize ? ` in ${selectedSize.name}` : ""}` : "In stock, ready to ship"}
                     </p>
                   )}
 
                   {product.short_description && <p className="pd-lead">{product.short_description}</p>}
+
+                  {sizes.length > 0 && !soldOut && (
+                    <fieldset className={`pd-sizes${sizeMissing ? " is-missing" : ""}`} ref={sizePickerRef}>
+                      <legend>Size{selectedSize && <>: <strong>{selectedSize.name}</strong></>}</legend>
+                      <div className="pd-size-list">
+                        {sizes.map((size) => {
+                          const inputId = `pd-size-${size.size_id}`;
+                          const low = size.in_stock && size.qty != null && size.qty <= LOW_STOCK;
+                          return (
+                            <span key={size.size_id} className="pd-size-option">
+                              <input type="radio" name="pd-size" id={inputId} className="pd-size-input" checked={size.size_id === sizeId} onChange={() => chooseSize(size)} disabled={!size.in_stock} />
+                              <label htmlFor={inputId} className={`pd-size${size.in_stock ? "" : " is-out"}`} title={size.in_stock ? undefined : `${size.name} is sold out`}>
+                                {size.name}
+                                {low && <small>{size.qty} left</small>}
+                                {!size.in_stock && <span className="visually-hidden"> (sold out)</span>}
+                              </label>
+                            </span>
+                          );
+                        })}
+                      </div>
+                      {sizeMissing && <p className="pd-size-alert" role="alert">Please choose a size first.</p>}
+                    </fieldset>
+                  )}
 
                   <div className="pd-actions">
                     <div className="pd-qty" role="group" aria-label="Quantity">
@@ -294,14 +357,15 @@ const Product = () => {
                     <div><dt>Category</dt><dd>{product.category ? [product.category.parent?.name, product.category.name].filter(Boolean).join(" › ") : "—"}</dd></div>
                     <div><dt>Brand</dt><dd>{product.brand?.name || "—"}</dd></div>
                     <div><dt>SKU</dt><dd>{product.sku || "—"}</dd></div>
-                    <div><dt>Availability</dt><dd>{stock == null ? "Available" : soldOut ? "Sold out" : `${stock} in stock`}</dd></div>
+                    {sizes.length > 0 && <div><dt>Sizes</dt><dd>{sizes.map((size) => (size.in_stock ? size.name : `${size.name} (sold out)`)).join(", ")}</dd></div>}
+                    <div><dt>Availability</dt><dd>{totalStock == null ? "Available" : soldOut ? "Sold out" : `${totalStock} in stock`}</dd></div>
                     <div><dt>Payment</dt><dd>Cash on delivery</dd></div>
                   </dl>
                 </div>
               </div>
             </section>
 
-            <ProductReviews key={product.id} productId={product.id} onSummary={setRatingSummary} />
+            <ProductReviews key={product.id} productId={product.id} path={productPath(product)} onSummary={setRatingSummary} />
 
             {related.length > 0 && (
               <section className="pd-related">

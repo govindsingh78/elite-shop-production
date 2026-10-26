@@ -75,7 +75,15 @@
           "photosPermission": "Elitezaar uses your photos so you can add pictures to your product listings."
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#18372e",
+          "defaultChannel": "default"
+        }
+      ]
     ],
     "extra": {
       "router": {

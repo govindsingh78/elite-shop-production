@@ -12,6 +12,8 @@ import { useWishlist } from "@/context/WishlistContext";
 import { colors, fonts, radius } from "@/theme";
 
 const canBuy = (item) => item.available !== false && item.qty !== 0;
+// Pieces sold in sizes go to the bag from their own page, where the shopper picks a size.
+const needsSize = (item) => (item.sizes?.length || 0) > 0;
 
 /** Saved pieces, with "Move to bag". Guests are invited to sign in so the list follows them to the website. */
 export default function WishlistScreen() {
@@ -22,6 +24,10 @@ export default function WishlistScreen() {
 
   const removeItem = (item) => remove(item.id).catch((error) => toast(error.message, "error"));
   const moveToBag = (item) => {
+    if (needsSize(item)) {
+      router.push(`/product/${item.id}`);
+      return;
+    }
     addItem(item, 1);
     removeItem(item);
     toast(`${item.title} moved to your bag`);
@@ -68,7 +74,7 @@ export default function WishlistScreen() {
           {item.available === false ? <Text style={styles.unavailable}>No longer available</Text> : null}
           <View style={styles.actions}>
             <Pressable onPress={() => moveToBag(item)} disabled={!canBuy(item)} style={({ pressed }) => [styles.move, !canBuy(item) && styles.moveDisabled, pressed && { opacity: 0.85 }]}>
-              <Text style={[styles.moveText, !canBuy(item) && { color: colors.muted }]}>{item.available === false ? "Unavailable" : item.qty === 0 ? "Sold out" : "Move to bag"}</Text>
+              <Text style={[styles.moveText, !canBuy(item) && { color: colors.muted }]}>{item.available === false ? "Unavailable" : item.qty === 0 ? "Sold out" : needsSize(item) ? "Choose size" : "Move to bag"}</Text>
             </Pressable>
             <Pressable onPress={() => removeItem(item)} hitSlop={6} accessibilityLabel={`Remove ${item.title} from your wishlist`} style={({ pressed }) => [styles.remove, pressed && { opacity: 0.7 }]}>
               <Ionicons name="trash-outline" size={17} color={colors.muted} />

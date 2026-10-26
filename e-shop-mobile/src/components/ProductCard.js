@@ -17,9 +17,16 @@ export default function ProductCard({ product, width }) {
   const discount = discountOf(product);
   const soldOut = product.qty !== null && product.qty !== undefined && Number(product.qty) <= 0;
   const lowStock = !soldOut && product.qty != null && Number(product.qty) <= 3;
+  // Products sold in sizes are added from their page, once a size is chosen.
+  const sizes = product.sizes || [];
+  const inStockSizes = sizes.filter((size) => size.in_stock).map((size) => size.name);
 
   const quickAdd = () => {
     if (soldOut) return;
+    if (sizes.length) {
+      router.push(`/product/${product.id}`);
+      return;
+    }
     addItem(product, 1);
     toast(`${product.title} added to your bag`);
   };
@@ -35,13 +42,16 @@ export default function ProductCard({ product, width }) {
           {soldOut ? <Text style={[styles.badge, styles.badgeMuted]}>Sold out</Text> : lowStock ? <Text style={[styles.badge, styles.badgeLight]}>Only {product.qty} left</Text> : null}
         </View>
         <WishlistButton product={product} />
-        <Pressable onPress={quickAdd} disabled={soldOut} hitSlop={6} accessibilityLabel={`Add ${product.title} to bag`} style={({ pressed }) => [styles.quick, soldOut && { opacity: 0.4 }, pressed && { transform: [{ scale: 0.92 }] }]}>
+        <Pressable onPress={quickAdd} disabled={soldOut} hitSlop={6} accessibilityLabel={sizes.length ? `Choose a size for ${product.title}` : `Add ${product.title} to bag`} style={({ pressed }) => [styles.quick, soldOut && { opacity: 0.4 }, pressed && { transform: [{ scale: 0.92 }] }]}>
           <Ionicons name="bag-add-outline" size={18} color={colors.white} />
         </Pressable>
       </View>
       <View style={styles.meta}>
         <Text style={styles.brand} numberOfLines={1}>{product.brand?.name || product.category?.name || "Elitezaar"}</Text>
         <Text style={styles.title} numberOfLines={2}>{product.title}</Text>
+        {inStockSizes.length ? (
+          <Text style={styles.sizes} numberOfLines={1}>{inStockSizes.slice(0, 4).join(" · ")}{inStockSizes.length > 4 ? ` +${inStockSizes.length - 4}` : ""}</Text>
+        ) : null}
         {Number(product.reviews_count) > 0 ? (
           <View style={styles.rating}>
             <Ionicons name="star" size={12} color="#e3a53c" />
@@ -73,6 +83,7 @@ const styles = StyleSheet.create({
   meta: { paddingHorizontal: 2, paddingTop: 10 },
   brand: { color: colors.goldDeep, fontFamily: fonts.bodyBold, fontSize: 11.5, letterSpacing: 1.2, textTransform: "uppercase" },
   title: { marginTop: 2, color: colors.text, fontFamily: fonts.bodySemi, fontSize: 15.5, lineHeight: 19 },
+  sizes: { marginTop: 2, color: colors.muted, fontFamily: fonts.bodySemi, fontSize: 12.5, letterSpacing: 0.3 },
   rating: { flexDirection: "row", alignItems: "center", gap: 3, marginTop: 3 },
   ratingValue: { color: colors.text, fontFamily: fonts.bodyBold, fontSize: 13 },
   ratingCount: { color: colors.muted, fontFamily: fonts.body, fontSize: 12.5 },

@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\OrderItem;
 use App\Models\SellerPayout;
 use App\Models\User;
+use App\Notifications\PayoutSent;
 use App\Services\Commissions;
+use App\Services\Messenger;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -110,6 +112,7 @@ class CommissionController extends Controller
             'paid_on' => $validated['paid_on'] ?? now()->toDateString(),
             'recorded_by' => $request->user()->id,
         ]);
+        Messenger::send($seller, new PayoutSent($payout));
 
         return response()->json([
             'message' => 'Payout recorded.',

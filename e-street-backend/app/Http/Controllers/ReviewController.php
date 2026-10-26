@@ -89,7 +89,7 @@ class ReviewController extends Controller
         ]);
 
         $reviews = ProductReview::query()
-            ->with(['product:id,title', 'user:id,name,email'])
+            ->with(['product:id,title,slug', 'user:id,name,email'])
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->input('status')))
             ->when($request->filled('rating'), fn ($query) => $query->where('rating', $request->integer('rating')))
             ->when($request->filled('search'), function ($query) use ($request) {
@@ -112,7 +112,7 @@ class ReviewController extends Controller
 
         return response()->json([
             'message' => $review->status === ProductReview::HIDDEN ? 'Review hidden from the store.' : 'Review published.',
-            'data' => $review->load(['product:id,title', 'user:id,name,email']),
+            'data' => $review->load(['product:id,title,slug', 'user:id,name,email']),
         ]);
     }
 

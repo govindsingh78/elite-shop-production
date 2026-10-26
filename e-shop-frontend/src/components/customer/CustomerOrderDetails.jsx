@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { formatPrice } from "../common/currency";
+import { orderItemPath } from "../common/productPath";
 import { currentMilestone, formatDateTime, lastKnownLocation, MILESTONES, timeAgo, trackingLabel } from "../common/tracking";
 import CustomerShell from "./CustomerShell";
 import { customerRequest, formatDate } from "./customerApi";
@@ -152,9 +153,9 @@ const CustomerOrderDetails = () => {
                     <li key={item.id}>
                       <span className="customer-item-thumb" aria-hidden="true">{item.product_title.charAt(0)}</span>
                       <span className="customer-item-copy">
-                        {item.product_id ? <Link to={`/product/${item.product_id}`}>{item.product_title}</Link> : <strong>{item.product_title}</strong>}
-                        <small>{formatPrice(item.unit_price)} × {item.quantity}{item.sku ? ` · SKU ${item.sku}` : ""}</small>
-                        {delivered && item.product_id && <Link to={`/product/${item.product_id}#reviews`} className="customer-review-link">★ Rate &amp; review</Link>}
+                        {item.product_id ? <Link to={orderItemPath(item)}>{item.product_title}</Link> : <strong>{item.product_title}</strong>}
+                        <small>{item.size ? `Size ${item.size} · ` : ""}{formatPrice(item.unit_price)} × {item.quantity}{item.sku ? ` · SKU ${item.sku}` : ""}</small>
+                        {delivered && item.product_id && <Link to={`${orderItemPath(item)}#reviews`} className="customer-review-link">★ Rate &amp; review</Link>}
                       </span>
                       <strong>{formatPrice(item.line_total)}</strong>
                     </li>

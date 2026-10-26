@@ -2,6 +2,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\DeviceTokenController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\GeoController;
 use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\PolicyController;
@@ -13,6 +15,7 @@ use App\Http\Controllers\TempImageController;
 use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ShippingMethodController;
+use App\Http\Controllers\SizeController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\CommissionController;
@@ -57,7 +60,8 @@ Route::get('/storefront/categories', [CategoryController::class, 'navigation']);
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->middleware('throttle:30,1');
 Route::get('/storefront/policies/{policy}', [PolicyController::class, 'show'])->where('policy', '[a-z-]+');
 Route::get('/storefront/products', [ProductController::class, 'storefrontIndex']);
-Route::get('/storefront/products/{id}', [ProductController::class, 'storefrontShow'])->whereNumber('id');
+// A product's readable address (/product/classic-linen-shirt), an earlier one, or its id for old links.
+Route::get('/storefront/products/{handle}', [ProductController::class, 'storefrontShow'])->where('handle', '[A-Za-z0-9-]+');
 Route::get('/storefront/products/{product}/reviews', [ReviewController::class, 'index'])->whereNumber('product');
 Route::middleware('throttle:120,1')->prefix('geo')->group(function () {
     Route::get('countries', [GeoController::class, 'countries']);
@@ -79,6 +83,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('brands', BrandController::class);
         Route::apiResource('products', ProductController::class);
         Route::apiResource('shipping-methods', ShippingMethodController::class)->except(['create', 'edit']);
+        Route::apiResource('sizes', SizeController::class)->except(['show']);
     });
     Route::apiResource('temp-images', TempImageController::class);
 
@@ -100,6 +105,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/change-password', [PasswordController::class, 'update']);
+
+    // Messages: this phone's push notifications, and the inbox of everything the user was sent.
+    Route::middleware('throttle:30,1,device-tokens')->group(function () {
+        Route::post('device-tokens', [DeviceTokenController::class, 'store']);
+        Route::delete('device-tokens', [DeviceTokenController::class, 'destroy']);
+    });
+    Route::get('notifications', [NotificationController::class, 'index']);
+    Route::post('notifications/read-all', [NotificationController::class, 'readAll']);
+    Route::patch('notifications/{notification}/read', [NotificationController::class, 'read'])->whereUuid('notification');
 
     Route::middleware(EnsureCustomer::class)->prefix('customer')->group(function () {
         Route::get('dashboard', [CustomerAccountController::class, 'dashboard']);

@@ -46,6 +46,20 @@ class User extends Authenticatable
         return in_array(strtolower(trim((string) $email)), $approved, true);
     }
 
+    /** Phones signed in to this account that receive push notifications. */
+    public function deviceTokens()
+    {
+        return $this->hasMany(DeviceToken::class);
+    }
+
+    /** Admins who may use the admin portal, for store alerts such as new orders. */
+    public static function storeAdmins()
+    {
+        return self::query()->whereIn('role', self::ADMIN_ROLES)->get()
+            ->filter(fn (User $user) => self::isApprovedAdminEmail($user->email))
+            ->values();
+    }
+
     public function hasAdminRole(): bool
     {
         return in_array($this->role, self::ADMIN_ROLES, true);

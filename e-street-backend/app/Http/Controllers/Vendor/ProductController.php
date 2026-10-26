@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Vendor;
 
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Models\Product;
+use App\Models\User;
+use App\Notifications\ListingsAwaitingReview;
+use App\Services\Messenger;
 use Illuminate\Http\Request;
 
 /** The admin product tools, limited to the signed-in vendor's own listings. */
@@ -55,6 +58,14 @@ class ProductController extends AdminProductController
         }
 
         return false;
+    }
+
+    /** A listing that has just gone to review (new, or changed after approval or rejection) is flagged to the admins. */
+    protected function afterSave(Product $product, ?string $approvalBefore): void
+    {
+        if ($product->approval_status === Product::PENDING && $approvalBefore !== Product::PENDING) {
+            Messenger::send(User::storeAdmins(), new ListingsAwaitingReview($product->vendor, collect([$product])));
+        }
     }
 
     protected function savedMessage(Product $product, bool $created): string

@@ -5,6 +5,7 @@ import Layout from "../../common/Layout";
 import Sidebar from "../../common/Sidebar";
 import { apiUrl } from "../../common/http";
 import { Stars } from "../../common/ReviewBits";
+import { productPath } from "../../common/productPath";
 
 const TABS = [["", "All reviews"], ["published", "Published"], ["hidden", "Hidden"]];
 
@@ -106,7 +107,7 @@ const ManageReviews = () => {
                   <tbody>
                     {page?.data?.length ? page.data.map((review) => (
                       <tr key={review.id}>
-                        <td>{review.product ? <Link to={`/product/${review.product.id}#reviews`} target="_blank">{review.product.title}</Link> : "—"}</td>
+                        <td>{review.product ? <Link to={`${productPath(review.product)}#reviews`} target="_blank">{review.product.title}</Link> : "—"}</td>
                         <td><Stars value={review.rating} size={14} /></td>
                         <td className="admin-review-text">
                           {review.title && <strong className="d-block">{review.title}</strong>}

@@ -2563,3 +2563,59 @@ a.pd-tag:hover { color: #fff; background: #2f6f63; }
     .customer-timeline { padding: 18px 4px; }
     .customer-timeline-label { font-size: .72rem; }
 }
+/* ---------- Sizes ---------- */
+/* Product page: one chip per size; sold-out sizes are struck through and can't be picked. */
+.pd-sizes { min-width: 0; margin: 0 0 22px; border: 0; padding: 0;
+    legend { float: none; width: auto; margin: 0 0 10px; color: #4f5f57; font-size: .92rem; font-weight: 600; line-height: 1.4;
+        strong { color: #13291f; }
+    }
+    &.is-missing .pd-size:not(.is-out) { border-color: #e2a3a3; }
+}
+.pd-size-list { display: flex; flex-wrap: wrap; gap: 10px; }
+.pd-size-option { position: relative; }
+.pd-size-input { position: absolute; opacity: 0; pointer-events: none; }
+.pd-size {
+    display: inline-flex; flex-direction: column; align-items: center; justify-content: center; min-width: 56px; min-height: 48px; margin: 0; border: 1.5px solid #dce5dd; border-radius: 12px; padding: 6px 14px;
+    color: #13291f; background: #fff; font-size: .98rem; font-weight: 700; line-height: 1.1; cursor: pointer; transition: border-color .15s ease, background .15s ease, color .15s ease;
+    small { margin-top: 3px; color: #c07a2c; font-size: .66rem; font-weight: 700; }
+    &:hover { border-color: #18372e; }
+    &.is-out { color: #a6ada7; background: #f6f7f5; text-decoration: line-through; cursor: not-allowed; }
+    &.is-out:hover { border-color: #dce5dd; }
+}
+.pd-size-input:checked + .pd-size { border-color: #18372e; color: #fff; background: #18372e;
+    small { color: #f3dfb3; }
+}
+.pd-size-input:focus-visible + .pd-size { outline: 3px solid rgba(67, 195, 209, .5); outline-offset: 2px; }
+.pd-size-alert { margin: 10px 0 0; color: #b04343; font-size: .88rem; font-weight: 700; }
+
+/* Product cards: the sizes in stock, and "Choose size" in place of quick add. */
+.sp-card-sizes { margin: 4px 0 0; overflow: hidden; color: #6c7a72; font-size: .78rem; font-weight: 600; letter-spacing: .02em; text-overflow: ellipsis; white-space: nowrap;
+    span { color: #a6ada7; }
+}
+a.sp-card-quick { display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none;
+    &:hover { color: #fff; }
+}
+
+.cart-item-size { margin: 4px 0 0; color: #4f5f57; font-size: .88rem;
+    strong { color: #13291f; }
+}
+
+/* Product form: tick the sizes sold, each with its own stock box. */
+.pf-sizes { border: 1px solid #e3e9e5; border-radius: 14px; padding: 14px 16px; background: #fbfcfa;
+    &.is-on { background: #fff; }
+}
+.pf-size-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 10px; }
+.pf-size { display: flex; align-items: center; gap: 8px; border: 1px solid #e3e9e5; border-radius: 10px; padding: 8px 10px; background: #fff;
+    &.is-ticked { border-color: #18372e; box-shadow: inset 0 0 0 1px #18372e; }
+    .form-control { width: 76px; flex-shrink: 0; }
+}
+.pf-size-name { display: flex; flex: 1; align-items: center; gap: 7px; min-width: 0; margin: 0; font-weight: 700; cursor: pointer;
+    .form-check-input { flex-shrink: 0; margin: 0; }
+    span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+/* Admin: the size list. */
+.size-table .size-order { width: 104px; white-space: nowrap;
+    .btn { margin-right: 4px; }
+}
+.size-chip { display: inline-block; min-width: 44px; border: 1.5px solid #dce5dd; border-radius: 10px; padding: 3px 10px; text-align: center; }

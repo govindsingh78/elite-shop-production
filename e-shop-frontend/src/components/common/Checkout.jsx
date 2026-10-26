@@ -273,7 +273,7 @@ const Checkout = () => {
         payment_method: paymentChoice === "cod" ? "cod" : "razorpay",
         shipping_method_id: shippingMethodId ? Number(shippingMethodId) : null,
         accept_policy: acceptPolicy,
-        items: items.map(({ id, quantity }) => ({ product_id: id, quantity })),
+        items: items.map(({ id, quantity, size_id: sizeId }) => ({ product_id: id, quantity, ...(sizeId ? { size_id: sizeId } : {}) })),
       };
       const response = await fetch(`${apiUrl}/orders`, {
         method: "POST",
@@ -539,12 +539,12 @@ const Checkout = () => {
                   </div>
                   <ul className="co-items">
                     {items.map((item) => (
-                      <li key={item.id}>
+                      <li key={item.key}>
                         <span className="co-item-image">
                           {item.image ? <img src={`${imageBase}/uploads/products/small/${encodeURIComponent(item.image)}`} alt="" /> : <span>PW</span>}
                           <b>{item.quantity}</b>
                         </span>
-                        <span className="co-item-copy"><strong>{item.title}</strong><small>{formatPrice(item.price)} each</small></span>
+                        <span className="co-item-copy"><strong>{item.title}</strong><small>{item.size ? `Size ${item.size} · ` : ""}{formatPrice(item.price)} each</small></span>
                         <strong className="co-item-total">{formatPrice(item.price * item.quantity)}</strong>
                       </li>
                     ))}

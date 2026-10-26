@@ -66,7 +66,7 @@ class AccountController extends Controller
 
     public function showOrder(Request $request, int $order)
     {
-        $order = $this->ordersFor($request)->with(['items.product:id,image', 'shippingMethod:id,name', 'trackingEvents'])->findOrFail($order);
+        $order = $this->ordersFor($request)->with(['items.product:id,image,slug', 'shippingMethod:id,name', 'trackingEvents'])->findOrFail($order);
 
         return response()->json($order);
     }

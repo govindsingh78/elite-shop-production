@@ -1,6 +1,9 @@
 import { GOOGLE_RETURN_PATH } from "@/lib/googleSignIn";
 
-/** Website pages whose app screen lives at a different path. Others (/product/12, /about…) match as they are. */
+/**
+ * Website pages whose app screen lives at a different path. Others match as they are: /about, and
+ * /product/classic-linen-shirt (the product screen loads products by their web address or id).
+ */
 const WEB_TO_APP = [
   [/^\/shop\/([^/]+)\/?$/, (match, search) => `/shop?${new URLSearchParams({ ...Object.fromEntries(search), category: decodeURIComponent(match[1]) })}`],
   [/^\/terms-and-conditions\/?$/, () => "/terms"],

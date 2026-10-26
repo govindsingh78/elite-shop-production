@@ -70,7 +70,7 @@ class WishlistController extends Controller
 
     private function relations(): array
     {
-        return ['product.brand:id,name', 'product.category:id,name,slug'];
+        return ['product.brand:id,name', 'product.category:id,name,slug', 'product.sizes'];
     }
 
     private function items(Request $request): array
@@ -93,11 +93,14 @@ class WishlistController extends Controller
         return [
             'id' => $product->id,
             'title' => $product->title,
+            'slug' => $product->slug,
             'price' => $product->price,
             'compare_price' => $product->compare_price,
             'image' => $product->image,
             'sku' => $product->sku,
             'qty' => $product->qty,
+            // A product sold in sizes moves to the bag from its page, where the shopper picks one.
+            'sizes' => $product->sizes,
             'brand' => $product->brand ? ['name' => $product->brand->name] : null,
             'category' => $product->category ? ['name' => $product->category->name, 'slug' => $product->category->slug] : null,
             // Hidden or unapproved since it was saved: shown as "no longer available" rather than silently dropped.

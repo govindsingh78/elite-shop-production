@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Image, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Image, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { File } from "expo-file-system";
@@ -12,7 +12,7 @@ import { productImageUrl, SITE_URL } from "@/lib/config";
 import { confirmAction } from "@/lib/confirm";
 import { APPROVAL_STATUSES } from "@/lib/format";
 import { PORTALS } from "@/lib/portals";
-import { colors, radius } from "@/theme";
+import { colors, fonts, radius } from "@/theme";
 
 // Phone photos are often 3–8 MB, more than the server accepts per file. Shrinking to at most 1600px and
 // re-saving as JPEG (usually 200–500 KB) makes uploads fit, and keeps them quick on mobile data.
@@ -27,7 +27,7 @@ async function preparePhoto(asset) {
   return image.saveAsync({ compress: 0.82, format: SaveFormat.JPEG });
 }
 
-const EMPTY = { title: "", price: "", compare_price: "", sku: "", barcode: "", qty: "", category_id: "", brand_id: "", short_description: "", description: "", status: true, is_featured: false };
+const EMPTY = { title: "", price: "", compare_price: "", sku: "", barcode: "", qty: "", category_id: "", brand_id: "", short_description: "", description: "", status: true, is_featured: false, hasSizes: false, sizes: [] };
 
 /** Create or edit a product. Vendors manage their own listings, which an admin reviews before they go live; only admins can feature a product. */
 export default function ProductFormScreen({ portal: portalKey }) {
@@ -38,7 +38,7 @@ export default function ProductFormScreen({ portal: portalKey }) {
   const editing = !!id;
 
   const [values, setValues] = useState(EMPTY);
-  const [options, setOptions] = useState({ categories: [], brands: [] });
+  const [options, setOptions] = useState({ categories: [], brands: [], sizes: [] });
   const [existingImages, setExistingImages] = useState([]);
   const [review, setReview] = useState(null);
   const [uploads, setUploads] = useState([]);
@@ -53,7 +53,7 @@ export default function ProductFormScreen({ portal: portalKey }) {
       request(portal.productOptions),
       editing ? request(`${portal.products}/${id}`) : Promise.resolve(null),
     ]).then(([optionData, product]) => {
-      setOptions({ categories: optionData.categories || [], brands: optionData.brands || [] });
+      setOptions({ categories: optionData.categories || [], brands: optionData.brands || [], sizes: optionData.sizes || [] });
       if (product) {
         setValues({
           title: product.title || "",
@@ -68,6 +68,8 @@ export default function ProductFormScreen({ portal: portalKey }) {
           description: product.description || "",
           status: !!product.status,
           is_featured: product.is_featured === "yes",
+          hasSizes: (product.sizes || []).length > 0,
+          sizes: (product.sizes || []).map((size) => ({ size_id: size.size_id, qty: size.qty == null ? "" : String(size.qty) })),
         });
         setExistingImages([...new Set([product.image, ...(product.images || []).map((image) => image.image)].filter(Boolean))]);
         setReview({ id: product.id, vendor_id: product.vendor_id, vendor: product.vendor, approval_status: product.approval_status || "approved", review_note: product.review_note });
@@ -79,6 +81,18 @@ export default function ProductFormScreen({ portal: portalKey }) {
     setValues((current) => ({ ...current, [name]: value }));
     setErrors((current) => ({ ...current, [name]: undefined }));
   };
+
+  // Sizes: values.sizes holds [{size_id, qty}] for the ticked sizes, kept in the shop's size order.
+  const toggleSize = (sizeId) => setValues((current) => {
+    const ticked = current.sizes.some((row) => row.size_id === sizeId);
+    const order = options.sizes.map((size) => size.id);
+    const sizes = ticked ? current.sizes.filter((row) => row.size_id !== sizeId) : [...current.sizes, { size_id: sizeId, qty: "" }];
+    return { ...current, sizes: sizes.sort((a, b) => order.indexOf(a.size_id) - order.indexOf(b.size_id)) };
+  });
+  const setSizeQty = (sizeId, qty) => setValues((current) => ({
+    ...current,
+    sizes: current.sizes.map((row) => (row.size_id === sizeId ? { ...row, qty: qty.replace(/[^0-9]/g, "") } : row)),
+  }));
 
   const pickImages = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], allowsMultipleSelection: true, selectionLimit: 6, quality: 0.8 });
@@ -107,6 +121,10 @@ export default function ProductFormScreen({ portal: portalKey }) {
   };
 
   const save = async () => {
+    if (values.hasSizes && !values.sizes.length) {
+      setError("Tick at least one size, or switch off “Sold in sizes”.");
+      return;
+    }
     setSaving(true);
     setError("");
     const body = {
@@ -115,7 +133,9 @@ export default function ProductFormScreen({ portal: portalKey }) {
       compare_price: values.compare_price === "" ? null : values.compare_price,
       sku: values.sku.trim(),
       barcode: values.barcode.trim() || null,
-      qty: values.qty === "" ? null : Number(values.qty),
+      // A product sold in sizes gets its stock from them; an empty size list makes it a one-size product.
+      qty: values.hasSizes || values.qty === "" ? null : Number(values.qty),
+      sizes: values.hasSizes ? values.sizes.map((row) => ({ size_id: row.size_id, qty: row.qty === "" ? null : Number(row.qty) })) : [],
       category_id: values.category_id ? Number(values.category_id) : null,
       brand_id: values.brand_id ? Number(values.brand_id) : null,
       short_description: values.short_description || null,
@@ -156,6 +176,9 @@ export default function ProductFormScreen({ portal: portalKey }) {
   // Categories carry a "Kids › Toys" label for subcategories.
   const toOptions = (list) => list.map((item) => ({ value: String(item.id), label: item.label || item.name }));
   const isVendor = portalKey === "vendor";
+  // Shown in the stock box: the sizes' total, or blank while any size's stock isn't tracked.
+  const sizeTotal = values.sizes.some((row) => row.qty === "") ? "" : String(values.sizes.reduce((sum, row) => sum + Number(row.qty || 0), 0));
+  const sizeErrors = [...new Set(Object.entries(errors).filter(([key, message]) => key.startsWith("sizes") && message).map(([, message]) => message))];
   const saveTitle = !editing ? (isVendor ? "Submit for review" : "Publish product") : isVendor && review?.approval_status === "rejected" ? "Save & resubmit" : "Save changes";
 
   return (
@@ -204,9 +227,42 @@ export default function ProductFormScreen({ portal: portalKey }) {
           </Row>
           <Row gap={10} align="flex-start">
             <TextField label="SKU" autoCapitalize="characters" value={values.sku} onChangeText={(text) => change("sku", text)} error={errors.sku} style={{ flex: 1 }} />
-            <TextField label="Stock qty" keyboardType="number-pad" value={values.qty} onChangeText={(text) => change("qty", text.replace(/[^0-9]/g, ""))} error={errors.qty} style={{ flex: 1 }} hint="Blank = unlimited" />
+            <TextField label="Stock qty" keyboardType="number-pad" value={values.hasSizes ? sizeTotal : values.qty} onChangeText={(text) => change("qty", text.replace(/[^0-9]/g, ""))} error={errors.qty} style={{ flex: 1 }} hint={values.hasSizes ? "Added up from sizes" : "Blank = unlimited"} editable={!values.hasSizes} />
           </Row>
           <TextField label="Barcode (optional)" value={values.barcode} onChangeText={(text) => change("barcode", text)} error={errors.barcode} />
+        </Card>
+
+        <Card style={styles.card}>
+          <SwitchRow label="Sold in sizes" hint="e.g. Free Size, S, M, L, XL — shoppers pick one" value={values.hasSizes} onValueChange={(value) => change("hasSizes", value)} />
+          {values.hasSizes ? (
+            <View style={{ marginTop: 6 }}>
+              <T variant="small" style={{ marginBottom: 10 }}>Tick each size you sell and enter how many you have. Leave stock blank if you don’t track it.</T>
+              {options.sizes.map((size) => {
+                const row = values.sizes.find((item) => item.size_id === size.id);
+                return (
+                  <View key={size.id} style={[styles.sizeRow, row && styles.sizeRowOn]}>
+                    <Pressable onPress={() => toggleSize(size.id)} style={styles.sizeName} accessibilityRole="checkbox" accessibilityState={{ checked: !!row }} accessibilityLabel={`Size ${size.name}`} hitSlop={6}>
+                      <Ionicons name={row ? "checkbox" : "square-outline"} size={22} color={row ? colors.emerald : colors.muted} />
+                      <T variant="title">{size.name}</T>
+                    </Pressable>
+                    <TextInput
+                      value={row?.qty ?? ""}
+                      onChangeText={(text) => setSizeQty(size.id, text)}
+                      editable={!!row}
+                      keyboardType="number-pad"
+                      placeholder={row ? "Stock" : "—"}
+                      placeholderTextColor={colors.faint}
+                      accessibilityLabel={`Stock for size ${size.name}`}
+                      style={[styles.sizeStock, !row && styles.sizeStockOff]}
+                    />
+                  </View>
+                );
+              })}
+              {!options.sizes.length ? <T variant="small">No sizes have been set up yet.</T> : null}
+              {sizeErrors.map((message) => <T key={message} variant="small" color={colors.danger} style={{ marginTop: 6 }}>{message}</T>)}
+              <T variant="small" style={{ marginTop: 8 }}>{isVendor ? "Need a size that isn’t listed? Ask the Elitezaar team to add it." : "Add more sizes (like UK 8 or 32) under More › Catalog › Sizes."}</T>
+            </View>
+          ) : null}
         </Card>
 
         <Card style={styles.card}>
@@ -278,6 +334,11 @@ const styles = StyleSheet.create({
   card: { marginBottom: 12 },
   review: { borderWidth: 1.5 },
   photo: { width: 88, height: 104, borderRadius: radius.md, backgroundColor: colors.mint },
+  sizeRow: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 8, borderWidth: 1, borderColor: colors.lineSoft, borderRadius: radius.md, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: colors.white },
+  sizeRowOn: { borderColor: colors.emerald },
+  sizeName: { flex: 1, flexDirection: "row", alignItems: "center", gap: 10, minHeight: 36 },
+  sizeStock: { width: 96, height: 40, borderWidth: 1, borderColor: colors.line, borderRadius: radius.sm, paddingHorizontal: 10, color: colors.ink, fontFamily: fonts.bodySemi, fontSize: 16, backgroundColor: colors.white },
+  sizeStockOff: { backgroundColor: colors.cream, borderColor: colors.lineSoft },
   addPhoto: { alignItems: "center", justifyContent: "center", gap: 2, borderWidth: 1.5, borderStyle: "dashed", borderColor: colors.emerald },
   photoRemove: { position: "absolute", top: 5, right: 5, width: 22, height: 22, alignItems: "center", justifyContent: "center", borderRadius: 11, backgroundColor: "rgba(15,36,29,0.8)" },
 });

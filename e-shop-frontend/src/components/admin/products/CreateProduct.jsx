@@ -7,11 +7,12 @@ import { toast } from "react-toastify";
 import ProductForm from "./ProductForm";
 import { portalConfig, portalToken } from "../portal";
 import { SellerReviewNotice } from "./ReviewBits";
+import { productPayload, sizesProblem } from "./productPayload";
 
 const initialValues = {
   title: "", price: "", compare_price: "", description: "", short_description: "",
   category_id: "", brand_id: "", sku: "", barcode: "", qty: "0", status: "1",
-  is_featured: "no", gallery: [],
+  is_featured: "no", gallery: [], hasSizes: false, sizes: [],
 };
 
 const CreateProduct = ({ portal = "admin" }) => {
@@ -19,6 +20,7 @@ const CreateProduct = ({ portal = "admin" }) => {
   const [values, setValues] = useState(initialValues);
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
+  const [sizeOptions, setSizeOptions] = useState([]);
   const [loadingOptions, setLoadingOptions] = useState(true);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -34,6 +36,7 @@ const CreateProduct = ({ portal = "admin" }) => {
         if (!response.ok) throw new Error(data.message || "Unable to load categories and brands.");
         setCategories(data.categories || []);
         setBrands(data.brands || []);
+        setSizeOptions(data.sizes || []);
       } catch (error) {
         setErrors({ general: error.message || "Unable to load product options." });
       } finally {
@@ -50,16 +53,12 @@ const CreateProduct = ({ portal = "admin" }) => {
     try {
       const token = portalToken(portal);
       if (!token) throw new Error(config.sessionExpired);
-      const payload = {
-        ...values,
-        price: Number(values.price),
-        compare_price: values.compare_price === "" ? null : Number(values.compare_price),
-        category_id: Number(values.category_id),
-        brand_id: Number(values.brand_id),
-        qty: values.qty === "" ? null : Number(values.qty),
-        status: Number(values.status),
-        gallery: values.gallery.map((image) => image.id),
-      };
+      const problem = sizesProblem(values);
+      if (problem) {
+        setErrors({ sizes: problem });
+        return;
+      }
+      const payload = productPayload(values);
       const response = await fetch(`${apiUrl}/${config.api}/products`, {
         method: "POST",
         headers: { Accept: "application/json", "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -89,7 +88,7 @@ const CreateProduct = ({ portal = "admin" }) => {
         {loadingOptions ? <p role="status">Loading categories and brands...</p> : (
           <div className="card shadow-sm"><div className="card-body">
             {portal === "vendor" && <SellerReviewNotice status="new" />}
-            <ProductForm portal={portal} values={values} setValues={setValues} categories={categories} brands={brands} onSubmit={handleSubmit} errors={errors} loading={loading} submitLabel={portal === "vendor" ? "Submit for review" : "Create product"} />
+            <ProductForm portal={portal} values={values} setValues={setValues} categories={categories} brands={brands} sizeOptions={sizeOptions} onSubmit={handleSubmit} errors={errors} loading={loading} submitLabel={portal === "vendor" ? "Submit for review" : "Create product"} />
           </div></div>
         )}
       </main></div></div>

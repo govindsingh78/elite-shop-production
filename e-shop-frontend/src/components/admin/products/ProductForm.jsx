@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { apiUrl } from "../../common/http";
 import { portalConfig, portalToken } from "../portal";
 
@@ -10,6 +11,7 @@ const ProductForm = ({
   setValues,
   categories,
   brands,
+  sizeOptions = [],
   onSubmit,
   errors = {},
   loading,
@@ -70,6 +72,25 @@ const ProductForm = ({
   };
 
   const fieldError = (name) => errors[name] && <div className="invalid-feedback">{errors[name]}</div>;
+
+  // Sizes: values.sizes holds [{size_id, qty}] for the ticked sizes, kept in the shop's size order.
+  const toggleSizes = (event) => {
+    const { checked } = event.target;
+    setValues((current) => ({ ...current, hasSizes: checked }));
+  };
+  const toggleSize = (sizeId) => setValues((current) => {
+    const ticked = current.sizes.some((row) => row.size_id === sizeId);
+    const order = sizeOptions.map((size) => size.id);
+    const sizes = ticked ? current.sizes.filter((row) => row.size_id !== sizeId) : [...current.sizes, { size_id: sizeId, qty: "" }];
+    return { ...current, sizes: sizes.sort((a, b) => order.indexOf(a.size_id) - order.indexOf(b.size_id)) };
+  });
+  const setSizeQty = (sizeId, qty) => setValues((current) => ({
+    ...current,
+    sizes: current.sizes.map((row) => (row.size_id === sizeId ? { ...row, qty } : row)),
+  }));
+  // Shown in the stock box: the sizes' total, or blank while any size's stock isn't tracked.
+  const sizeTotal = values.sizes.some((row) => row.qty === "") ? "" : values.sizes.reduce((sum, row) => sum + Number(row.qty || 0), 0);
+  const sizeErrors = [...new Set(Object.entries(errors).filter(([key]) => key === "sizes" || key.startsWith("sizes.")).map(([, message]) => message))];
 
   return (
     <form onSubmit={onSubmit} noValidate>
@@ -134,8 +155,9 @@ const ProductForm = ({
         </div>
         <div className="col-md-3 mb-3">
           <label htmlFor="qty" className="form-label">Stock quantity</label>
-          <input id="qty" name="qty" type="number" min="0" step="1" className={`form-control ${errors.qty ? "is-invalid" : ""}`} value={values.qty} onChange={handleChange} />
+          <input id="qty" name="qty" type="number" min="0" step="1" className={`form-control ${errors.qty ? "is-invalid" : ""}`} value={values.hasSizes ? sizeTotal : values.qty} onChange={handleChange} disabled={values.hasSizes} aria-describedby="qty-help" />
           {fieldError("qty")}
+          <div id="qty-help" className="form-text">{values.hasSizes ? "Added up from the sizes below." : "Leave blank if you don’t track stock."}</div>
         </div>
         {portal === "admin" && (
           <div className="col-md-3 mb-3">
@@ -147,6 +169,40 @@ const ProductForm = ({
           </div>
         )}
       </div>
+
+      <section className={`pf-sizes mb-4${values.hasSizes ? " is-on" : ""}`} aria-labelledby="has_sizes_label">
+        <div className="form-check form-switch">
+          <input className="form-check-input" type="checkbox" role="switch" id="has_sizes" checked={values.hasSizes} onChange={toggleSizes} />
+          <label className="form-check-label" htmlFor="has_sizes" id="has_sizes_label"><strong>Sold in sizes</strong> <span className="text-muted">e.g. Free Size, S, M, L, XL</span></label>
+        </div>
+        {values.hasSizes && (
+          <>
+            <p className="form-text mt-1 mb-3">Tick each size you sell and enter how many you have. Leave a size’s stock blank if you don’t track it. Shoppers pick a size before adding to their bag.</p>
+            {sizeOptions.length ? (
+              <div className="pf-size-grid">
+                {sizeOptions.map((size) => {
+                  const row = values.sizes.find((item) => item.size_id === size.id);
+                  return (
+                    <div key={size.id} className={`pf-size${row ? " is-ticked" : ""}`}>
+                      <label className="pf-size-name">
+                        <input type="checkbox" className="form-check-input" checked={Boolean(row)} onChange={() => toggleSize(size.id)} />
+                        <span>{size.name}</span>
+                      </label>
+                      <input type="number" min="0" step="1" inputMode="numeric" className="form-control form-control-sm" placeholder={row ? "Stock" : "—"} value={row?.qty ?? ""} onChange={(event) => setSizeQty(size.id, event.target.value)} disabled={!row} aria-label={`Stock for size ${size.name}`} />
+                    </div>
+                  );
+                })}
+              </div>
+            ) : <p className="text-muted small mb-0">No sizes have been set up yet.</p>}
+            {sizeErrors.map((message) => <div key={message} className="text-danger small mt-2" role="alert">{message}</div>)}
+            <div className="form-text mt-2">
+              {portal === "admin"
+                ? <>Need another size, like UK 8 or 32? Add it under <Link to="/admin/manage-sizes">Sizes</Link>.</>
+                : "Need a size that isn’t listed? Ask the Elitezaar team to add it."}
+            </div>
+          </>
+        )}
+      </section>
 
       <div className="row">
         <div className="col-md-4 mb-3">

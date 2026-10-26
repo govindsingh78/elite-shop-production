@@ -8,9 +8,11 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderTrackingEvent;
 use App\Models\Product;
+use App\Models\ProductSize;
 use App\Models\ShippingMethod;
 use App\Models\User;
 use App\Services\Commissions;
+use App\Services\Messenger;
 use App\Services\Razorpay;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -71,6 +73,8 @@ class OrderController extends Controller
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['required', 'integer', 'exists:products,id'],
             'items.*.quantity' => ['required', 'integer', 'min:1', 'max:999'],
+            // Required for products sold in sizes; checked against the product below.
+            'items.*.size_id' => ['nullable', 'integer'],
             // Shoppers must agree to the Return & Refund Policy; the version they saw is kept on the order.
             'accept_policy' => ['accepted'],
         ], ['accept_policy.accepted' => 'Please read and accept the Return & Refund Policy to place your order.']);
@@ -129,6 +133,23 @@ class OrderController extends Controller
                 if (!$product->isOnStorefront()) {
                     abort(422, "{$product->title} is not available.");
                 }
+                // A product sold in sizes is bought in one of them, from that size's own stock.
+                $sizes = ProductSize::query()->with('size:id,name')->where('product_id', $product->id)->lockForUpdate()->get();
+                $size = null;
+                if ($sizes->isNotEmpty()) {
+                    $size = $sizes->firstWhere('size_id', (int) ($requestedItem['size_id'] ?? 0));
+                    if (!$size) {
+                        abort(422, "Please choose a size for {$product->title}.");
+                    }
+                    if ($size->qty !== null && $size->qty < $requestedItem['quantity']) {
+                        abort(422, $size->qty === 0
+                            ? "{$product->title} is sold out in size {$size->name}."
+                            : "Only {$size->qty} left of {$product->title} in size {$size->name}.");
+                    }
+                    if ($size->qty !== null) {
+                        $size->decrement('qty', $requestedItem['quantity']);
+                    }
+                }
                 if ($product->qty !== null && $product->qty < $requestedItem['quantity']) {
                     abort(422, "Insufficient stock for {$product->title}.");
                 }
@@ -145,6 +166,8 @@ class OrderController extends Controller
                     : null;
                 $items[] = [
                     'product_id' => $product->id,
+                    'size_id' => $size?->size_id,
+                    'size' => $size?->name,
                     'vendor_id' => $product->vendor_id,
                     'product_title' => $product->title,
                     'sku' => $product->sku,
@@ -204,11 +227,14 @@ class OrderController extends Controller
         if ($order->payment_method === 'razorpay') {
             $paymentToken = Str::random(48);
             $order->forceFill(['payment_token' => $paymentToken])->save();
+        } else {
+            // Cash on delivery orders are confirmed now; online ones once paid (Order::markPaid).
+            Messenger::orderPlaced($order);
         }
 
         return response()->json([
             'message' => 'Order created successfully.',
-            'data' => $order->load('items.product:id,image'),
+            'data' => $order->load('items.product:id,image,slug'),
             'customer' => $customer,
             'customer_token' => $customerToken,
             'payment_token' => $paymentToken,

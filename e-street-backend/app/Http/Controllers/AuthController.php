@@ -11,6 +11,8 @@ use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Str;
 use App\Models\User;
 use App\Http\Requests\CustomerAddressRequest;
+use App\Notifications\SellerJoined;
+use App\Services\Messenger;
 
 class AuthController extends Controller
 {
@@ -140,6 +142,7 @@ class AuthController extends Controller
             'password' => Hash::make($validated['password']),
             'role' => 'seller',
         ]);
+        Messenger::send(User::storeAdmins(), new SellerJoined($user));
 
         return response()->json([
             'message' => 'Vendor account created. You can now sign in to the vendor portal.',

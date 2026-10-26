@@ -1,7 +1,9 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { Platform } from "react-native";
 import { api } from "@/lib/api";
 import { googleSignIn } from "@/lib/googleSignIn";
 import { LOGIN_PATHS } from "@/lib/portals";
+import { getPushToken } from "@/lib/push";
 import { secureStorage } from "@/lib/storage";
 
 const SESSION_KEY = "elitezaar.session";
@@ -15,6 +17,8 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [ready, setReady] = useState(false);
   const sessionRef = useRef(null);
+  // This phone’s push token once registered, so signing out can stop its notifications.
+  const pushTokenRef = useRef(null);
 
   const save = useCallback(async (next) => {
     sessionRef.current = next;
@@ -39,6 +43,21 @@ export function AuthProvider({ children }) {
       .finally(() => setReady(true));
   }, []);
 
+  // Signed in (or back with a saved session): this phone gets the account’s push notifications.
+  const authToken = session?.token;
+  useEffect(() => {
+    if (!authToken) return undefined;
+    let cancelled = false;
+    getPushToken().then((pushToken) => {
+      if (cancelled || !pushToken) return;
+      pushTokenRef.current = pushToken;
+      api("/device-tokens", { method: "POST", token: authToken, body: { token: pushToken, platform: Platform.OS } }).catch(() => {});
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [authToken]);
+
   const signIn = useCallback(async (portal, email, password) => {
     const data = await api(LOGIN_PATHS[portal], { method: "POST", body: { email: email.trim(), password } });
     const next = { token: data.token, user: data.user, portal: data.portal || portal };
@@ -60,8 +79,13 @@ export function AuthProvider({ children }) {
 
   const signOut = useCallback(async () => {
     const token = sessionRef.current?.token;
+    const pushToken = pushTokenRef.current;
+    pushTokenRef.current = null;
     await save(null);
-    if (token) api("/logout", { method: "POST", token }).catch(() => {});
+    if (!token) return;
+    // Stop this phone getting the account’s notifications, then end the session.
+    const forgetPhone = pushToken ? api("/device-tokens", { method: "DELETE", token, body: { token: pushToken } }).catch(() => {}) : Promise.resolve();
+    forgetPhone.finally(() => api("/logout", { method: "POST", token }).catch(() => {}));
   }, [save]);
 
   const updateUser = useCallback((user) => {

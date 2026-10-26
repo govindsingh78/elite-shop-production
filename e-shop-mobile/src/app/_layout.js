@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import { Stack, router, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
@@ -11,6 +11,7 @@ import { CartProvider } from "@/context/CartContext";
 import { ToastProvider } from "@/context/ToastContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { stackHeader } from "@/lib/navigation";
+import { useNotificationTaps } from "@/lib/push";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -40,7 +41,7 @@ export default function RootLayout() {
 }
 
 function RootNavigator({ fontsReady }) {
-  const { ready, portal } = useAuth();
+  const { ready, portal, request } = useAuth();
   const segments = useSegments();
   const sentStaffHome = useRef(false);
   const loaded = ready && fontsReady;
@@ -48,6 +49,14 @@ function RootNavigator({ fontsReady }) {
   useEffect(() => {
     if (loaded) SplashScreen.hideAsync().catch(() => {});
   }, [loaded]);
+
+  // A tapped notification opens its screen (and is marked read), taking the place of the usual start screen.
+  const openNotification = useCallback((data) => {
+    sentStaffHome.current = true;
+    if (data.notification_id) request(`/notifications/${data.notification_id}/read`, { method: "PATCH" }).catch(() => {});
+    router.push(typeof data.url === "string" && data.url ? data.url : "/notifications");
+  }, [request]);
+  useNotificationTaps(openNotification, loaded);
 
   // Vendors and admins open straight into their dashboard when the app starts.
   useEffect(() => {
@@ -68,6 +77,7 @@ function RootNavigator({ fontsReady }) {
         <Stack.Screen name="write-review" options={{ title: "Your review" }} />
         <Stack.Screen name="checkout" options={{ title: "Checkout" }} />
         <Stack.Screen name="about" options={{ title: "About us" }} />
+        <Stack.Screen name="notifications" options={{ title: "Notifications" }} />
         <Stack.Screen name="return-policy" options={{ title: "Returns & refunds" }} />
         <Stack.Screen name="terms" options={{ title: "Terms & conditions" }} />
         <Stack.Screen name="privacy" options={{ title: "Privacy policy" }} />

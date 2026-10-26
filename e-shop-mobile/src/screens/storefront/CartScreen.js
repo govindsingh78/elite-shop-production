@@ -36,7 +36,7 @@ export default function CartScreen() {
         const image = productImageUrl(item.image);
         const maxed = item.qtyAvailable != null && item.quantity >= item.qtyAvailable;
         return (
-          <View key={item.id} style={styles.item}>
+          <View key={item.key} style={styles.item}>
             <Pressable onPress={() => router.push(`/product/${item.id}`)} style={styles.thumb}>
               {image ? <Image source={{ uri: image }} style={styles.thumbImage} /> : <Text style={styles.thumbLetter}>{item.title.charAt(0)}</Text>}
             </Pressable>
@@ -44,20 +44,21 @@ export default function CartScreen() {
               <Row align="flex-start" gap={8}>
                 <Pressable onPress={() => router.push(`/product/${item.id}`)} style={{ flex: 1 }}>
                   <T variant="title" numberOfLines={2}>{item.title}</T>
+                  {item.size ? <T variant="small" color={colors.text}>Size <T variant="strong">{item.size}</T></T> : null}
                   {item.sku ? <T variant="small">SKU {item.sku}</T> : null}
                 </Pressable>
-                <Pressable onPress={() => removeItem(item.id)} hitSlop={10} accessibilityLabel={`Remove ${item.title}`}>
+                <Pressable onPress={() => removeItem(item.key)} hitSlop={10} accessibilityLabel={`Remove ${item.title}`}>
                   <Ionicons name="trash-outline" size={19} color={colors.muted} />
                 </Pressable>
               </Row>
               <Row justify="space-between" style={{ marginTop: 10 }}>
-                <QuantityStepper compact value={item.quantity} max={item.qtyAvailable ?? 999} onChange={(value) => updateQuantity(item.id, value)} />
+                <QuantityStepper compact value={item.quantity} max={item.qtyAvailable ?? 999} onChange={(value) => updateQuantity(item.key, value)} />
                 <View style={{ alignItems: "flex-end" }}>
                   <T variant="price">{formatPrice(item.price * item.quantity)}</T>
                   {item.quantity > 1 ? <T variant="small">{formatPrice(item.price)} each</T> : null}
                 </View>
               </Row>
-              {maxed ? <T variant="small" color={colors.warning} style={{ marginTop: 6 }}>That’s all we have in stock.</T> : null}
+              {maxed ? <T variant="small" color={colors.warning} style={{ marginTop: 6 }}>That’s all we have in stock{item.size ? ` in ${item.size}` : ""}.</T> : null}
             </View>
           </View>
         );

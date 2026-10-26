@@ -6,7 +6,10 @@ use App\Http\Controllers\Vendor\ProductController as VendorProductController;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductSize;
+use App\Models\Size;
 use App\Models\User;
+use App\Notifications\ListingsAwaitingReview;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -19,8 +22,9 @@ use Throwable;
  * updates it (blank cells keep the current value). The same rules as the product form apply: sellers
  * can only touch their own products, and their new or changed listings go to review.
  *
- * Row keys: sku, title, category, brand, price, compare_price, qty, short_description, description,
- * barcode, show_in_store, featured (admins only), images (file names, separated by commas), _row (sheet row).
+ * Row keys: sku, title, category, brand, price, compare_price, qty, sizes ("S:10, M:12, L" — size and
+ * stock, stock optional), short_description, description, barcode, show_in_store, featured (admins only),
+ * images (file names, separated by commas), _row (sheet row).
  */
 class BulkProductImport
 {
@@ -33,11 +37,15 @@ class BulkProductImport
     /** @var Collection<string, int> lower-case brand name => id */
     private Collection $brands;
 
+    /** @var Collection<string, Size> size name without spaces, lower-case => size */
+    private Collection $sizes;
+
     public function __construct(private User $user)
     {
         $this->categories = self::categoryLookup();
         $this->brands = Brand::query()->where('status', 1)->get(['id', 'name'])
             ->mapWithKeys(fn (Brand $brand) => [Str::lower(trim($brand->name)) => $brand->id]);
+        $this->sizes = Size::query()->ordered()->get(['id', 'name'])->keyBy(fn (Size $size) => self::sizeKey($size->name));
     }
 
     public function forAdmin(): bool
@@ -53,6 +61,7 @@ class BulkProductImport
             'owner' => ['name' => $this->user->name, 'email' => $this->user->email],
             'categories' => self::categoryOptions()->pluck('label')->values(),
             'brands' => Brand::query()->where('status', 1)->orderBy('name')->pluck('name'),
+            'sizes' => $this->sizes->pluck('name')->values(),
             'max_rows' => self::MAX_ROWS,
             'max_images' => self::MAX_IMAGES_PER_ROW,
         ];
@@ -63,7 +72,7 @@ class BulkProductImport
     {
         return Product::query()
             ->when(!$this->forAdmin(), fn ($query) => $query->where('vendor_id', $this->user->id))
-            ->with(['category:id,name,parent_id', 'category.parent:id,name', 'brand:id,name'])
+            ->with(['category:id,name,parent_id', 'category.parent:id,name', 'brand:id,name', 'sizes'])
             ->orderBy('id')
             ->limit($limit)
             ->get()
@@ -74,7 +83,11 @@ class BulkProductImport
                 'brand' => $product->brand?->name ?? '',
                 'price' => (float) $product->price,
                 'compare_price' => $product->compare_price !== null ? (float) $product->compare_price : '',
-                'qty' => $product->qty ?? '',
+                // A sized product's stock lives in its sizes, so the Stock column stays blank.
+                'qty' => $product->sizes->isNotEmpty() ? '' : ($product->qty ?? ''),
+                'sizes' => $product->sizes
+                    ->map(fn (ProductSize $size) => $size->qty === null ? $size->name : "{$size->name}:{$size->qty}")
+                    ->implode(', '),
                 'short_description' => $product->short_description ?? '',
                 'description' => $product->description ?? '',
                 'barcode' => $product->barcode ?? '',
@@ -111,6 +124,7 @@ class BulkProductImport
         $tempIds = collect($imageMap)->mapWithKeys(fn ($id, $name) => [Str::lower(basename((string) $name)) => (int) $id]);
         $results = $this->inspectAll($rows, $tempIds->keys()->all());
         $report = ['created' => 0, 'updated' => 0, 'skipped' => [], 'failed' => [], 'saved' => []];
+        $sentForReview = collect();
 
         foreach ($results as $result) {
             if ($result['errors']) {
@@ -119,7 +133,11 @@ class BulkProductImport
             }
 
             try {
+                $approvalBefore = $result['product']?->approval_status;
                 $product = DB::transaction(fn () => $this->save($result, $tempIds));
+                if ($product->approval_status === Product::PENDING && $approvalBefore !== Product::PENDING) {
+                    $sentForReview->push($product);
+                }
                 $report[$result['action'] === 'create' ? 'created' : 'updated']++;
                 $report['saved'][] = [
                     'row' => $result['row'], 'sku' => $product->sku, 'title' => $product->title, 'action' => $result['action'],
@@ -129,6 +147,11 @@ class BulkProductImport
                 Log::warning('Bulk product row failed', ['row' => $result['row'], 'sku' => $result['sku'], 'error' => $exception->getMessage()]);
                 $report['failed'][] = ['row' => $result['row'], 'sku' => $result['sku'], 'title' => $result['title'], 'errors' => ['This row couldn’t be saved. Please check it and try again.']];
             }
+        }
+
+        // One alert for the whole sheet, not one per product.
+        if ($sentForReview->isNotEmpty() && !$this->forAdmin()) {
+            Messenger::send(User::storeAdmins(), new ListingsAwaitingReview($this->user, $sentForReview));
         }
 
         return $report;
@@ -158,6 +181,9 @@ class BulkProductImport
             $product->update($attributes);
         } else {
             $product = Product::create($attributes);
+        }
+        if ($result['sizes'] !== null) {
+            $product->syncSizes($result['sizes']);
         }
         ProductImages::attachTempImages($product, $imageIds);
 
@@ -269,6 +295,24 @@ class BulkProductImport
             }
         }
 
+        // Blank keeps the product's current sizes, like every other column.
+        $sizes = null;
+        if ($text('sizes') !== '') {
+            [$sizes, $sizeErrors] = $this->parseSizes($text('sizes'));
+            array_push($errors, ...$sizeErrors);
+            $sizes = $sizes ?: null;
+            if ($sizes) {
+                if (array_key_exists('qty', $attributes)) {
+                    $warnings[] = 'Stock is worked out from the sizes, so the Stock column is ignored.';
+                    unset($attributes['qty']);
+                    $warnings = array_values(array_diff($warnings, ['Stock is 0, so it shows as sold out.']));
+                }
+                if (collect($sizes)->every(fn ($size) => $size['qty'] === 0)) {
+                    $warnings[] = 'Every size has 0 stock, so it shows as sold out.';
+                }
+            }
+        }
+
         foreach (['short_description', 'description'] as $key) {
             if ($text($key) !== '') {
                 $attributes[$key] = $text($key);
@@ -333,8 +377,51 @@ class BulkProductImport
             'warnings' => $warnings,
             'images' => $images->all(),
             'attributes' => $attributes,
+            'sizes' => $sizes,
             'product' => $product,
         ];
+    }
+
+    /**
+     * "S:10, M:12, L" → [[size_id, qty], ...] and any problems. Stock after the size is optional
+     * (no number = not tracked); "Free size" and "free-size" match "Free Size".
+     *
+     * @return array{0: array<int, array{size_id: int, qty: ?int}>, 1: array<int, string>}
+     */
+    private function parseSizes(string $value): array
+    {
+        $sizes = [];
+        $errors = [];
+        foreach (preg_split('/[,;\n]+/', $value) ?: [] as $part) {
+            $part = trim($part);
+            if ($part === '') {
+                continue;
+            }
+            preg_match('/^(.*?)(?:\s*[:=]\s*(\S+))?$/u', $part, $match);
+            $name = trim($match[1] ?? '');
+            $stock = $match[2] ?? null;
+            $size = $this->sizes->get(self::sizeKey($name));
+            if (!$size) {
+                $errors[] = "Size “{$name}” isn’t on Elitezaar. Use one of: " . $this->sizes->pluck('name')->implode(', ') . '.';
+                continue;
+            }
+            if (isset($sizes[$size->id])) {
+                $errors[] = "Size {$size->name} is listed twice.";
+                continue;
+            }
+            if ($stock !== null && !preg_match('/^\d+(\.0+)?$/', $stock)) {
+                $errors[] = "Stock for size {$size->name} must be a whole number, like {$size->name}:10.";
+                continue;
+            }
+            $sizes[$size->id] = ['size_id' => $size->id, 'qty' => $stock === null ? null : (int) $stock];
+        }
+
+        return [array_values($sizes), $errors];
+    }
+
+    private static function sizeKey(string $name): string
+    {
+        return Str::lower(preg_replace('/[\s\-_]+/u', '', $name));
     }
 
     private function summarise(array $results): array
@@ -352,7 +439,7 @@ class BulkProductImport
 
     private static function publicResult(array $result): array
     {
-        return array_diff_key($result, ['attributes' => true, 'product' => true]);
+        return array_diff_key($result, ['attributes' => true, 'sizes' => true, 'product' => true]);
     }
 
     private const YES = ['yes', 'y', 'true', '1', 'active', 'show', 'live'];

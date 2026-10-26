@@ -61,6 +61,7 @@ export function OrderItemRow({ item, last, onReview }) {
       </View>
       <View style={{ flex: 1 }}>
         <T variant="title" numberOfLines={2}>{item.product_title}</T>
+        {item.size ? <T variant="small" color={colors.text}>Size <T variant="strong">{item.size}</T></T> : null}
         <T variant="small">{item.sku ? `SKU ${item.sku} · ` : ""}{item.quantity} × {formatPrice(item.unit_price)}</T>
         {onReview ? (
           <Pressable onPress={onReview} hitSlop={6} style={styles.reviewLink} accessibilityRole="link">

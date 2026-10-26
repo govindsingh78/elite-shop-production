@@ -3,6 +3,7 @@ import { Link, useLocation, useParams } from "react-router-dom";
 import Layout from "./Layout";
 import { apiUrl } from "./http";
 import { formatPrice } from "./currency";
+import { orderItemPath } from "./productPath";
 import { SUPPORT_PHONES } from "./support";
 import { AdminAuthContext } from "../context/AdminAuth";
 import { customerRequest } from "../customer/customerApi";
@@ -98,8 +99,8 @@ const OrderConfirmation = () => {
                             <b>{item.quantity}</b>
                           </span>
                           <span className="co-item-copy">
-                            {item.product_id ? <Link to={`/product/${item.product_id}`}><strong>{item.product_title}</strong></Link> : <strong>{item.product_title}</strong>}
-                            <small>{formatPrice(item.unit_price)} × {item.quantity}</small>
+                            {item.product_id ? <Link to={orderItemPath(item)}><strong>{item.product_title}</strong></Link> : <strong>{item.product_title}</strong>}
+                            <small>{item.size ? `Size ${item.size} · ` : ""}{formatPrice(item.unit_price)} × {item.quantity}</small>
                           </span>
                           <strong className="co-item-total">{formatPrice(item.line_total)}</strong>
                         </li>

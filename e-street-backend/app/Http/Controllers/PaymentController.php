@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Services\Messenger;
 use App\Services\Razorpay;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -69,7 +70,7 @@ class PaymentController extends Controller
 
         $order->markPaid($validated['razorpay_payment_id']);
 
-        return response()->json(['message' => 'Payment received.', 'data' => $order->refresh()->load('items.product:id,image')]);
+        return response()->json(['message' => 'Payment received.', 'data' => $order->refresh()->load('items.product:id,image,slug')]);
     }
 
     /** Lets the shopper fall back to cash on delivery if the online payment didn't go through. */
@@ -78,8 +79,9 @@ class PaymentController extends Controller
         $this->authorizePayment($request, $order);
 
         $order->forceFill(['payment_method' => 'cod', 'payment_token' => null])->save();
+        Messenger::orderPlaced($order);
 
-        return response()->json(['message' => 'Switched to cash on delivery.', 'data' => $order->refresh()->load('items.product:id,image')]);
+        return response()->json(['message' => 'Switched to cash on delivery.', 'data' => $order->refresh()->load('items.product:id,image,slug')]);
     }
 
     /** Server-to-server confirmation, so orders are marked paid even if the shopper closes the tab. */

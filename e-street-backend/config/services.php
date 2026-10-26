@@ -60,4 +60,10 @@ return [
         'token_url' => 'https://oauth2.googleapis.com/token',
     ],
 
+    // Push notifications to the app go through Expo. The access token is only needed if "enhanced security
+    // for push notifications" is switched on for the project at expo.dev.
+    'expo' => [
+        'access_token' => env('EXPO_ACCESS_TOKEN'),
+    ],
+
 ];

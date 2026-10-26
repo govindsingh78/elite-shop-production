@@ -7,8 +7,11 @@ import { HeartIcon } from "./WishlistButton";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/wishlist";
 import { AdminAuthContext } from "../context/AdminAuth";
+import { productPath } from "./productPath";
 
 const canBuy = (item) => item.available !== false && item.qty !== 0;
+// Pieces sold in sizes go to the bag from their own page, where the shopper picks a size.
+const needsSize = (item) => (item.sizes?.length || 0) > 0;
 
 /** Saved pieces, with "Move to bag". Guests are invited to sign in so the list follows them to the app. */
 const Wishlist = () => {
@@ -16,7 +19,7 @@ const Wishlist = () => {
   const { addItem } = useCart();
   const { user } = useContext(AdminAuthContext);
   const isCustomer = user?.portal === "customer";
-  const buyable = items.filter(canBuy);
+  const buyable = items.filter((item) => canBuy(item) && !needsSize(item));
 
   const removeItem = (item) => remove(item.id).catch((error) => toast.error(error.message));
 
@@ -78,9 +81,13 @@ const Wishlist = () => {
                       <StorefrontProductCard product={item} />
                       {item.available === false && <span className="wl-unavailable">No longer available</span>}
                       <div className="wl-actions">
-                        <button type="button" className="wl-move" onClick={() => moveToBag(item)} disabled={!canBuy(item)}>
-                          {item.available === false ? "Unavailable" : item.qty === 0 ? "Sold out" : "Move to bag"}
-                        </button>
+                        {canBuy(item) && needsSize(item) ? (
+                          <Link to={productPath(item)} className="wl-move">Choose size</Link>
+                        ) : (
+                          <button type="button" className="wl-move" onClick={() => moveToBag(item)} disabled={!canBuy(item)}>
+                            {item.available === false ? "Unavailable" : item.qty === 0 ? "Sold out" : "Move to bag"}
+                          </button>
+                        )}
                         <button type="button" className="wl-remove" onClick={() => removeItem(item)} aria-label={`Remove ${item.title} from your wishlist`}>Remove</button>
                       </div>
                     </div>

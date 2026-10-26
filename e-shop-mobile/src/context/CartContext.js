@@ -4,6 +4,9 @@ import { readJson, writeJson } from "@/lib/storage";
 const CART_KEY = "elitezaar.cart";
 const CartContext = createContext(null);
 
+/** One bag line per product and size: the same shirt in M and in L is two lines. */
+const lineKey = (productId, sizeId) => (sizeId ? `${productId}:${sizeId}` : String(productId));
+
 const clampQuantity = (quantity, available) => {
   const max = available == null ? 999 : Math.max(1, Math.min(999, available));
   return Math.max(1, Math.min(max, Number(quantity) || 1));
@@ -17,7 +20,8 @@ export function CartProvider({ children }) {
 
   useEffect(() => {
     readJson(CART_KEY, []).then((stored) => {
-      const valid = Array.isArray(stored) ? stored : [];
+      // Bags saved before sizes existed have no line key yet.
+      const valid = (Array.isArray(stored) ? stored : []).map((item) => ({ ...item, key: item.key || lineKey(item.id, item.size_id) }));
       itemsRef.current = valid;
       setItems(valid);
     });
@@ -29,28 +33,34 @@ export function CartProvider({ children }) {
     writeJson(CART_KEY, next);
   }, []);
 
-  const addItem = useCallback((product, quantity = 1) => {
-    const available = product.qty == null ? null : Number(product.qty);
+  /** `size` is one of the product's sizes ({size_id, name, qty}) for products sold in sizes. */
+  const addItem = useCallback((product, quantity = 1, size = null) => {
+    const key = lineKey(product.id, size?.size_id);
+    const stock = size ? size.qty : product.qty;
+    const available = stock == null ? null : Number(stock);
     const current = itemsRef.current;
-    const existing = current.find((item) => item.id === product.id);
+    const existing = current.find((item) => item.key === key);
     persist(existing
-      ? current.map((item) => (item.id === product.id ? { ...item, quantity: clampQuantity(item.quantity + quantity, available), qtyAvailable: available } : item))
+      ? current.map((item) => (item.key === key ? { ...item, quantity: clampQuantity(item.quantity + quantity, available), qtyAvailable: available } : item))
       : [...current, {
+        key,
         id: product.id,
         title: product.title,
         price: Number(product.price),
         image: product.image || null,
         sku: product.sku || "",
+        size_id: size?.size_id ?? null,
+        size: size?.name ?? null,
         qtyAvailable: available,
         quantity: clampQuantity(quantity, available),
       }]);
   }, [persist]);
 
-  const updateQuantity = useCallback((productId, quantity) => {
-    persist(itemsRef.current.map((item) => (item.id === productId ? { ...item, quantity: clampQuantity(quantity, item.qtyAvailable) } : item)));
+  const updateQuantity = useCallback((key, quantity) => {
+    persist(itemsRef.current.map((item) => (item.key === key ? { ...item, quantity: clampQuantity(quantity, item.qtyAvailable) } : item)));
   }, [persist]);
 
-  const removeItem = useCallback((productId) => persist(itemsRef.current.filter((item) => item.id !== productId)), [persist]);
+  const removeItem = useCallback((key) => persist(itemsRef.current.filter((item) => item.key !== key)), [persist]);
   const clearCart = useCallback(() => persist([]), [persist]);
 
   const value = useMemo(() => ({

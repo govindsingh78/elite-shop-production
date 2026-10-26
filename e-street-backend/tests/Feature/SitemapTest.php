@@ -54,9 +54,9 @@ class SitemapTest extends TestCase
         $this->assertNotContains("https://elitezaar.com/shop/{$hidden->slug}", $urls);
         $this->assertNotContains("https://elitezaar.com/shop/{$orphan->slug}", $urls);
 
-        $this->assertContains("https://elitezaar.com/product/{$live->id}", $urls);
-        $this->assertNotContains("https://elitezaar.com/product/{$draft->id}", $urls);
-        $this->assertNotContains("https://elitezaar.com/product/{$pending->id}", $urls);
+        $this->assertContains("https://elitezaar.com/product/{$live->slug}", $urls);
+        $this->assertNotContains("https://elitezaar.com/product/{$draft->slug}", $urls);
+        $this->assertNotContains("https://elitezaar.com/product/{$pending->slug}", $urls);
 
         // Product photos are listed, with "&" escaped in titles.
         $this->assertStringContainsString('<image:loc>' . url('uploads/products/large/LIVE.jpg') . '</image:loc>', $response->getContent());

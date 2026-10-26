@@ -16,6 +16,7 @@ import BannerImage2 from "../../assets/images/banner-2.jpg";
 import founderPhoto from "../../assets/images/founder.jpg";
 import { AdminAuthContext } from "../context/AdminAuth";
 import { useSeo } from "./seo";
+import { productPath } from "./productPath";
 import { diwaliSeason } from "./festive";
 import { DiwaliArt, DiyaIcon, DiyaLedge, FestiveLights, Toran } from "./Diwali";
 
@@ -162,7 +163,7 @@ const Hero = ({ stats, spotlight, categories, shopperName, festive }) => {
             <HeroSlider slides={slides} categories={categories} />
             <div className="lp-hero-badge" aria-hidden="true"><Icon><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3Z" /><path d="m9 12 2 2 4-4" /></Icon>Secure checkout</div>
             {spotlight && (
-              <Link to={`/product/${spotlight.id}`} className="lp-spotlight">
+              <Link to={productPath(spotlight)} className="lp-spotlight">
                 <span className="lp-spotlight-image">{productImage(spotlight) ? <img src={productImage(spotlight)} alt="" /> : <span>EZ</span>}</span>
                 <span className="lp-spotlight-copy">
                   <small>{spotlight.is_featured === "yes" ? "Editor’s pick" : "Just in"}</small>

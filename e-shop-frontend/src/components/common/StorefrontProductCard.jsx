@@ -5,6 +5,7 @@ import { apiUrl } from "./http";
 import { formatPrice } from "./currency";
 import { useCart } from "../context/CartContext";
 import WishlistButton from "./WishlistButton";
+import { productPath } from "./productPath";
 
 const imageBase = apiUrl.replace(/\/api\/?$/, "");
 const LOW_STOCK = 5;
@@ -17,6 +18,9 @@ const StorefrontProductCard = ({ product }) => {
   const discount = compare > price ? Math.round(((compare - price) / compare) * 100) : 0;
   const soldOut = product.qty === 0;
   const lowStock = !soldOut && product.qty != null && product.qty <= LOW_STOCK;
+  // Products sold in sizes are added from their page, once a size is chosen.
+  const sizes = product.sizes || [];
+  const inStockSizes = sizes.filter((size) => size.in_stock).map((size) => size.name);
 
   const quickAdd = () => {
     addItem(product, 1);
@@ -28,7 +32,7 @@ const StorefrontProductCard = ({ product }) => {
   return (
     <article className={`sp-card${soldOut ? " is-sold-out" : ""}`}>
       <div className="sp-card-media">
-        <Link to={`/product/${product.id}`} aria-label={`View ${product.title}`} className="sp-card-image">
+        <Link to={productPath(product)} aria-label={`View ${product.title}`} className="sp-card-image">
           {product.image ? (
             <img src={`${imageBase}/uploads/products/small/${encodeURIComponent(product.image)}`} alt={product.title} loading="lazy" />
           ) : (
@@ -41,18 +45,27 @@ const StorefrontProductCard = ({ product }) => {
           {soldOut && <span className="sp-badge sp-badge--out">Sold out</span>}
           {lowStock && <span className="sp-badge sp-badge--low">Only {product.qty} left</span>}
         </div>
-        {!soldOut && (
+        {!soldOut && (sizes.length ? (
+          <Link to={productPath(product)} className="sp-card-quick" aria-label={`Choose a size for ${product.title}`}>
+            Choose size <span aria-hidden="true">→</span>
+          </Link>
+        ) : (
           <button type="button" className={`sp-card-quick${added ? " is-added" : ""}`} onClick={quickAdd} aria-label={`Add ${product.title} to bag`}>
             {added ? "Added ✓" : <><span aria-hidden="true">＋</span> Add to bag</>}
           </button>
-        )}
+        ))}
       </div>
       <div className="sp-card-body">
         <div className="sp-card-meta">
           <span>{product.brand?.name || product.category?.name || "Elitezaar"}</span>
           {product.brand?.name && product.category?.name && <span>{product.category.name}</span>}
         </div>
-        <Link to={`/product/${product.id}`} className="sp-card-title">{product.title}</Link>
+        <Link to={productPath(product)} className="sp-card-title">{product.title}</Link>
+        {inStockSizes.length > 0 && (
+          <p className="sp-card-sizes" aria-label={`Sizes in stock: ${inStockSizes.join(", ")}`}>
+            {inStockSizes.slice(0, 5).join(" · ")}{inStockSizes.length > 5 && <span> +{inStockSizes.length - 5}</span>}
+          </p>
+        )}
         {Number(product.reviews_count) > 0 && (
           <div className="sp-card-rating" aria-label={`Rated ${Number(product.reviews_avg_rating).toFixed(1)} out of 5 from ${product.reviews_count} reviews`}>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.4l2.65 5.37 5.93.86-4.29 4.18 1.01 5.9L12 16.92l-5.3 2.79 1.01-5.9-4.29-4.18 5.93-.86L12 3.4Z" /></svg><strong>{Number(product.reviews_avg_rating).toFixed(1)}</strong><span>({product.reviews_count})</span>

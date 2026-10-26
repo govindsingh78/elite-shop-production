@@ -91,7 +91,7 @@ function reset() {
 }
 
 /**
- * Sets this page's search and sharing tags. Pass `path` (e.g. "/product/12") for the canonical URL,
+ * Sets this page's search and sharing tags. Pass `path` (e.g. "/product/classic-linen-shirt") for the canonical URL,
  * `jsonLd` for schema.org objects, and `noindex` for pages search engines shouldn't list.
  * Pass `ready: false` while the page's data is loading, so the tags aren't set twice.
  */

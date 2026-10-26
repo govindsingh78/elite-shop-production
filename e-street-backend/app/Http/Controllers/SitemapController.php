@@ -45,10 +45,10 @@ class SitemapController extends Controller
         Product::query()
             ->onStorefront()
             ->orderBy('id')
-            ->get(['id', 'title', 'image', 'updated_at'])
+            ->get(['id', 'title', 'slug', 'image', 'updated_at'])
             ->each(function (Product $product) use (&$entries, $site) {
                 $entries[] = [
-                    'loc' => "{$site}/product/{$product->id}",
+                    'loc' => "{$site}/product/{$product->slug}",
                     'lastmod' => $product->updated_at,
                     'changefreq' => 'weekly',
                     'priority' => '0.7',

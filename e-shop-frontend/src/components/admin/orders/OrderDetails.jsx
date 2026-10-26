@@ -116,7 +116,7 @@ const OrderDetails = ({ portal = "admin" }) => {
                           <thead><tr><th>Product</th><th>SKU</th><th>Qty</th><th>Unit price</th><th>Subtotal</th></tr></thead>
                           <tbody>
                             {(order.items || []).map((item) => (
-                              <tr key={item.id}><td>{item.product_title}</td><td>{item.sku || "—"}</td><td>{item.quantity}</td><td>{money(item.unit_price)}</td><td>{money(item.line_total)}</td></tr>
+                              <tr key={item.id}><td>{item.product_title}{item.size && <div className="small text-muted">Size <strong>{item.size}</strong></div>}</td><td>{item.sku || "—"}</td><td>{item.quantity}</td><td>{money(item.unit_price)}</td><td>{money(item.line_total)}</td></tr>
                             ))}
                           </tbody>
                         </table>

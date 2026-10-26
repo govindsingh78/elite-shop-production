@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Size;
+use App\Notifications\ListingReviewed;
+use App\Services\Messenger;
 use App\Services\ProductImages;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -58,6 +61,9 @@ class ProductController extends Controller
             'review_note' => $validated['note'] ?? null,
             'reviewed_at' => now(),
         ]);
+        if ($product->vendor_id) {
+            Messenger::send($product->vendor, new ListingReviewed($product));
+        }
 
         $message = match (true) {
             $validated['decision'] === Product::REJECTED => 'Product rejected. The seller will see your note.',
@@ -85,6 +91,7 @@ class ProductController extends Controller
                 ])->all(),
             ])->values(),
             'brands' => Brand::query()->where('status', 1)->orderBy('name')->get(['id', 'name']),
+            'sizes' => Size::query()->ordered()->get(['id', 'name']),
         ], 200);
     }
 
@@ -92,55 +99,84 @@ class ProductController extends Controller
     {
         $this->authorizeProduct($request, $product);
 
-        return response()->json($product->load(['category:id,name', 'brand:id,name', 'vendor:id,name', 'images']), 200);
+        return response()->json($product->load(['category:id,name', 'brand:id,name', 'vendor:id,name', 'images', 'sizes']), 200);
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate($this->rules());
+        $validated = $request->validate($this->rules(), self::MESSAGES);
 
         $galleryIds = $validated['gallery'] ?? [];
         unset($validated['gallery']);
+        $sizes = self::takeSizes($validated);
         // The existing products schema stores barcode as a non-null string.
         $validated['barcode'] ??= '';
         $validated = $this->prepareAttributes($request, $validated, null);
 
-        $product = DB::transaction(function () use ($validated, $galleryIds) {
+        $product = DB::transaction(function () use ($validated, $galleryIds, $sizes) {
             $product = Product::create($validated);
             $this->attachGallery($product, $galleryIds);
+            if ($sizes !== null) {
+                $product->syncSizes($sizes);
+            }
             return $product;
         });
+        $this->afterSave($product, null);
 
         return response()->json([
             'message' => $this->savedMessage($product, true),
-            'data' => $product->refresh()->load(['category:id,name', 'brand:id,name', 'images']),
+            'data' => $product->refresh()->load(['category:id,name', 'brand:id,name', 'images', 'sizes']),
         ], 201);
     }
 
     public function update(Request $request, Product $product)
     {
         $this->authorizeProduct($request, $product);
-        $validated = $request->validate($this->rules($product));
+        $validated = $request->validate($this->rules($product), self::MESSAGES);
         $galleryIds = $validated['gallery'] ?? [];
         unset($validated['gallery']);
+        $sizes = self::takeSizes($validated);
         if (array_key_exists('barcode', $validated)) {
             $validated['barcode'] ??= '';
         }
         $validated = $this->prepareAttributes($request, $validated, $product);
+        $approvalBefore = $product->approval_status;
 
-        DB::transaction(function () use ($product, $validated, $galleryIds) {
+        DB::transaction(function () use ($product, $validated, $galleryIds, $sizes) {
             $product->update($validated);
             if ($galleryIds) {
                 $this->attachGallery($product, $galleryIds);
             }
+            if ($sizes !== null) {
+                $product->syncSizes($sizes);
+            }
         });
 
         $product->refresh();
+        $this->afterSave($product, $approvalBefore);
 
         return response()->json([
             'message' => $this->savedMessage($product, false),
-            'data' => $product->load(['category:id,name', 'brand:id,name', 'images']),
+            'data' => $product->load(['category:id,name', 'brand:id,name', 'images', 'sizes']),
         ], 200);
+    }
+
+    /**
+     * Takes the sizes out of the request data: null when none were sent (older app versions), so the
+     * product's sizes stay as they are. A product sold in sizes gets its stock from them, not from qty.
+     */
+    private static function takeSizes(array &$validated): ?array
+    {
+        if (!array_key_exists('sizes', $validated)) {
+            return null;
+        }
+        $sizes = $validated['sizes'] ?? [];
+        unset($validated['sizes']);
+        if ($sizes) {
+            unset($validated['qty']);
+        }
+
+        return $sizes;
     }
 
     public function destroy(Request $request, Product $product)
@@ -182,6 +218,11 @@ class ProductController extends Controller
         return $created ? 'Product created successfully.' : 'Product updated successfully.';
     }
 
+    /** After a save; `$approvalBefore` is null for a new product. The store's own products need no review. */
+    protected function afterSave(Product $product, ?string $approvalBefore): void
+    {
+    }
+
     protected function rules(?Product $product = null): array
     {
         return [
@@ -199,8 +240,19 @@ class ProductController extends Controller
             'is_featured' => ['required', Rule::in(['yes', 'no'])],
             'gallery' => ['sometimes', 'array'],
             'gallery.*' => ['integer', 'exists:temp_images,id'],
+            // One entry per size the product comes in; an empty list makes it a one-size product.
+            'sizes' => ['sometimes', 'nullable', 'array', 'max:40'],
+            'sizes.*.size_id' => ['required', 'integer', 'distinct', 'exists:sizes,id'],
+            'sizes.*.qty' => ['nullable', 'integer', 'min:0', 'max:1000000'],
         ];
     }
+
+    private const MESSAGES = [
+        'sizes.*.size_id.distinct' => 'Each size can only be added once.',
+        'sizes.*.size_id.exists' => 'That size is no longer available. Refresh the page and pick again.',
+        'sizes.*.qty.integer' => 'Stock for each size must be a whole number.',
+        'sizes.*.qty.min' => 'Stock can’t be less than 0.',
+    ];
 
     private function attachGallery(Product $product, array $galleryIds): void
     {

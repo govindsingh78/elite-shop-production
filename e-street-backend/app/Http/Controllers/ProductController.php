@@ -54,7 +54,8 @@ class ProductController extends Controller
         };
 
         $filteredProducts = Product::query()
-            ->with(['category:id,name', 'brand:id,name'])
+            // Sizes let product cards send shoppers to pick one instead of adding straight to the bag.
+            ->with(['category:id,name', 'brand:id,name', 'sizes'])
             ->onStorefront()
             ->when($categoryIds, fn ($query) => $query->whereIn('category_id', $categoryIds))
             ->when($brandId, fn ($query) => $query->where('brand_id', $brandId))
@@ -107,13 +108,15 @@ class ProductController extends Controller
     }
 
     /** Public product details for the storefront. */
-    public function storefrontShow(string $id)
+    /** One product by its address (a slug, an earlier slug, or an id from an old link); `slug` in the reply is its current address. */
+    public function storefrontShow(string $handle)
     {
         $product = Product::query()
             ->onStorefront()
-            ->with(['category:id,name,slug,parent_id', 'category.parent:id,name,slug', 'brand:id,name', 'images'])
+            ->whereHandle($handle)
+            ->with(['category:id,name,slug,parent_id', 'category.parent:id,name,slug', 'brand:id,name', 'images', 'sizes'])
             ->withRating()
-            ->find($id);
+            ->first();
 
         if (!$product) {
             return response()->json(['message' => 'Product not found.'], 404);

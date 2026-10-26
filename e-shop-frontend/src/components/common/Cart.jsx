@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import Layout from "./Layout";
 import { apiUrl } from "./http";
 import { useCart } from "../context/CartContext";
+import { productPath } from "./productPath";
 import { formatPrice } from "./currency";
 import StorefrontProductCard from "./StorefrontProductCard";
 
@@ -47,12 +48,16 @@ const Cart = () => {
   const shippingLabel = shippingMethods === null ? "Calculated at checkout" : cheapestShipping === 0 ? "Free" : `From ${formatPrice(cheapestShipping)}`;
 
   const remove = (item) => {
-    removeItem(item.id);
+    removeItem(item.key);
     toast.info(({ closeToast }) => (
       <span className="cart-undo">
         Removed {item.title}.
         <button type="button" onClick={() => {
-          addItem({ id: item.id, title: item.title, price: item.price, image: item.image, sku: item.sku, qty: item.qtyAvailable }, item.quantity);
+          addItem(
+            { id: item.id, slug: item.slug, title: item.title, price: item.price, image: item.image, sku: item.sku, qty: item.qtyAvailable },
+            item.quantity,
+            item.size_id ? { size_id: item.size_id, name: item.size, qty: item.qtyAvailable } : null,
+          );
           closeToast();
         }}>Undo</button>
       </span>
@@ -116,8 +121,8 @@ const Cart = () => {
                   {items.map((item) => {
                     const max = Math.min(999, item.qtyAvailable ?? 999);
                     return (
-                      <li key={item.id} className="cart-item">
-                        <Link to={`/product/${item.id}`} className="cart-item-image">
+                      <li key={item.key} className="cart-item">
+                        <Link to={productPath(item)} className="cart-item-image">
                           {item.image
                             ? <img src={`${imageBase}/uploads/products/small/${encodeURIComponent(item.image)}`} alt={item.title} />
                             : <span>PW</span>}
@@ -125,17 +130,18 @@ const Cart = () => {
                         <div className="cart-item-body">
                           <div className="cart-item-top">
                             <div>
-                              <Link to={`/product/${item.id}`} className="cart-item-title">{item.title}</Link>
+                              <Link to={productPath(item)} className="cart-item-title">{item.title}</Link>
+                              {item.size && <p className="cart-item-size">Size <strong>{item.size}</strong></p>}
                               <p className="cart-item-meta">{formatPrice(item.price)} each{item.sku ? ` · SKU ${item.sku}` : ""}</p>
-                              {item.qtyAvailable != null && item.qtyAvailable <= LOW_STOCK && <p className="cart-item-stock">Only {item.qtyAvailable} left — order soon</p>}
+                              {item.qtyAvailable != null && item.qtyAvailable <= LOW_STOCK && <p className="cart-item-stock">Only {item.qtyAvailable} left{item.size ? ` in ${item.size}` : ""} — order soon</p>}
                             </div>
                             <strong className="cart-item-total">{formatPrice(item.price * item.quantity)}</strong>
                           </div>
                           <div className="cart-item-actions">
                             <div className="pd-qty cart-qty" role="group" aria-label={`Quantity for ${item.title}`}>
-                              <button type="button" onClick={() => updateQuantity(item.id, item.quantity - 1)} disabled={item.quantity <= 1} aria-label="Decrease quantity">−</button>
-                              <input type="number" min="1" max={max} value={item.quantity} onChange={(event) => updateQuantity(item.id, Math.min(max, Number(event.target.value) || 1))} aria-label="Quantity" />
-                              <button type="button" onClick={() => updateQuantity(item.id, item.quantity + 1)} disabled={item.quantity >= max} aria-label="Increase quantity">+</button>
+                              <button type="button" onClick={() => updateQuantity(item.key, item.quantity - 1)} disabled={item.quantity <= 1} aria-label="Decrease quantity">−</button>
+                              <input type="number" min="1" max={max} value={item.quantity} onChange={(event) => updateQuantity(item.key, Math.min(max, Number(event.target.value) || 1))} aria-label="Quantity" />
+                              <button type="button" onClick={() => updateQuantity(item.key, item.quantity + 1)} disabled={item.quantity >= max} aria-label="Increase quantity">+</button>
                             </div>
                             <button type="button" className="cart-remove" onClick={() => remove(item)}>
                               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" /></svg>

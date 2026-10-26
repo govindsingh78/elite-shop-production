@@ -13,9 +13,11 @@ const KINDS = {
   categories: { path: "/categories", singular: "category", icon: "albums-outline", hasPrice: false },
   brands: { path: "/brands", singular: "brand", icon: "pricetag-outline", hasPrice: false },
   shipping: { path: "/shipping-methods", singular: "shipping method", icon: "car-outline", hasPrice: true },
+  // Sizes have no on/off switch; their position sets the order shoppers see them in.
+  sizes: { path: "/sizes", singular: "size", icon: "resize-outline", hasPrice: false, isSize: true },
 };
 
-/** Admin: categories, brands and shipping methods. */
+/** Admin: categories, brands, shipping methods and sizes. */
 export default function CatalogScreen() {
   const { request } = useAuth();
   const toast = useToast();
@@ -31,6 +33,7 @@ export default function CatalogScreen() {
     title: `Delete “${row.name}”?`,
     message: kind === "shipping" ? "Shoppers will no longer see this delivery option."
       : kind === "categories" ? "Only empty categories can be deleted — move any products or subcategories out first."
+        : kind === "sizes" ? "Only sizes no product uses can be deleted."
         : `Products using this ${config.singular} keep their details, but you should move them to another ${config.singular}.`,
     onConfirm: async () => {
       try {
@@ -50,7 +53,7 @@ export default function CatalogScreen() {
       onRefresh={reload}
       footer={<Button title={`Add ${config.singular}`} icon="add" onPress={() => setEditing({ name: "", price: "", status: true, parent_id: null })} />}
     >
-      <Segmented options={[{ value: "categories", label: "Categories" }, { value: "brands", label: "Brands" }, { value: "shipping", label: "Shipping" }]} value={kind} onChange={setKind} style={{ marginBottom: 14 }} />
+      <Segmented options={[{ value: "categories", label: "Categories" }, { value: "brands", label: "Brands" }, { value: "shipping", label: "Shipping" }, { value: "sizes", label: "Sizes" }]} value={kind} onChange={setKind} style={{ marginBottom: 14 }} />
       {error ? <Notice tone="error" message={error} style={{ marginBottom: 12 }} /> : null}
       {loading ? <Loader /> : !rows?.length ? (
         <EmptyState icon={config.icon} title={`No ${kind === "shipping" ? "shipping methods" : kind} yet`} message={`Add your first ${config.singular}.`} />
@@ -61,8 +64,10 @@ export default function CatalogScreen() {
               key={row.id}
               icon={row.parent_id ? "return-down-forward-outline" : config.icon}
               title={row.name}
-              subtitle={config.hasPrice ? (Number(row.price) > 0 ? formatPrice(row.price) : "Free") : kind === "categories" ? categorySubtitle(row) : row.slug ? `/${row.slug}` : undefined}
-              right={Number(row.status) === 1 ? <Pill label="Active" /> : <Pill label="Hidden" color={colors.muted} background={colors.lineSoft} />}
+              subtitle={config.hasPrice ? (Number(row.price) > 0 ? formatPrice(row.price) : "Free") : kind === "categories" ? categorySubtitle(row)
+                : config.isSize ? (row.products_count ? `Used by ${plural(Number(row.products_count), "product", "products")}` : "Not used yet") : row.slug ? `/${row.slug}` : undefined}
+              right={config.isSize ? <Pill label={`#${index + 1}`} color={colors.muted} background={colors.lineSoft} />
+                : Number(row.status) === 1 ? <Pill label="Active" /> : <Pill label="Hidden" color={colors.muted} background={colors.lineSoft} />}
               onPress={() => setEditing({ ...row, price: row.price != null ? String(row.price) : "", status: Number(row.status) === 1 })}
               last={index === rows.length - 1}
             />
@@ -98,7 +103,7 @@ function EditSheet({ kind, row, parents, onClose, onDelete, onSaved }) {
   const { request } = useAuth();
   const insets = useSafeAreaInsets();
   const config = KINDS[kind];
-  const [values, setValues] = useState({ name: row.name || "", price: row.price || "", status: row.status !== false, parent_id: row.parent_id ? String(row.parent_id) : "" });
+  const [values, setValues] = useState({ name: row.name || "", price: row.price || "", status: row.status !== false, parent_id: row.parent_id ? String(row.parent_id) : "", sort_order: row.sort_order != null ? String(row.sort_order) : "" });
   const isCategory = kind === "categories";
   // A main category with subcategories of its own can't become a subcategory (one level deep).
   const keepsTopLevel = isCategory && Number(row.children_count) > 0;
@@ -109,7 +114,9 @@ function EditSheet({ kind, row, parents, onClose, onDelete, onSaved }) {
   const save = async () => {
     setSaving(true);
     setError("");
-    const body = config.hasPrice
+    const body = config.isSize
+      ? { name: values.name.trim(), sort_order: values.sort_order === "" ? null : Number(values.sort_order) }
+      : config.hasPrice
       ? { name: values.name.trim(), price: values.price || 0, status: values.status }
       : { name: values.name.trim(), status: values.status ? 1 : 0, ...(isCategory ? { parent_id: values.parent_id ? Number(values.parent_id) : null } : {}) };
     try {
@@ -142,7 +149,11 @@ function EditSheet({ kind, row, parents, onClose, onDelete, onSaved }) {
         ) : null}
         {keepsTopLevel ? <T variant="small" style={{ marginTop: -4, marginBottom: 12 }}>Has its own subcategories, so it stays a main category.</T> : null}
         {config.hasPrice ? <TextField label="Price (₹)" keyboardType="decimal-pad" hint="0 for free delivery" value={values.price} onChangeText={(price) => setValues((current) => ({ ...current, price }))} error={errors.price} /> : null}
-        <SwitchRow label="Active" hint={kind === "shipping" ? "Offered at checkout" : "Visible on the store"} value={values.status} onValueChange={(status) => setValues((current) => ({ ...current, status }))} />
+        {config.isSize ? (
+          <TextField label="Position" keyboardType="number-pad" hint="Lower numbers show first (S is 30, M is 40). New sizes go last if left blank." value={values.sort_order} onChangeText={(text) => setValues((current) => ({ ...current, sort_order: text.replace(/[^0-9]/g, "") }))} error={errors.sort_order} />
+        ) : (
+          <SwitchRow label="Active" hint={kind === "shipping" ? "Offered at checkout" : "Visible on the store"} value={values.status} onValueChange={(status) => setValues((current) => ({ ...current, status }))} />
+        )}
         <Row gap={10} style={{ marginTop: 6 }}>
           {onDelete ? <Button title="Delete" variant="danger" icon="trash-outline" block={false} onPress={onDelete} /> : null}
           <View style={{ flex: 1 }}><Button title="Save" icon="checkmark" loading={saving} disabled={!values.name.trim()} onPress={save} /></View>

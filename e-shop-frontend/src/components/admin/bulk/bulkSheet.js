@@ -17,7 +17,8 @@ export const COLUMNS = [
   { key: "brand", header: "Brand", required: true, width: 20, list: "brands", help: "Pick from the list." },
   { key: "price", header: "Price (₹)", required: true, width: 13, number: true, help: "Selling price, e.g. 1499 or 1499.50." },
   { key: "compare_price", header: "MRP (₹)", width: 13, number: true, help: "Optional. The original price, shown crossed out when it’s higher than the price." },
-  { key: "qty", header: "Stock", width: 10, whole: true, help: "How many you have. Leave blank if you don’t track stock." },
+  { key: "qty", header: "Stock", width: 10, whole: true, help: "How many you have. Leave blank if you don’t track stock, or if you fill in Sizes & stock." },
+  { key: "sizes", header: "Sizes & stock", width: 30, help: "Only for products sold in sizes: each size and how many you have, separated by commas, e.g. S:10, M:12, L:0. Leave out the numbers if you don’t track stock (S, M, L). The product’s stock is then added up from its sizes. The sizes you can use are listed on the “How to use” sheet." },
   { key: "short_description", header: "Short description", width: 40, help: "One or two lines shown near the price." },
   { key: "description", header: "Description", width: 52, help: "Full details: fabric, fit, size guide, care." },
   { key: "barcode", header: "Barcode", width: 16, help: "Optional." },
@@ -26,7 +27,7 @@ export const COLUMNS = [
   { key: "images", header: "Photo file names", width: 44, help: "File names of this product’s photos, separated by commas, e.g. kurta-front.jpg, kurta-back.jpg. The first is the main photo. Up to 10." },
 ];
 
-const ALIASES = { mrp: "compare_price", "compare price": "compare_price", stock: "qty", quantity: "qty", photos: "images", images: "images", "image file names": "images", price: "price", featured: "featured", status: "show_in_store" };
+const ALIASES = { sizes: "sizes", size: "sizes", "sizes and stock": "sizes", mrp: "compare_price", "compare price": "compare_price", stock: "qty", quantity: "qty", photos: "images", images: "images", "image file names": "images", price: "price", featured: "featured", status: "show_in_store" };
 
 export const columnsFor = (portal) => COLUMNS.filter((column) => portal === "admin" || !column.adminOnly);
 
@@ -139,9 +140,13 @@ export async function buildWorkbook({ data, rows = [] }) {
   // A filled-in example using this store's own categories and brands. It isn't imported.
   const category = data.categories.find((label) => label.includes("›")) || data.categories[0] || "";
   const brand = data.brands[0] || "";
+  // Sizes from this store's list (S, M, L, XL when it has them), with stock.
+  const sizeNames = data.sizes || [];
+  const usual = ["S", "M", "L", "XL"].filter((name) => sizeNames.includes(name));
+  const sampleSizes = (usual.length ? usual : sizeNames.slice(0, 4)).map((name, index) => `${name}:${[8, 12, 5, 0][index]}`).join(", ");
   const example = addProductSheet("Example", [
-    { sku: "KURTA-BLUE-M", title: "Indigo cotton kurta", category, brand, price: 1499, compare_price: 1999, qty: 25, short_description: "Breathable hand-block print, regular fit.", description: "100% cotton. Machine wash cold. Size M: chest 40 in, length 44 in.", barcode: "", show_in_store: "Yes", featured: "No", images: "kurta-blue-front.jpg, kurta-blue-back.jpg" },
-    { sku: "KURTA-BLUE-L", title: "Indigo cotton kurta (L)", category, brand, price: 1499, compare_price: "", qty: 10, short_description: "", description: "", barcode: "", show_in_store: "Yes", featured: "No", images: "kurta-blue-front.jpg" },
+    { sku: "KURTA-BLUE", title: "Indigo cotton kurta", category, brand, price: 1499, compare_price: 1999, qty: "", sizes: sampleSizes, short_description: "Breathable hand-block print, regular fit.", description: "100% cotton. Machine wash cold. Size M: chest 40 in, length 44 in.", barcode: "", show_in_store: "Yes", featured: "No", images: "kurta-blue-front.jpg, kurta-blue-back.jpg" },
+    { sku: "TOTE-JUTE", title: "Jute tote bag", category, brand, price: 499, compare_price: "", qty: 10, sizes: "", short_description: "", description: "", barcode: "", show_in_store: "Yes", featured: "No", images: "tote-jute.jpg" },
     { sku: "SCARF-RED", title: "Silk blend scarf", category, brand, price: 799, compare_price: "", qty: "", short_description: "", description: "", barcode: "8901234567890", show_in_store: "No", featured: "No", images: "" },
   ], "FFC99A5B");
   const exampleNote = example.getCell(`A${example.rowCount + 2}`);
@@ -159,6 +164,7 @@ export async function buildWorkbook({ data, rows = [] }) {
   [
     "1. Fill in the “Products” sheet, one product per row (up to " + data.max_rows + " rows). Columns marked * are required for new products.",
     "2. Categories and brands come from drop-down lists of what’s on Elitezaar now. Ask us if one you need is missing.",
+    `Sizes: for clothes and shoes, list each size with its stock in “Sizes & stock”, like ${sampleSizes || "S:10, M:12"}. Sizes you can use: ${sizeNames.join(", ") || "ask us to add the sizes you need"}.`,
     "3. Put all the photos in one folder. In “Photo file names”, list each product’s photo file names, separated by commas.",
     "4. On Elitezaar, open Products › Bulk upload, choose this file and the photo folder, check the results, then import.",
     "To update products, use a SKU you already have: only the cells you fill in change; blank cells keep their current values. “Download my products” gives you a sheet of your current products to edit.",

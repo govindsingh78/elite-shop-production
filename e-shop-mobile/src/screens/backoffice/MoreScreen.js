@@ -2,6 +2,7 @@ import React from "react";
 import { Linking, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import NotificationsRow from "@/components/NotificationsRow";
 import SupportCard from "@/components/SupportCard";
 import { Card, ListRow, Row, Screen, T } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
@@ -50,6 +51,7 @@ export default function MoreScreen({ portal }) {
             <ListRow icon="add-circle-outline" title="Add a product" subtitle="List something new" onPress={() => router.push("/vendor/product-form")} />
           </>
         )}
+        <NotificationsRow />
         <ListRow
           icon="cloud-upload-outline"
           title="Bulk upload"

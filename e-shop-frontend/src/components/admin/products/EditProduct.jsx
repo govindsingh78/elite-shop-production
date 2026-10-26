@@ -7,12 +7,13 @@ import { toast } from "react-toastify";
 import ProductForm from "./ProductForm";
 import { portalConfig, portalToken } from "../portal";
 import { ReviewPanel, SellerReviewNotice } from "./ReviewBits";
+import { productPayload, sizeValues, sizesProblem } from "./productPayload";
 
 const apiOrigin = apiUrl.replace(/\/api\/?$/, "");
 const emptyValues = {
   title: "", price: "", compare_price: "", description: "", short_description: "",
   category_id: "", brand_id: "", sku: "", barcode: "", qty: "0", status: "1",
-  is_featured: "no", gallery: [],
+  is_featured: "no", gallery: [], hasSizes: false, sizes: [],
 };
 
 const EditProduct = ({ portal = "admin" }) => {
@@ -24,6 +25,7 @@ const EditProduct = ({ portal = "admin" }) => {
   const [review, setReview] = useState(null);
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
+  const [sizeOptions, setSizeOptions] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -45,6 +47,7 @@ const EditProduct = ({ portal = "admin" }) => {
 
         setCategories(optionsData.categories || []);
         setBrands(optionsData.brands || []);
+        setSizeOptions(optionsData.sizes || []);
         setValues({
           ...emptyValues,
           title: productData.title || "",
@@ -56,10 +59,12 @@ const EditProduct = ({ portal = "admin" }) => {
           brand_id: String(productData.brand_id || ""),
           sku: productData.sku || "",
           barcode: productData.barcode || "",
-          qty: productData.qty == null ? "0" : String(productData.qty),
+          // Blank = stock not tracked (showing 0 here used to make the product sold out on the next save).
+          qty: productData.qty == null ? "" : String(productData.qty),
           status: String(productData.status ?? 1),
           is_featured: productData.is_featured || "no",
           gallery: [],
+          ...sizeValues(productData),
         });
         const images = productData.images?.length
           ? productData.images.map((image) => image.image)
@@ -88,16 +93,12 @@ const EditProduct = ({ portal = "admin" }) => {
     try {
       const token = portalToken(portal);
       if (!token) throw new Error(config.sessionExpired);
-      const payload = {
-        ...values,
-        price: Number(values.price),
-        compare_price: values.compare_price === "" ? null : Number(values.compare_price),
-        category_id: Number(values.category_id),
-        brand_id: Number(values.brand_id),
-        qty: values.qty === "" ? null : Number(values.qty),
-        status: Number(values.status),
-        gallery: values.gallery.map((image) => image.id),
-      };
+      const problem = sizesProblem(values);
+      if (problem) {
+        setErrors({ sizes: problem });
+        return;
+      }
+      const payload = productPayload(values);
       const response = await fetch(`${apiUrl}/${config.api}/products/${id}`, {
         method: "PUT",
         headers: { Accept: "application/json", "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -141,7 +142,7 @@ const EditProduct = ({ portal = "admin" }) => {
                 <p className="form-text">Existing images are retained. Add more images below if needed.</p>
               </div>
             )}
-            <ProductForm portal={portal} values={values} setValues={setValues} categories={categories} brands={brands} onSubmit={handleSubmit} errors={errors} loading={loading} submitLabel={portal === "vendor" && review?.approval_status === "rejected" ? "Save & resubmit" : "Save changes"} />
+            <ProductForm portal={portal} values={values} setValues={setValues} categories={categories} brands={brands} sizeOptions={sizeOptions} onSubmit={handleSubmit} errors={errors} loading={loading} submitLabel={portal === "vendor" && review?.approval_status === "rejected" ? "Save & resubmit" : "Save changes"} />
           </div></div>
         )}
         {!loadingData && errors.general && <button className="btn btn-link mt-2" onClick={() => navigate(config.productsPath)}>Back to products</button>}

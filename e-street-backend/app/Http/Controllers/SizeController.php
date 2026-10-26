@@ -1,94 +1,59 @@
 <?php
 
 namespace App\Http\Controllers;
-use Illuminate\Http\Request;
+
 use App\Models\Size;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
-
+/** The admin's list of sizes that sellers and the store can offer products in. */
 class SizeController extends Controller
 {
-    /**
-     * Display a listing of the sizes.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
-        $sizes = Size::all();
-        return response()->json($sizes);
+        return response()->json(Size::query()->ordered()->withCount('productSizes as products_count')->get(), 200);
     }
 
-    /**
-     * Store a newly created size in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-        ]);
+        $validated = $request->validate($this->rules());
+        // New sizes go to the end of the list unless a position is given.
+        $validated['sort_order'] ??= ((int) Size::query()->max('sort_order')) + 10;
 
-        $size = Size::create($validatedData);
-        return response()->json($size, 201);
+        return response()->json(['message' => "Size {$validated['name']} added.", 'data' => Size::create($validated)], 201);
     }
 
-    /**
-     * Display the specified size.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
+    public function update(Request $request, Size $size)
     {
-        $size = Size::find($id);
-
-        if (!$size) {
-            return response()->json(['message' => 'Size not found'], 404);
+        $validated = $request->validate($this->rules($size));
+        // A blank position keeps the size where it is.
+        if (($validated['sort_order'] ?? null) === null) {
+            unset($validated['sort_order']);
         }
+        $size->update($validated);
 
-        return response()->json($size);
+        return response()->json(['message' => 'Size updated.', 'data' => $size], 200);
     }
 
-    /**
-     * Update the specified size in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
+    public function destroy(Size $size)
     {
-        $size = Size::find($id);
-
-        if (!$size) {
-            return response()->json(['message' => 'Size not found'], 404);
+        // Past orders keep the size name, but live products would silently lose the size and its stock.
+        $inUse = $size->productSizes()->count();
+        if ($inUse) {
+            return response()->json([
+                'message' => "{$size->name} is used by {$inUse} " . ($inUse === 1 ? 'product' : 'products') . '. Remove it from those products first.',
+            ], 422);
         }
-
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-        ]);
-
-        $size->update($validatedData);
-        return response()->json($size);
-    }
-
-    /**
-     * Remove the specified size from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        $size = Size::find($id);
-
-        if (!$size) {
-            return response()->json(['message' => 'Size not found'], 404);
-        }
-
         $size->delete();
-        return response()->json(['message' => 'Size deleted successfully']);
+
+        return response()->json(['message' => "Size {$size->name} deleted."], 200);
+    }
+
+    private function rules(?Size $size = null): array
+    {
+        return [
+            'name' => ['required', 'string', 'max:60', Rule::unique('sizes', 'name')->ignore($size?->id)],
+            'sort_order' => ['nullable', 'integer', 'min:0', 'max:65535'],
+        ];
     }
 }

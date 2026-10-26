@@ -12,7 +12,7 @@ const EMPTY_FORM = { rating: 0, title: "", comment: "" };
  * Ratings & reviews on the product page. Anyone can read them; customers whose order with the product was delivered
  * can write one review, then edit or delete it. `onSummary` receives the latest rating summary.
  */
-const ProductReviews = ({ productId, onSummary }) => {
+const ProductReviews = ({ productId, path, onSummary }) => {
   const { user } = useContext(AdminAuthContext);
   const isCustomer = user?.portal === "customer";
   const location = useLocation();
@@ -110,7 +110,7 @@ const ProductReviews = ({ productId, onSummary }) => {
             {!isCustomer ? (
               <>
                 <p>Bought this piece? Tell other shoppers what you think.</p>
-                <Link to="/customer/login" state={{ from: `/product/${productId}#reviews` }} className="btn btn-outline-primary">Sign in to review</Link>
+                <Link to="/customer/login" state={{ from: `${path || `/product/${productId}`}#reviews` }} className="btn btn-outline-primary">Sign in to review</Link>
               </>
             ) : mine.loading ? null : mine.review ? (
               <p>Thanks for sharing your thoughts. You can edit your review whenever you like.</p>

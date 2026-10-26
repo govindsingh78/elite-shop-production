@@ -133,7 +133,7 @@ export default function CheckoutScreen() {
       payment_method: payment === "cod" ? "cod" : "razorpay",
       shipping_method_id: shippingId || null,
       accept_policy: acceptPolicy,
-      items: items.map(({ id, quantity }) => ({ product_id: id, quantity })),
+      items: items.map(({ id, quantity, size_id: sizeId }) => ({ product_id: id, quantity, ...(sizeId ? { size_id: sizeId } : {}) })),
     };
 
     setPlacing(true);
@@ -280,8 +280,8 @@ export default function CheckoutScreen() {
       <Card>
         <T variant="h3" style={{ marginBottom: 6 }}>Order summary</T>
         {items.map((item) => (
-          <Row key={item.id} justify="space-between" style={{ paddingVertical: 6 }} align="flex-start">
-            <T variant="body" style={{ flex: 1 }} numberOfLines={2}>{item.quantity} × {item.title}</T>
+          <Row key={item.key} justify="space-between" style={{ paddingVertical: 6 }} align="flex-start">
+            <T variant="body" style={{ flex: 1 }} numberOfLines={2}>{item.quantity} × {item.title}{item.size ? ` (Size ${item.size})` : ""}</T>
             <T variant="strong">{formatPrice(item.price * item.quantity)}</T>
           </Row>
         ))}
