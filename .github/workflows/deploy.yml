@@ -13,12 +13,39 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
+      # The website is built here rather than on the server: installing and building it needs more memory
+      # than the server has, and doing it there froze the server. Only the finished files are copied over.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: e-shop-frontend/package-lock.json
+
+      - name: Build the website
+        working-directory: e-shop-frontend
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+          tar -czf ../website.tgz dist
+
+      - name: Copy the website to the server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: website.tgz
+          target: /tmp/elitezaar-deploy
+
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          command_timeout: 20m
           script: |
             set -e
             cd /var/www/html/elite-shop-production
@@ -30,4 +57,4 @@ jobs:
             git config core.fileMode false
             git fetch origin elite-production
             git reset --hard origin/elite-production
-            bash deploy.sh
+            bash deploy.sh /tmp/elitezaar-deploy/website.tgz

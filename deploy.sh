@@ -25,9 +25,23 @@ sudo systemctl reload php8.5-fpm
 php artisan up
 trap - EXIT
 
-# ---------- React frontend (the live site keeps serving the previous build until this one is written) ----------
-cd "$FRONTEND_DIR"
-npm ci
-npm run build          # change "dist" to "build" in Nginx if your output folder is build
+# ---------- React website ----------
+# GitHub Actions builds the website (this server hasn't the memory to) and passes the files in as $1,
+# a .tgz of the dist folder. Nginx serves e-shop-frontend/dist.
+SITE_ARCHIVE="${1:-}"
+if [ -n "$SITE_ARCHIVE" ]; then
+  cd "$FRONTEND_DIR"
+  rm -rf dist.new dist.old
+  mkdir dist.new
+  tar -xzf "$SITE_ARCHIVE" -C dist.new --strip-components=1
+  # Swap the new files in at once, so visitors never see a half-copied site.
+  if [ -d dist ]; then mv dist dist.old; fi
+  mv dist.new dist
+  rm -rf dist.old "$SITE_ARCHIVE"
+  # Only needed for building here, which no longer happens: free the disk space.
+  rm -rf node_modules
+else
+  echo "Website not updated: it is built by GitHub Actions on each push (Actions › Deploy to AWS EC2 › Run workflow to redo it)."
+fi
 
 echo "Deploy finished: $(git -C "$REPO_DIR" log -1 --pretty='%h %s')"
