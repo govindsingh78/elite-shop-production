@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import PagedList from "@/components/PagedList";
 import ProductCard from "@/components/ProductCard";
+import VoiceSearchButton from "@/components/VoiceSearch";
 import { Button, Chip, EmptyState, OptionSheet, Row, T, TextField } from "@/components/ui";
 import { api } from "@/lib/api";
 import { formatPriceShort } from "@/lib/format";
@@ -26,14 +27,18 @@ export default function ShopScreen() {
   const [searchDraft, setSearchDraft] = useState(params.q || "");
   const [sort, setSort] = useState("newest");
   const [price, setPrice] = useState({ min: "", max: "" });
-  const [meta, setMeta] = useState({ total: null, brands: [], range: { min: 0, max: 0 }, category: null });
+  const [meta, setMeta] = useState({ total: null, brands: [], range: { min: 0, max: 0 }, category: null, search: null });
+  // Whether the current search was spoken, and a request from the home screen's mic to start listening.
+  const [spoken, setSpoken] = useState(false);
+  const [listenRequest, setListenRequest] = useState(params.voice);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
 
   // Links from the home screen (collections, brands) arrive as new params on this tab.
-  const [seenParams, setSeenParams] = useState({ category: params.category, brand: params.brand, q: params.q });
-  if (params.category !== seenParams.category || params.brand !== seenParams.brand || params.q !== seenParams.q) {
-    setSeenParams({ category: params.category, brand: params.brand, q: params.q });
+  const [seenParams, setSeenParams] = useState({ category: params.category, brand: params.brand, q: params.q, voice: params.voice });
+  if (params.category !== seenParams.category || params.brand !== seenParams.brand || params.q !== seenParams.q || params.voice !== seenParams.voice) {
+    setSeenParams({ category: params.category, brand: params.brand, q: params.q, voice: params.voice });
+    if (params.voice !== undefined) setListenRequest(params.voice);
     if (params.category !== undefined) setCategory(params.category);
     if (params.brand !== undefined) setBrand(params.brand);
     if (params.q !== undefined) {
@@ -63,9 +68,13 @@ export default function ShopScreen() {
       brands: data.brands || [],
       range: { min: Number(data.price_range?.min || 0), max: Number(data.price_range?.max || 0) },
       category: data.category,
+      search: data.search,
     });
     return data.products;
   };
+
+  // Words to listen out for: brand and collection names.
+  const voiceHints = useMemo(() => [...meta.brands.map((item) => item.name), ...categories.flatMap((item) => [item.name, ...(item.children || []).map((child) => child.name)])], [meta.brands, categories]);
 
   const activeFilters = (brand ? 1 : 0) + (price.min || price.max ? 1 : 0);
   const showEverything = () => {
@@ -94,7 +103,7 @@ export default function ShopScreen() {
           <TextInput
             value={searchDraft}
             onChangeText={setSearchDraft}
-            onSubmitEditing={() => setSearch(searchDraft.trim())}
+            onSubmitEditing={() => { setSearch(searchDraft.trim()); setSpoken(false); }}
             placeholder="Search by name or SKU"
             placeholderTextColor={colors.faint}
             returnKeyType="search"
@@ -103,6 +112,7 @@ export default function ShopScreen() {
           {searchDraft ? (
             <Pressable onPress={() => { setSearchDraft(""); setSearch(""); }} hitSlop={8}><Ionicons name="close-circle" size={18} color={colors.faint} /></Pressable>
           ) : null}
+          <VoiceSearchButton hints={voiceHints} listenRequest={listenRequest} onResult={(text) => { setSearchDraft(text); setSearch(text); setSpoken(true); }} />
         </View>
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
@@ -129,6 +139,7 @@ export default function ShopScreen() {
       {search ? (
         <View style={styles.activeSearch}>
           <Chip label={`“${search}” ×`} active onPress={() => { setSearch(""); setSearchDraft(""); }} />
+          {meta.search ? <SearchUnderstanding info={meta.search} spoken={spoken} /> : null}
         </View>
       ) : null}
     </View>
@@ -207,6 +218,24 @@ function FilterSheet({ onClose, brands, range, brand, price, onApply }) {
   );
 }
 
+/** "You said “linen shirts for men under 2000” — linen shirt · Men · under ₹2,000" */
+function SearchUnderstanding({ info, spoken }) {
+  const price = info.min_price && info.max_price ? `${formatPriceShort(info.min_price)} – ${formatPriceShort(info.max_price)}`
+    : info.max_price ? `under ${formatPriceShort(info.max_price)}`
+    : info.min_price ? `over ${formatPriceShort(info.min_price)}` : null;
+  const parts = [info.terms.join(" "), info.category?.name, info.brand?.name, price].filter(Boolean);
+
+  return (
+    <View style={styles.understood}>
+      {spoken ? <Ionicons name="mic" size={14} color={colors.emerald} /> : null}
+      <T variant="small" style={{ flexShrink: 1 }}>
+        {spoken ? "You said" : "Searching for"} “{info.query}”{parts.length ? ` — ${parts.join(" · ")}` : ""}
+        {info.match === "any" ? ". Nothing matched every word, so these match some of them." : ""}
+      </T>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.cream },
   list: { paddingHorizontal: 0, paddingTop: 0 },
@@ -221,7 +250,8 @@ const styles = StyleSheet.create({
   toolbar: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 16, marginBottom: 12 },
   toolButton: { flexDirection: "row", alignItems: "center", gap: 6, borderWidth: 1, borderColor: colors.line, borderRadius: radius.pill, paddingHorizontal: 13, paddingVertical: 8, backgroundColor: colors.white },
   toolText: { color: colors.emerald, fontFamily: fonts.semi, fontSize: 14 },
-  activeSearch: { flexDirection: "row", paddingHorizontal: 16, marginBottom: 12 },
+  activeSearch: { alignItems: "flex-start", gap: 8, paddingHorizontal: 16, marginBottom: 12 },
+  understood: { flexDirection: "row", alignItems: "center", gap: 6 },
   column: { gap: 14, paddingHorizontal: 16 },
   cell: { flex: 1, maxWidth: "50%", marginBottom: 20 },
   backdrop: { flex: 1, backgroundColor: "rgba(10,31,25,0.45)" },

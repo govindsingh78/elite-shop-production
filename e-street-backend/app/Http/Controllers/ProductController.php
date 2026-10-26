@@ -7,6 +7,7 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Intervention\Image\Facades\Image;
 use App\Models\TempImage;
+use App\Services\ProductSearch;
 use Illuminate\Support\Str;
 
 class ProductController extends Controller
@@ -19,6 +20,7 @@ class ProductController extends Controller
             'max_price' => ['nullable', 'numeric', 'min:0'],
             'brand_id' => ['nullable', 'integer', 'min:1'],
             'sort' => ['nullable', 'in:newest,price_asc,price_desc'],
+            'search' => ['nullable', 'string', 'max:200'],
         ]);
 
         if ($request->filled('min_price') && $request->filled('max_price')
@@ -46,38 +48,49 @@ class ProductController extends Controller
             return response()->json(['message' => 'Category not found.'], 404);
         }
 
+        // Typed or spoken searches ("linen shirts for men under 2000") are understood: the collection, brand and
+        // price they mention apply unless the shopper picked those separately.
+        $interpreted = $search !== '' ? ProductSearch::interpret($search) : null;
+        $searchCategory = !$category && !$categoryId ? $interpreted['category'] ?? null : null;
+        $searchBrandId = !$brandId ? ($interpreted['brand'] ?? null)?->id : null;
+        $searchMinPrice = ($minPrice === null || $minPrice === '') ? $interpreted['min_price'] ?? null : null;
+        $searchMaxPrice = ($maxPrice === null || $maxPrice === '') ? $interpreted['max_price'] ?? null : null;
+        $terms = $interpreted['terms'] ?? [];
+
         // A top-level category also lists its subcategories' products.
         $categoryIds = match (true) {
             (bool) $category => $category->storefrontCategoryIds(),
             (bool) $categoryId => Category::find($categoryId)?->storefrontCategoryIds() ?? [$categoryId],
+            (bool) $searchCategory => $searchCategory->storefrontCategoryIds(),
             default => null,
         };
 
-        $filteredProducts = Product::query()
+        $filtered = fn (bool $anyWord) => ProductSearch::apply(Product::query()
             // Sizes let product cards send shoppers to pick one instead of adding straight to the bag.
             ->with(['category:id,name', 'brand:id,name', 'sizes'])
             ->onStorefront()
             ->when($categoryIds, fn ($query) => $query->whereIn('category_id', $categoryIds))
-            ->when($brandId, fn ($query) => $query->where('brand_id', $brandId))
-            ->when($search !== '', function ($query) use ($search) {
-                $query->where(function ($query) use ($search) {
-                    $query->where('title', 'like', "%{$search}%")
-                        ->orWhere('sku', 'like', "%{$search}%")
-                        ->orWhere('short_description', 'like', "%{$search}%");
-                });
-            })
-            ->when($request->input('featured') === 'yes', fn ($query) => $query->where('is_featured', 'yes'));
+            ->when($brandId ?: $searchBrandId, fn ($query, $brand) => $query->where('brand_id', $brand))
+            ->when($request->input('featured') === 'yes', fn ($query) => $query->where('is_featured', 'yes')), $terms, $anyWord);
+        $priced = fn ($query) => $query
+            ->when($minPrice !== null && $minPrice !== '', fn ($query) => $query->where('price', '>=', (float) $minPrice))
+            ->when($maxPrice !== null && $maxPrice !== '', fn ($query) => $query->where('price', '<=', (float) $maxPrice))
+            ->when($searchMinPrice !== null, fn ($query) => $query->where('price', '>=', $searchMinPrice))
+            ->when($searchMaxPrice !== null, fn ($query) => $query->where('price', '<=', $searchMaxPrice));
+
+        // Nothing has every word: show what has some of them rather than nothing.
+        $anyWord = count($terms) > 1 && !$priced($filtered(false))->exists();
+        $filteredProducts = $filtered($anyWord);
 
         $priceRange = (clone $filteredProducts)
             ->selectRaw('MIN(price) as min_price, MAX(price) as max_price')
             ->first();
 
-        $products = (clone $filteredProducts)
-            ->withRating()
-            ->when($minPrice !== null && $minPrice !== '', fn ($query) => $query->where('price', '>=', (float) $minPrice))
-            ->when($maxPrice !== null && $maxPrice !== '', fn ($query) => $query->where('price', '<=', (float) $maxPrice))
+        $products = $priced((clone $filteredProducts)->withRating())
             ->when($request->input('sort') === 'price_asc', fn ($query) => $query->orderBy('price'))
             ->when($request->input('sort') === 'price_desc', fn ($query) => $query->orderByDesc('price'))
+            // Searching without choosing an order: best matches first.
+            ->when(!$request->filled('sort'), fn ($query) => ProductSearch::orderByRelevance($query, $terms))
             ->orderByDesc('id')
             ->paginate(12);
 
@@ -104,6 +117,16 @@ class ProductController extends Controller
                 'min_price' => $minPrice !== null ? (float) $minPrice : null,
                 'max_price' => $maxPrice !== null ? (float) $maxPrice : null,
             ],
+            // How the search was understood, for "Showing shirts · Men · under ₹2,000".
+            'search' => $interpreted ? [
+                'query' => $interpreted['query'],
+                'terms' => $terms,
+                'category' => $searchCategory ? $searchCategory->only(['id', 'name', 'slug']) : null,
+                'brand' => $searchBrandId ? $interpreted['brand']->only(['id', 'name']) : null,
+                'min_price' => $searchMinPrice,
+                'max_price' => $searchMaxPrice,
+                'match' => $anyWord ? 'any' : 'all',
+            ] : null,
         ], 200);
     }
 

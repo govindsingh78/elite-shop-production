@@ -46,6 +46,7 @@
         { "type": "list", "items": [
           "Technical information: when you use the Platform, our servers record basic technical details such as your IP address, browser or device type, the pages you request and the time. We use these to keep the Platform secure and working, and to investigate misuse.",
           "Device storage: the website and app store your bag, wishlist and sign-in session on your own device, so they're still there when you come back.",
+          "Voice search: if you search by voice, your browser or phone turns your speech into text with its own speech service (Google's in Chrome and on Android, Apple's in Safari and on iPhone). We receive only the text, like a typed search, never the recording. The microphone is used only while you're searching.",
           "No advertising trackers: we don't use advertising cookies, third-party analytics or tracking pixels, and we don't build advertising profiles about you. If you allow it, we measure how fast our pages load on your device, without linking it to you (see the Cookie Policy)."
         ] }
       ]

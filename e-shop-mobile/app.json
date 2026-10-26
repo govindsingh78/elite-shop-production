@@ -83,6 +83,14 @@
           "color": "#18372e",
           "defaultChannel": "default"
         }
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Elitezaar uses the microphone only while you search by voice.",
+          "speechRecognitionPermission": "Elitezaar turns what you say into a product search when you search by voice.",
+          "androidSpeechServicePackages": ["com.google.android.googlequicksearchbox"]
+        }
       ]
     ],
     "extra": {

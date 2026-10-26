@@ -2896,3 +2896,55 @@ body.cookie-settings-open { overflow: hidden; }
 @media print { .cookie-banner, .cookie-settings-backdrop { display: none !important; } }
 .cookie-categories .form-check-input:checked { border-color: #1f6f63; background-color: #1f6f63; }
 .cookie-categories .form-check-input:focus { border-color: #8fc9b8; box-shadow: 0 0 0 .2rem rgba(31, 111, 99, .2); }
+
+/* ---------- Search by voice ---------- */
+.header-search { width: 50px; justify-content: center; padding: 4px; }
+.header-search-icon { display: grid; width: 40px; height: 40px; place-items: center; border-radius: 50%; color: #2f6f63; background: linear-gradient(145deg, #eef6f3, #dcebe5);
+    svg { width: 20px; height: 20px; stroke-width: 1.9; }
+}
+body.voice-search-open { overflow: hidden; }
+.voice-backdrop { position: fixed; inset: 0; z-index: 1095; display: grid; place-items: start center; padding: 10vh 16px 16px; background: rgba(12, 26, 20, .6); }
+.voice-dialog { position: relative; width: 100%; max-width: 560px; border-radius: 22px; padding: 30px 28px 24px; background: #fffdf8; box-shadow: 0 30px 70px rgba(0, 0, 0, .3); text-align: center; animation: cookie-rise .25s ease-out;
+    h2 { margin: 0 0 18px; color: #13291f; font-size: 1.35rem; font-weight: 700; }
+}
+.voice-close { position: absolute; top: 16px; right: 16px; }
+.voice-mic { position: relative; display: inline-grid; width: 92px; height: 92px; place-items: center; border: 0; border-radius: 50%; color: #fff; background: linear-gradient(145deg, #2f8f7a, #18372e); box-shadow: 0 14px 30px rgba(24, 55, 46, .35); transition: transform .2s ease;
+    svg { width: 38px; height: 38px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    &:hover { transform: scale(1.04); }
+    &:focus-visible { outline: 3px solid rgba(67, 195, 209, .55); outline-offset: 4px; }
+    &.is-listening { background: linear-gradient(145deg, #e0564a, #b23a2f);
+        &::before, &::after { position: absolute; inset: 0; border-radius: 50%; background: rgba(224, 86, 74, .35); content: ""; animation: voice-pulse 1.6s ease-out infinite; }
+        &::after { animation-delay: .8s; }
+    }
+}
+@keyframes voice-pulse { from { opacity: .8; transform: scale(1); } to { opacity: 0; transform: scale(1.8); } }
+@media (prefers-reduced-motion: reduce) { .voice-mic.is-listening::before, .voice-mic.is-listening::after { animation: none; } }
+.voice-status { margin: 16px 0 4px; color: #4c5d55; font-weight: 600;
+    &.is-error { color: #a63d2f; }
+}
+.voice-heard { min-height: 1.6em; margin: 0 0 16px; color: #13291f; font-size: 1.25rem; font-weight: 700; overflow-wrap: anywhere; }
+.voice-type { display: flex; gap: 8px;
+    .form-control { border-radius: 999px; padding-left: 18px; }
+    .btn { border-radius: 999px; padding: 0 20px; }
+}
+.voice-examples { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px; margin-top: 16px;
+    span { color: #8b968f; font-size: .8rem; }
+    button { border: 1px solid #dfe6e1; border-radius: 999px; padding: 4px 12px; color: #2f6f63; background: #fff; font-size: .82rem; }
+    button:hover { border-color: #2f6f63; }
+}
+.shop-voice-button { display: grid; width: 30px; height: 30px; flex-shrink: 0; place-items: center; border: 0; border-radius: 50%; color: #2f6f63; background: #e8f4f0;
+    svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+    &:hover { color: #fff; background: #2f6f63; }
+}
+.sp-understood { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 6px 0 0; color: #4c5d55; font-size: .88rem;
+    svg { width: 16px; height: 16px; fill: none; stroke: #2f6f63; stroke-width: 2; stroke-linecap: round; }
+    strong { color: #13291f; }
+    small { flex-basis: 100%; color: #9a6512; }
+}
+@media (max-width: 575.98px) {
+    .voice-backdrop { padding-top: 6vh; }
+    .voice-dialog { padding: 26px 18px 20px; }
+}
+.header-search-mobile { display: grid; width: 42px; height: 42px; margin-left: auto; margin-right: 6px; place-items: center; border: 1px solid rgba(33, 59, 51, .14); border-radius: 50%; color: #2f6f63; background: linear-gradient(145deg, #eef6f3, #dcebe5);
+    svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; }
+}

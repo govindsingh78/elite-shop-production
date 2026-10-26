@@ -9,6 +9,7 @@ import TermsConditions from './components/common/TermsConditions';
 import PrivacyPolicy from './components/common/PrivacyPolicy';
 import CookiePolicy from './components/common/CookiePolicy';
 import CookieConsent from './components/common/CookieConsent';
+import VoiceSearch from './components/common/VoiceSearch';
 import Wishlist from './components/common/Wishlist';
 import ManageReviews from './components/admin/reviews/ManageReviews';
 import ManageCommissions from './components/admin/commissions/ManageCommissions';
@@ -326,6 +327,7 @@ function App() {
         {/* Inside the router so toast messages can contain <Link>s. */}
         <ToastContainer />
         <CookieConsent />
+        <VoiceSearch />
       </BrowserRouter>
       </StorefrontCategoriesProvider>
       </WishlistProvider>

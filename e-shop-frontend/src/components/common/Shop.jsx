@@ -5,6 +5,7 @@ import { apiUrl } from "./http";
 import { useStorefrontCategories } from "./useStorefrontCategories";
 import StorefrontProductCard from "./StorefrontProductCard";
 import { formatPrice } from "./currency";
+import { openSearch, voiceSearchSupported } from "./voice";
 import { breadcrumbs, summarize, useSeo } from "./seo";
 
 const PER_PAGE = 12;
@@ -23,6 +24,8 @@ const Shop = () => {
   const [brands, setBrands] = useState([]);
   const [priceRange, setPriceRange] = useState({ min: 0, max: 0 });
   const [resolvedCategory, setResolvedCategory] = useState(null);
+  // How the search was understood (words, collection, brand, price), from the API.
+  const [searchInfo, setSearchInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -61,6 +64,7 @@ const Shop = () => {
         setTotalProducts(Number(data.products?.total || 0));
         setBrands(data.brands || []);
         setPriceRange({ min: Number(data.price_range?.min || 0), max: Number(data.price_range?.max || 0) });
+        setSearchInfo(data.search || null);
         setResolvedCategory(data.category || null);
       } catch (requestError) {
         if (requestError.name !== "AbortError") setError(requestError.message || "Could not load products.");
@@ -202,6 +206,11 @@ const Shop = () => {
                     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8" /><path d="m16 16 5 5" /></svg>
                     <input id="shop-search" type="search" placeholder="Name or SKU, then Enter" value={searchDraft} onChange={(event) => setSearchDraft(event.target.value)} />
                     {searchDraft && <button type="button" aria-label="Clear search" onClick={() => { setSearchDraft(""); updateFilters({ q: "" }); }}>×</button>}
+                    {voiceSearchSupported && (
+                      <button type="button" className="shop-voice-button" aria-label="Search by voice" title="Search by voice" onClick={() => openSearch({ listen: true })}>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3" /></svg>
+                      </button>
+                    )}
                   </div>
                 </form>
                 <div className="shop-filter-group">
@@ -235,6 +244,7 @@ const Shop = () => {
               <div className="sp-toolbar">
                 <div className="sp-toolbar-copy">
                   <strong>{loading ? "Finding pieces…" : `Showing ${products.length} of ${totalProducts}`}</strong>
+                  {searchInfo && !loading && <SearchUnderstanding info={searchInfo} spoken={searchParams.get("voice") === "1"} />}
                   {chips.length > 0 && (
                     <div className="sp-chips">
                       {chips.map((chip) => <button key={chip.key} type="button" className="sp-chip" onClick={chip.clear} aria-label={`Remove filter ${chip.label}`}>{chip.label}<span aria-hidden="true">×</span></button>)}
@@ -274,5 +284,22 @@ const Shop = () => {
     </Layout>
   );
 };
+
+/** "You said “linen shirts for men under 2000”: linen shirt · Men · under ₹2,000" */
+function SearchUnderstanding({ info, spoken }) {
+  const amount = (value) => formatPrice(value).replace(/.00$/, "");
+  const price = info.min_price && info.max_price ? `${amount(info.min_price)} – ${amount(info.max_price)}`
+    : info.max_price ? `under ${amount(info.max_price)}`
+    : info.min_price ? `over ${amount(info.min_price)}` : null;
+  const parts = [info.terms.join(" "), info.category?.name, info.brand?.name, price].filter(Boolean);
+
+  return (
+    <p className="sp-understood" role="status">
+      {spoken && <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3" /></svg>}
+      <span>{spoken ? "You said" : "Searching for"} “{info.query}”{parts.length > 0 && <> — <strong>{parts.join(" · ")}</strong></>}</span>
+      {info.match === "any" && <small>Nothing matched every word, so these match some of them.</small>}
+    </p>
+  );
+}
 
 export default Shop;

@@ -13,6 +13,7 @@ import { productImageUrl } from "@/lib/config";
 import { diwaliSeason } from "@/lib/festive";
 import { discountOf } from "@/lib/format";
 import { useLoad } from "@/lib/useLoad";
+import { voiceAvailable } from "@/lib/voice";
 import { colors, fonts, radius, shadow } from "@/theme";
 
 // The banner photos have text printed on their right half, so each slide shows only the left part.
@@ -67,6 +68,8 @@ export default function HomeScreen() {
       <View style={styles.topBar}>
         <BrandLogo size={38} />
         <View style={styles.topActions}>
+          {/* The mic opens the shop and starts listening; each tap is a new request. */}
+          {voiceAvailable() ? <IconButton icon="mic-outline" label="Search by voice" onPress={() => router.push({ pathname: "/shop", params: { voice: String(Date.now()) } })} /> : null}
           <IconButton icon="search" label="Search" onPress={() => router.push("/shop")} />
           <IconButton icon="bag-handle-outline" label="Shopping bag" badge={count} onPress={() => router.push("/cart")} />
         </View>

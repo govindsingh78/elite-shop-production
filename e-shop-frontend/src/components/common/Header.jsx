@@ -11,6 +11,7 @@ import { formatPrice } from "./currency";
 import { SUPPORT_PHONES } from "./support";
 import { diwaliSeason } from "./festive";
 import { DiyaIcon } from "./Diwali";
+import { openSearch } from "./voice";
 
 /** "Categories" dropdown in the main menu: every category with its subcategories underneath. Desktop only; phones list them in the menu. */
 const CategoriesMenu = ({ categories, onNavigate }) => {
@@ -120,6 +121,10 @@ const Header = () => {
             <Navbar.Brand as={Link} to="/" onClick={closeMenu} className="store-brand" aria-label="Elitezaar home">
               <BrandLogo />
             </Navbar.Brand>
+            {/* On phones the header actions sit in the menu, so search gets its own button beside it. */}
+            <button type="button" className="header-search-mobile d-lg-none" onClick={() => { closeMenu(); openSearch(); }} aria-label="Search, by voice or typing">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 5 5" /></svg>
+            </button>
             <Navbar.Toggle aria-controls="store-nav" aria-label="Toggle navigation" />
             <Navbar.Collapse id="store-nav">
               <nav className="store-category-nav" aria-label="Shop categories">
@@ -160,6 +165,9 @@ const Header = () => {
                 {!categories.length && loading && <span className="store-nav-loading">Loading collections…</span>}
               </nav>
               <div className="store-header-actions">
+                <button type="button" className="header-action header-search" onClick={() => { closeMenu(); openSearch(); }} aria-label="Search, by voice or typing" title="Search">
+                  <span className="header-search-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 5 5" /></svg></span>
+                </button>
                 <Link to="/wishlist" onClick={closeMenu} className={`header-action header-wish${savedCount ? " has-items" : ""}`} aria-label={`Wishlist, ${savedCount} saved`} title="Wishlist">
                   <span className="header-wish-icon">
                     <HeartIcon filled={savedCount > 0} />
