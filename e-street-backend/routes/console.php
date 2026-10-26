@@ -1,7 +1,10 @@
 <?php
 
+use App\Models\LoginBlock;
 use App\Models\User;
+use App\Services\Security\LoginGuard;
 use App\Services\Monitoring\Advisor;
+use App\Services\Monitoring\MailCheck;
 use App\Services\Monitoring\ServerHealth;
 use App\Services\Monitoring\Speed;
 use Illuminate\Foundation\Console\ClosureCommand;
@@ -39,6 +42,7 @@ Artisan::command('admin:grant {email}', function (string $email) {
     $user ??= new User(['name' => $this->ask('Name for the new admin account', 'Govind Singh'), 'email' => $email]);
     $user->forceFill(['role' => 'admin', 'password' => $password])->save();
     $user->tokens()->delete();
+    LoginGuard::release($email, 'New password set on the server');
 
     $this->info("{$email} is now an admin. Sign in at /admin/login with the new password.");
 
@@ -67,5 +71,39 @@ Artisan::command('monitor:tidy', function () {
     return 0;
 })->purpose('Remove old photo uploads and old monitoring data');
 
+/* Sends a test email, to check the mail settings in .env (e.g. Amazon SES) after changing them. */
+Artisan::command('mail:test {to : Where to send the test email}', function (string $to) {
+    /** @var ClosureCommand $this */
+    $mailer = config('mail.default');
+    $this->line("Sending with “{$mailer}” via " . (config("mail.mailers.{$mailer}.host") ?: $mailer) . ':' . config("mail.mailers.{$mailer}.port") . ' from ' . config('mail.from.address') . '…');
+    $result = MailCheck::send($to);
+    if (!$result['sent']) {
+        $this->error($result['message']);
+        if (isset($result['error'])) {
+            $this->line('Details: ' . $result['error']);
+        }
+
+        return 1;
+    }
+    $this->info($result['message']);
+
+    return 0;
+})->purpose('Send a test email to check the mail settings');
+
+/*
+ * Admin › Security, from the server: lifts a lock or block on an email or IP address, e.g. if an admin has
+ * locked themselves out, or blocked the address they use.
+ */
+Artisan::command('security:unblock {value : The email or IP address}', function (string $value) {
+    /** @var ClosureCommand $this */
+    $count = LoginBlock::query()->active()->where('value', strtolower(trim($value)))
+        ->update(['unblocked_at' => now(), 'unblock_reason' => 'Unblocked on the server']);
+    LoginGuard::forgetBlockedIps();
+    $count ? $this->info("Unblocked {$value}.") : $this->warn("Nothing is blocking {$value} right now.");
+
+    return 0;
+})->purpose('Unlock an account or unblock an IP address');
+
 Schedule::command('monitor:check')->everyTenMinutes();
+Schedule::command('sanctum:prune-expired --hours=24')->daily();
 Schedule::command('monitor:tidy')->dailyAt('03:30');

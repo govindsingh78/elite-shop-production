@@ -62,6 +62,7 @@ export default function ServerScreen() {
           <T variant="title" style={{ marginTop: 8 }}>{item.title}</T>
           <T variant="body" style={{ marginTop: 4 }}>{item.detail}</T>
           {item.commands?.map((command) => <Text key={command} selectable style={styles.command}>{command}</Text>)}
+          {item.link === "/admin/security" ? <Button title="Open Security" icon="shield-checkmark-outline" variant="outline" small block={false} style={{ marginTop: 10 }} onPress={() => router.push("/admin/security")} /> : null}
         </Card>
       )) : <Card><T variant="body">Nothing right now. Disk, memory, database, settings, problems and speed all look fine.</T></Card>}
 

@@ -1,8 +1,10 @@
+import { hasConsent } from "./consent";
 import { apiUrl } from "./http";
 
 /**
- * Reports crashes visitors run into, and how fast the first page they open loads, to Admin › Server & health.
- * Reports never get in the way: they are sent in the background and any failure is ignored.
+ * Reports crashes visitors run into, and (if they allowed performance cookies) how fast the first page they open
+ * loads, to Admin › Server & health. Reports never get in the way: they are sent in the background and any
+ * failure is ignored.
  */
 
 const MAX_REPORTS = 5;
@@ -26,8 +28,9 @@ function browserName() {
   return [browser, system].filter(Boolean).join(" · ").slice(0, 60);
 }
 
-const post = (path, body) => {
-  const token = localStorage.getItem("authToken");
+/** `asUser`: say who's signed in (crash reports, to see whether shoppers or sellers hit it); speed figures never do. */
+const post = (path, body, { asUser = false } = {}) => {
+  const token = asUser ? localStorage.getItem("authToken") : null;
   return fetch(`${apiUrl}${path}`, {
     method: "POST",
     keepalive: true,
@@ -54,7 +57,7 @@ export function reportError(error, { component } = {}) {
       page: pagePattern(window.location.pathname),
       component: component ? component.slice(0, 190) : null,
       platform: browserName(),
-    });
+    }, { asUser: true });
   } catch {
     // Reporting must never break the page.
   }
@@ -82,7 +85,8 @@ function measureFirstPage() {
     done = true;
     observer.disconnect();
     const navigation = performance.getEntriesByType("navigation")[0];
-    if (!lcp || !navigation || document.prerendering) return;
+    // Performance measurement is optional: only sent if the visitor allowed it (they may say yes while here).
+    if (!lcp || !navigation || document.prerendering || !hasConsent("performance")) return;
     post("/monitor/page-speed", {
       page,
       device: window.matchMedia("(max-width: 767px)").matches || /Mobi/i.test(navigator.userAgent) ? "mobile" : "desktop",

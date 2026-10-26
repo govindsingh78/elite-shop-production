@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\TempImage;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
 
 class TempImageController extends Controller
@@ -30,8 +31,9 @@ class TempImageController extends Controller
             File::makeDirectory($thumbPath, 0755, true);
         }
 
-        // Save original image
-        $originalName = time() . '_' . $image->getClientOriginalName();
+        // Save original image, under a name of our own: the uploader's file name (e.g. "photo.php.jpg") is never
+        // used on the server, and the extension comes from what the file really is.
+        $originalName = time() . '_' . Str::random(12) . '.' . ($image->guessExtension() ?: 'jpg');
         $image->move($originalPath, $originalName);
 
         // Save thumbnail image

@@ -1,8 +1,8 @@
 {
   "slug": "privacy",
   "title": "Privacy Policy",
-  "version": "2026-10-25",
-  "updated": "25 October 2026",
+  "version": "2026-10-26",
+  "updated": "26 October 2026",
   "intro": "Your privacy matters to us. This policy explains what personal information Elitezaar collects when you use our website and app, how we use and protect it, who we share it with, and the rights you have over it.",
   "highlights": [
     { "icon": "shield", "title": "We never sell your data", "text": "Your details are used to serve you, never sold or rented." },
@@ -46,7 +46,7 @@
         { "type": "list", "items": [
           "Technical information: when you use the Platform, our servers record basic technical details such as your IP address, browser or device type, the pages you request and the time. We use these to keep the Platform secure and working, and to investigate misuse.",
           "Device storage: the website and app store your bag, wishlist and sign-in session on your own device, so they're still there when you come back.",
-          "No advertising trackers: we don't use advertising cookies, analytics trackers or tracking pixels, and we don't build advertising profiles about you."
+          "No advertising trackers: we don't use advertising cookies, third-party analytics or tracking pixels, and we don't build advertising profiles about you. If you allow it, we measure how fast our pages load on your device, without linking it to you (see the Cookie Policy)."
         ] }
       ]
     },
@@ -100,7 +100,9 @@
       "title": "Cookies and device storage",
       "blocks": [
         { "type": "p", "text": "Our website uses your browser's local storage, rather than tracking cookies, to keep your bag, wishlist and sign-in session. This information stays on your device. You can clear it from your browser settings at any time, but you'll be signed out and your bag will be emptied." },
-        { "type": "p", "text": "When you pay online, Razorpay's secure checkout may set its own cookies to process and protect your payment. These are covered by Razorpay's privacy policy." }
+        { "type": "p", "text": "When you pay online, Razorpay's secure checkout may set its own cookies to process and protect your payment. These are covered by Razorpay's privacy policy." },
+        { "type": "p", "text": "On your first visit we ask which cookies you allow, and you can change your choice at any time from \"Cookie settings\" at the bottom of every page. The Cookie Policy lists every cookie, what it's for and how long it's kept." },
+        { "type": "link", "text": "Read the Cookie Policy", "to": "cookies" }
       ]
     },
     {

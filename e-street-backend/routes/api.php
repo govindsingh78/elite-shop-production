@@ -22,7 +22,9 @@ use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\CommissionController;
 use App\Http\Controllers\Admin\SellerController;
+use App\Http\Controllers\Admin\SecurityController;
 use App\Http\Controllers\Admin\ServerController;
+use App\Http\Controllers\ConsentController;
 use App\Http\Controllers\MonitorController;
 use App\Http\Controllers\Vendor\EarningsController as VendorEarningsController;
 use App\Http\Middleware\EnsureAdmin;
@@ -39,7 +41,7 @@ use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\OrderTrackingController as AdminOrderTrackingController;
 use App\Models\ShippingMethod;
  
-Route::post('/admin/login', [AuthController::class, 'login']);
+Route::post('/admin/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 Route::post('/vendor/login', [AuthController::class, 'vendorLogin'])->middleware('throttle:10,1');
 Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
 Route::post('/customer/login', [AuthController::class, 'customerLogin'])->middleware('throttle:10,1');
@@ -67,6 +69,8 @@ Route::get('/sitemap.xml', [SitemapController::class, 'index'])->middleware('thr
 // The printable invoice, from a signed link (order pages, the app and emails), so no sign-in is needed.
 Route::get('/invoices/{invoice}/print', [InvoiceController::class, 'print'])
     ->name('invoices.print')->middleware(['signed:relative', 'throttle:60,1'])->whereNumber('invoice');
+// Cookie choices made on the website (Accept all / Necessary only / custom), kept as a record.
+Route::post('/consents', [ConsentController::class, 'store'])->middleware('throttle:20,1,consents');
 // The website and app report crashes people run into, and how fast pages loaded, for Server & health.
 Route::post('/monitor/client-errors', [MonitorController::class, 'clientError'])->middleware('throttle:10,1,client-errors');
 Route::post('/monitor/page-speed', [MonitorController::class, 'pageSpeed'])->middleware('throttle:30,1,page-speed');
@@ -97,7 +101,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('shipping-methods', ShippingMethodController::class)->except(['create', 'edit']);
         Route::apiResource('sizes', SizeController::class)->except(['show']);
     });
-    Route::apiResource('temp-images', TempImageController::class);
+    // Photo uploads only (listing, viewing or deleting uploads isn't something anyone needs).
+    Route::apiResource('temp-images', TempImageController::class)->only(['store'])->middleware('throttle:60,1,photo-uploads');
 
     // Every seller account can look around and keep its business details up to date, including one waiting
     // for approval or deactivated (they still need their orders, earnings and invoices).
@@ -173,6 +178,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('admin/gst/settings', [GstController::class, 'updateSettings']);
         Route::get('admin/gst/report', [InvoiceController::class, 'report'])->middleware('throttle:20,1,gst-report');
         Route::post('admin/orders/{order}/invoices', [AdminOrderController::class, 'issueInvoices']);
+        Route::get('admin/security', [SecurityController::class, 'index']);
+        Route::get('admin/consents', [ConsentController::class, 'index']);
+        Route::get('admin/security/attempts', [SecurityController::class, 'attempts']);
+        Route::post('admin/security/blocks', [SecurityController::class, 'block']);
+        Route::delete('admin/security/blocks/{block}', [SecurityController::class, 'unblock'])->whereNumber('block');
         Route::get('admin/server', [ServerController::class, 'overview']);
         Route::get('admin/server/problems', [ServerController::class, 'problems']);
         Route::post('admin/server/problems/resolve-all', [ServerController::class, 'resolveAll']);
@@ -183,6 +193,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('admin/server/storage', [ServerController::class, 'storage']);
         Route::post('admin/server/cleanup', [ServerController::class, 'cleanup'])->middleware('throttle:60,1,server-cleanup');
         Route::get('admin/server/logs', [ServerController::class, 'logs']);
+        Route::post('admin/server/test-email', [ServerController::class, 'testEmail'])->middleware('throttle:5,1,test-email');
         Route::get('admin/sellers', [SellerController::class, 'index']);
         Route::get('admin/sellers/{seller}', [SellerController::class, 'show'])->whereNumber('seller');
         Route::patch('admin/sellers/{seller}/status', [SellerController::class, 'updateStatus'])->whereNumber('seller');

@@ -19,6 +19,7 @@ class SitemapController extends Controller
         ['/return-refund-policy', 'yearly', '0.3'],
         ['/terms-and-conditions', 'yearly', '0.3'],
         ['/privacy-policy', 'yearly', '0.3'],
+        ['/cookie-policy', 'yearly', '0.2'],
         ['/vendor/register', 'monthly', '0.4'],
     ];
 

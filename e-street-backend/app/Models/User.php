@@ -44,6 +44,15 @@ class User extends Authenticatable
 
     public const ADMIN_ROLES = ['admin', 'superadmin'];
 
+    /** How long a sign-in lasts, by portal: admins sign in again weekly, so a stolen admin token soon stops working. */
+    public const TOKEN_DAYS = ['admin' => 7, 'vendor' => 30, 'customer' => 90];
+
+    /** A new API token for signing in to the portal, expiring after its TOKEN_DAYS. */
+    public function issueToken(string $portal): string
+    {
+        return $this->createToken("{$portal}_auth_token", ['*'], now()->addDays(self::TOKEN_DAYS[$portal] ?? 30))->plainTextToken;
+    }
+
     /**
      * A seller account's standing. Sellers who sign up themselves start pending; an admin approves them,
      * declines them (rejected), or later deactivates them. Only approved sellers can list products and handle

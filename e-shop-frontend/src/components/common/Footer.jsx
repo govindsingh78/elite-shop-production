@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import BrandLogo from "./BrandLogo";
+import { COOKIE_POLICY_PATH, openCookieSettings } from "./consent";
 import { useStorefrontCategories } from "./useStorefrontCategories";
 import { SUPPORT_EMAIL, SUPPORT_PHONES } from "./support";
 import founderPhoto from "../../assets/images/founder.jpg";
@@ -102,6 +103,8 @@ const Footer = () => {
                                 <Link to="/return-refund-policy">Returns &amp; refunds</Link>
                                 <Link to="/terms-and-conditions">Terms</Link>
                                 <Link to="/privacy-policy">Privacy</Link>
+                                <Link to={COOKIE_POLICY_PATH}>Cookies</Link>
+                                <button type="button" className="store-footer-link-button" onClick={openCookieSettings}>Cookie settings</button>
                                 <Link to="/shop">Shop</Link>
                                 <Link to="/customer/orders">Track an order</Link>
                                 <a href={`tel:${SUPPORT_PHONES[0].tel}`}>Call support</a>

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Mail\TestEmail;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\MonitorProblem;
@@ -15,6 +16,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Route;
 use RuntimeException;
@@ -229,6 +231,28 @@ class ServerMonitoringTest extends TestCase
         Notification::assertSentToTimes($this->admin, ServerAlert::class, 1);
         $this->actingAs($this->admin, 'sanctum')->getJson('/api/admin/server')->assertJsonPath('health.background.running', true);
         $this->artisan('monitor:tidy')->assertExitCode(0);
+    }
+
+    public function test_a_test_email_checks_the_mail_settings(): void
+    {
+        $this->actingAs($this->admin, 'sanctum');
+
+        Mail::fake();
+        $this->postJson('/api/admin/server/test-email')->assertOk()->assertJsonPath('sent', true)
+            ->assertJsonPath('message', fn ($message) => str_starts_with($message, 'Test email sent to owner@example.com'));
+        Mail::assertSent(TestEmail::class, fn (TestEmail $mail) => $mail->hasTo('owner@example.com'));
+
+        // A mail server that can't be reached is explained, not just reported.
+        $this->app->forgetInstance('mail.manager');
+        Mail::clearResolvedInstances();
+        config(['mail.default' => 'smtp', 'mail.mailers.smtp.host' => '127.0.0.1', 'mail.mailers.smtp.port' => 1]);
+        $this->postJson('/api/admin/server/test-email')->assertUnprocessable()->assertJsonPath('sent', false)
+            ->assertJsonPath('message', fn ($message) => str_starts_with($message, 'Couldn’t connect to the mail server.'));
+
+        config(['mail.default' => 'log']);
+        $this->postJson('/api/admin/server/test-email')->assertUnprocessable()
+            ->assertJsonPath('message', fn ($message) => str_contains($message, 'MAIL_MAILER is “log”'));
+        $this->artisan('mail:test', ['to' => 'owner@example.com'])->assertExitCode(1);
     }
 
     public function test_new_product_photos_are_saved_at_sensible_sizes(): void

@@ -115,6 +115,7 @@ function RootNavigator({ fontsReady }) {
         <Stack.Screen name="return-policy" options={{ title: "Returns & refunds" }} />
         <Stack.Screen name="terms" options={{ title: "Terms & conditions" }} />
         <Stack.Screen name="privacy" options={{ title: "Privacy policy" }} />
+        <Stack.Screen name="cookie-policy" options={{ title: "Cookie policy" }} />
         <Stack.Screen name="payment" options={{ title: "Secure payment", presentation: "modal", gestureEnabled: false }} />
         <Stack.Screen name="order-confirmation" options={{ headerShown: false, gestureEnabled: false }} />
         <Stack.Screen name="login" options={{ title: "" }} />

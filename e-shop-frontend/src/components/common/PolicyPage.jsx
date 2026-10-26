@@ -6,7 +6,7 @@ import { usePolicy } from "./policy";
 import { breadcrumbs, summarize, useSeo } from "./seo";
 
 /** A store policy (returns, terms…): hero, key points, then the numbered sections beside a contents list. */
-const PolicyPage = ({ slug, path, mark, crumb, eyebrow, heading, fallbackIntro }) => {
+const PolicyPage = ({ slug, path, mark, crumb, eyebrow, heading, fallbackIntro, action }) => {
   const { policy, error } = usePolicy(slug);
   // Links to a section (e.g. /privacy-policy#delete-account) arrive before the policy has loaded. Scroll once
   // the web fonts are in, or the text reflows afterwards and the section ends up out of view.
@@ -43,6 +43,7 @@ const PolicyPage = ({ slug, path, mark, crumb, eyebrow, heading, fallbackIntro }
                 <h1>{heading}</h1>
                 <p>{policy?.intro || fallbackIntro}</p>
                 {policy && <p className="pol-meta">Last updated {policy.updated}</p>}
+                {action}
               </div>
             </div>
           </div>

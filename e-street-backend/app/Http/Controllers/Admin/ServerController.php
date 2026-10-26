@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\MonitorProblem;
 use App\Services\Monitoring\Advisor;
+use App\Services\Monitoring\MailCheck;
 use App\Services\Monitoring\ServerHealth;
 use App\Services\Monitoring\Speed;
 use App\Services\ProductImages;
@@ -145,6 +146,14 @@ class ServerController extends Controller
         }
 
         return [...$result, 'message' => $message];
+    }
+
+    /** Sends a test email to the signed-in admin, to check the mail settings (e.g. Amazon SES) work. */
+    public function testEmail(Request $request)
+    {
+        $result = MailCheck::send($request->user()->email);
+
+        return response()->json($result, $result['sent'] ? 200 : 422);
     }
 
     public function logs(Request $request)

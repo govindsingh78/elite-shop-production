@@ -46,7 +46,7 @@ class SitemapTest extends TestCase
         $this->assertNotFalse($xml, 'The sitemap must be well-formed XML.');
         $urls = array_map('strval', $xml->xpath('//*[local-name()="loc" and namespace-uri()="http://www.sitemaps.org/schemas/sitemap/0.9"]'));
 
-        foreach (['/', '/shop', '/about', '/return-refund-policy', '/terms-and-conditions', '/privacy-policy'] as $path) {
+        foreach (['/', '/shop', '/about', '/return-refund-policy', '/terms-and-conditions', '/privacy-policy', '/cookie-policy'] as $path) {
             $this->assertContains('https://elitezaar.com' . $path, $urls);
         }
         $this->assertContains("https://elitezaar.com/shop/{$kids->slug}", $urls);

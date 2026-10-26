@@ -1,0 +1,96 @@
+{
+  "slug": "cookies",
+  "title": "Cookie Policy",
+  "version": "2026-10-26",
+  "updated": "26 October 2026",
+  "intro": "This policy explains the cookies and similar browser storage elitezaar.com uses, why, for how long, and how you choose which ones you allow. The Elitezaar app doesn't use cookies; it keeps your sign-in, bag and wishlist on your phone in the same way.",
+  "highlights": [
+    { "icon": "shield", "title": "No advertising trackers", "text": "No ad cookies, tracking pixels or selling of data." },
+    { "icon": "user", "title": "Your choice", "text": "Only essentials run until you say yes to more." },
+    { "icon": "card", "title": "Payments stay with Razorpay", "text": "Their cookies only appear when you pay online." },
+    { "icon": "support", "title": "Change your mind anytime", "text": "Use “Cookie settings” at the bottom of any page." }
+  ],
+  "sections": [
+    {
+      "id": "what-are-cookies",
+      "title": "Cookies and similar storage",
+      "blocks": [
+        { "type": "p", "text": "Cookies are small files a website saves in your browser. Websites can also keep information in your browser's \"local storage\" and \"session storage\", which work much the same way. Elitezaar mostly uses local and session storage; in this policy we call all of them \"cookies\"." },
+        { "type": "p", "text": "Local storage stays on your device until it is cleared. Session storage is cleared when you close the browser tab." }
+      ]
+    },
+    {
+      "id": "your-choices",
+      "title": "Your choices",
+      "blocks": [
+        { "type": "p", "text": "When you first visit elitezaar.com, we ask which cookies you allow:" },
+        { "type": "list", "items": [
+          "Accept all: strictly necessary cookies plus performance measurement.",
+          "Necessary only: just what the site needs to work. Nothing optional runs.",
+          "Manage preferences: choose each optional kind yourself."
+        ] },
+        { "type": "p", "text": "Until you choose, only strictly necessary cookies are used. You can change your choice at any time from \"Cookie settings\" at the bottom of every page or on this page. We remember your choice for 12 months, and ask again sooner if we start using a new kind of cookie." },
+        { "type": "p", "text": "Each choice is recorded with a random consent ID, the date and the version of this policy, so we can show what you agreed to. The record doesn't include your name or email unless you were signed in at the time." }
+      ]
+    },
+    {
+      "id": "strictly-necessary",
+      "title": "Strictly necessary cookies (always on)",
+      "blocks": [
+        { "type": "p", "text": "These make the website work. They can't be switched off here, but you can clear them in your browser (you'd be signed out and your bag emptied)." },
+        { "type": "list", "items": [
+          "authToken, authUser and the customer, vendor and admin sign-in keys: keep you signed in. Removed when you sign out; a sign-in itself ends after 90 days for shoppers, 30 days for sellers and 7 days for admins.",
+          "eshop_cart: your bag, so it's still there when you come back. Kept until you check out or remove the items.",
+          "eshop_wishlist: your wishlist while you're not signed in. Moved to your account when you sign in.",
+          "eshop_google_signin (session storage): finishes \"Continue with Google\". Removed as soon as you're signed in, or when you close the tab.",
+          "storefrontCategories (session storage): keeps the shop menu for a few minutes so pages open faster. Cleared when you close the tab.",
+          "ez_cookie_consent: remembers your cookie choices and consent ID. Kept for 12 months.",
+          "Error reports (no storage): if a page breaks, we receive the error, the page and your browser type (and which account, if you're signed in) so we can fix it quickly."
+        ] }
+      ]
+    },
+    {
+      "id": "performance",
+      "title": "Performance cookies (optional)",
+      "blocks": [
+        { "type": "p", "text": "Only with your permission: on the first page you open, we measure how long the page took to load and show its main content, and send that timing to our own servers with the kind of page (for example \"product page\") and whether you're on a phone or computer." },
+        { "type": "p", "text": "Nothing is saved on your device for this, the timing isn't linked to you or your account, and we keep only daily totals per page. We use it to find and fix slow pages. It's never shared or used for advertising." }
+      ]
+    },
+    {
+      "id": "third-parties",
+      "title": "Services from other companies",
+      "blocks": [
+        { "type": "list", "items": [
+          "Razorpay: when you pay online, Razorpay's secure checkout may set its own cookies to process your payment and prevent fraud. These are strictly necessary for paying online and are covered by Razorpay's privacy policy.",
+          "Google sign-in: only if you choose \"Continue with Google\". Google uses its own cookies on its own website to sign you in, under Google's privacy policy.",
+          "Google Fonts: our lettering is loaded from Google's servers, which see your device's IP address and browser type. No cookies are set for this."
+        ] },
+        { "type": "note", "text": "We don't use advertising cookies, social media tracking pixels or third-party analytics, and we don't sell or rent your data." }
+      ]
+    },
+    {
+      "id": "managing-cookies",
+      "title": "Managing and deleting cookies",
+      "blocks": [
+        { "type": "p", "text": "Besides Cookie settings, you can view and delete cookies and site storage in your browser's settings (usually under Privacy or Site settings). Blocking strictly necessary storage stops sign-in, your bag and checkout from working." },
+        { "type": "link", "text": "How we handle your personal information", "to": "privacy" }
+      ]
+    },
+    {
+      "id": "changes",
+      "title": "Changes to this policy",
+      "blocks": [
+        { "type": "p", "text": "If we change the cookies we use, we'll update this policy and its date. If we add a new kind of optional cookie, we'll ask for your choice again before using it." }
+      ]
+    },
+    {
+      "id": "contact",
+      "title": "Contact us",
+      "contact": true,
+      "blocks": [
+        { "type": "p", "text": "Questions about cookies or your choices? Our team is happy to help — quote your consent ID from Cookie settings if you'd like us to look up your record." }
+      ]
+    }
+  ]
+}

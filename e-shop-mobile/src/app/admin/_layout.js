@@ -11,6 +11,7 @@ export default function AdminLayout() {
       <Stack.Screen name="users" options={{ title: "Users" }} />
       <Stack.Screen name="user-form" options={{ title: "User" }} />
       <Stack.Screen name="server" options={{ title: "Server & health" }} />
+      <Stack.Screen name="security" options={{ title: "Security" }} />
       <Stack.Screen name="sellers" options={{ title: "Sellers" }} />
       <Stack.Screen name="seller/[id]" options={{ title: "Seller" }} />
       <Stack.Screen name="commissions" options={{ title: "Commissions" }} />

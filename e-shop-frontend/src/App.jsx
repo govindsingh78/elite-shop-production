@@ -7,11 +7,14 @@ import About from './components/common/About';
 import ReturnPolicy from './components/common/ReturnPolicy';
 import TermsConditions from './components/common/TermsConditions';
 import PrivacyPolicy from './components/common/PrivacyPolicy';
+import CookiePolicy from './components/common/CookiePolicy';
+import CookieConsent from './components/common/CookieConsent';
 import Wishlist from './components/common/Wishlist';
 import ManageReviews from './components/admin/reviews/ManageReviews';
 import ManageCommissions from './components/admin/commissions/ManageCommissions';
 import ManageSellers from './components/admin/sellers/ManageSellers';
 import ServerHealth from './components/admin/server/ServerHealth';
+import Security from './components/admin/security/Security';
 import SellerCommission from './components/admin/commissions/SellerCommission';
 import VendorEarnings from './components/admin/commissions/VendorEarnings';
 import BulkProducts from './components/admin/bulk/BulkProducts';
@@ -75,6 +78,7 @@ function App() {
           <Route path="/return-refund-policy" element={<ReturnPolicy />} />
           <Route path="/terms-and-conditions" element={<TermsConditions />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/cookie-policy" element={<CookiePolicy />} />
           <Route path="/shop/:categorySlug" element={<Shop />} />
           <Route path="/product" element={<Product />} />
           <Route path="/product/:handle" element={<Product />} />
@@ -144,6 +148,7 @@ function App() {
           <Route path="/admin/bulk-products" element={<AdminRequireAuth><BulkProducts portal="admin" /></AdminRequireAuth>} />
           <Route path="/admin/sellers" element={<AdminRequireAuth><ManageSellers /></AdminRequireAuth>} />
           <Route path="/admin/server" element={<AdminRequireAuth><ServerHealth /></AdminRequireAuth>} />
+          <Route path="/admin/security" element={<AdminRequireAuth><Security /></AdminRequireAuth>} />
           <Route path="/admin/commissions" element={<AdminRequireAuth><ManageCommissions /></AdminRequireAuth>} />
           <Route path="/admin/manage-sizes" element={<AdminRequireAuth><ManageSizes /></AdminRequireAuth>} />
           <Route path="/admin/invoices" element={<AdminRequireAuth><InvoiceList portal="admin" /></AdminRequireAuth>} />
@@ -320,6 +325,7 @@ function App() {
         </Routes>
         {/* Inside the router so toast messages can contain <Link>s. */}
         <ToastContainer />
+        <CookieConsent />
       </BrowserRouter>
       </StorefrontCategoriesProvider>
       </WishlistProvider>

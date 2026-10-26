@@ -9,7 +9,7 @@ import { useToast } from "@/context/ToastContext";
 import { timeAgo } from "@/lib/format";
 import { colors, radius } from "@/theme";
 
-const ICONS = { order: "receipt-outline", listing: "pricetags-outline", payout: "wallet-outline", seller: "storefront-outline", server: "pulse-outline" };
+const ICONS = { order: "receipt-outline", listing: "pricetags-outline", payout: "wallet-outline", seller: "storefront-outline", server: "pulse-outline", security: "shield-checkmark-outline" };
 
 /** Everything Elitezaar has told this account (order updates, listing reviews, payouts), newest first. */
 export default function NotificationsScreen() {

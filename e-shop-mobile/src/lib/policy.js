@@ -5,9 +5,10 @@ import { api } from "@/lib/api";
 export const RETURN_POLICY = "return-refund";
 export const TERMS = "terms";
 export const PRIVACY = "privacy";
+export const COOKIES = "cookies";
 
 /** Each policy's screen, for links from one policy to another. */
-export const POLICY_ROUTES = { [RETURN_POLICY]: "/return-policy", [TERMS]: "/terms", [PRIVACY]: "/privacy" };
+export const POLICY_ROUTES = { [RETURN_POLICY]: "/return-policy", [TERMS]: "/terms", [PRIVACY]: "/privacy", [COOKIES]: "/cookie-policy" };
 
 const cache = new Map();
 

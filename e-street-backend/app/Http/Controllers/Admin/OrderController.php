@@ -249,7 +249,7 @@ class OrderController extends Controller
             $order->recordTrackingEvent('order_placed', ['description' => 'Order received.']);
 
             if ($customer) {
-                $customerToken = $customer->createToken('customer_auth_token')->plainTextToken;
+                $customerToken = $customer->issueToken('customer');
             }
 
             return ['order' => $order, 'customer' => $customer];

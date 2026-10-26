@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Services\GoogleSignIn;
+use App\Services\Security\LoginGuard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
@@ -110,6 +111,8 @@ class GoogleAuthController extends Controller
         if (!$user || !$user->canUsePortal($pending['portal'])) {
             return response()->json(['message' => 'This Google sign-in has expired. Please try again.'], 422);
         }
+        // Google has checked who this is, so a lock from wrong passwords doesn't apply; the sign-in is still logged.
+        LoginGuard::succeeded($request, $user, $pending['portal'], 'google');
 
         return $pending['created']
             ? AuthController::sessionResponse($user, $pending['portal'], 'Your account has been created with Google.', 201)

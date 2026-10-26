@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { COOKIE_POLICY_PATH } from "./consent";
 import { apiUrl } from "./http";
 
 /** Store policies come from the API (/api/storefront/policies/...), so the website and app always show the same text. */
@@ -8,9 +9,10 @@ export const TERMS = "terms";
 export const TERMS_PATH = "/terms-and-conditions";
 export const PRIVACY = "privacy";
 export const PRIVACY_PATH = "/privacy-policy";
+export const COOKIES = "cookies";
 
 /** Each policy's page, for links from one policy to another. */
-export const POLICY_PATHS = { [RETURN_POLICY]: RETURN_POLICY_PATH, [TERMS]: TERMS_PATH, [PRIVACY]: PRIVACY_PATH };
+export const POLICY_PATHS = { [RETURN_POLICY]: RETURN_POLICY_PATH, [TERMS]: TERMS_PATH, [PRIVACY]: PRIVACY_PATH, [COOKIES]: COOKIE_POLICY_PATH };
 
 const cache = new Map();
 

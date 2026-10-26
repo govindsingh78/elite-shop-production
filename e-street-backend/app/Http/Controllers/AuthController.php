@@ -11,8 +11,10 @@ use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Str;
 use App\Models\User;
 use App\Http\Requests\CustomerAddressRequest;
+use App\Models\LoginBlock;
 use App\Notifications\SellerJoined;
 use App\Services\Messenger;
+use App\Services\Security\LoginGuard;
 
 class AuthController extends Controller
 {
@@ -51,12 +53,26 @@ class AuthController extends Controller
         }
 
         $user = User::where('email', $request->email)->first();
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(
-                [
-                    'message' => 'Invalid credentials',
-                    'status' => 401
-                ], 401);
+
+        // A locked account or blocked address is turned away before the password is even checked.
+        if ($block = LoginGuard::blockFor($request->email, $request->ip())) {
+            LoginGuard::refused($request, $request->email, $portal, $user);
+
+            return self::blockedResponse($block);
+        }
+
+        // Unknown emails are checked against a dummy hash, so the reply takes as long either way.
+        if (!Hash::check($request->password, $user?->password ?? self::DUMMY_HASH) || !$user) {
+            $result = LoginGuard::failed($request, $request->email, $portal, $user);
+            if ($result['block']) {
+                return self::blockedResponse($result['block']);
+            }
+
+            return response()->json([
+                'message' => LoginGuard::wrongPasswordMessage($result['remaining']),
+                'attempts_left' => $result['remaining'],
+                'status' => 401,
+            ], 401);
         }
 
         if (!$user->canUsePortal($portal)) {
@@ -66,7 +82,22 @@ class AuthController extends Controller
             ], 403);
         }
 
+        LoginGuard::succeeded($request, $user, $portal);
+
         return self::sessionResponse($user, $portal);
+    }
+
+    /** Any bcrypt hash: compared against when no account has the email, so that takes as long as a real check. */
+    private const DUMMY_HASH = '$2y$12$DVgTV1zUg.u3Hj2R8Fv4l.Alaefuz9j6hsXtgn1j4FIrCxo.bgvXe';
+
+    /** 423 Locked: the account or the address can't sign in for now, and until when. */
+    public static function blockedResponse(LoginBlock $block)
+    {
+        return response()->json([
+            'message' => LoginGuard::message($block),
+            'blocked_until' => $block->blocked_until?->toIso8601String(),
+            'status' => 423,
+        ], 423);
     }
 
     /** A new API token for the portal, in the shape every sign-in returns (password or Google). */
@@ -75,7 +106,7 @@ class AuthController extends Controller
         return response()->json([
             'status' => $status,
             'message' => $message,
-            'token' => $user->createToken($portal . '_auth_token')->plainTextToken,
+            'token' => $user->issueToken($portal),
             'user' => $user,
             'portal' => $portal,
         ], $status);
@@ -121,7 +152,7 @@ class AuthController extends Controller
         return response()->json([
             'status' => 201,
             'message' => 'Account created successfully.',
-            'token' => $user->createToken('customer_auth_token')->plainTextToken,
+            'token' => $user->issueToken('customer'),
             'user' => $user,
             'portal' => 'customer',
         ], 201);
@@ -192,6 +223,8 @@ class AuthController extends Controller
                 ])->save();
 
                 $user->tokens()->delete();
+                // Resetting proves the email's owner is asking, so a lock from wrong passwords is lifted.
+                LoginGuard::release($user->email, 'Password reset by the account owner');
                 event(new PasswordReset($user));
             }
         );

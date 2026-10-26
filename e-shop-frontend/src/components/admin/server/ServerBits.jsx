@@ -39,7 +39,8 @@ export const AttentionItem = ({ item, onOpenTab }) => (
     </div>
     <p>{item.detail}</p>
     {item.commands?.map((command) => <CommandBlock key={command} command={command} />)}
-    {item.tab && item.tab !== "overview" && onOpenTab && (
+    {item.link && <Link to={item.link} className="btn btn-link btn-sm px-0">Open {item.link === "/admin/security" ? "Security" : "it"} →</Link>}
+    {!item.link && item.tab && item.tab !== "overview" && onOpenTab && (
       <button type="button" className="btn btn-link btn-sm px-0" onClick={() => onOpenTab(item.tab)}>Open {item.tab} →</button>
     )}
   </li>

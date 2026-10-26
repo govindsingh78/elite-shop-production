@@ -130,7 +130,7 @@ const OverviewTab = ({ onOpenTab }) => {
               <div><dt>PHP / Laravel</dt><dd>{app.php} / {app.laravel}</dd></div>
               <div><dt>OPcache</dt><dd>{app.opcache == null ? "Unknown" : app.opcache ? "On" : "Off"}</dd></div>
               <div><dt>Settings cached</dt><dd>{app.config_cached ? "Yes" : "No"}{app.routes_cached ? " · routes too" : ""}</dd></div>
-              <div><dt>Email</dt><dd>{app.mailer}</dd></div>
+              <div><dt>Email</dt><dd>{app.mailer === "smtp" ? `${app.mail_host}:${app.mail_port}` : app.mailer}<small className="d-block text-muted">from {app.mail_from}</small></dd></div>
               <div><dt>Logs</dt><dd>{app.log_channel}</dd></div>
               <div><dt>PHP memory / upload</dt><dd>{app.memory_limit} / {app.upload_max}</dd></div>
               <div><dt>Operating system</dt><dd>{app.os}</dd></div>
@@ -138,9 +138,35 @@ const OverviewTab = ({ onOpenTab }) => {
                 <div className="srv-details-wide"><dt>Largest tables</dt><dd>{database.largest_tables.map((table) => `${table.name} (${formatBytes(table.size)})`).join(", ")}</dd></div>
               )}
             </dl>
+            <TestEmail />
           </section>
         </div>
       </div>
+    </div>
+  );
+};
+
+/** Sends a test email to the signed-in admin, to check the mail settings (e.g. Amazon SES) work. */
+const TestEmail = () => {
+  const [sending, setSending] = useState(false);
+  const [result, setResult] = useState(null);
+
+  const send = async () => {
+    setSending(true);
+    setResult(null);
+    try {
+      setResult({ sent: true, ...(await serverRequest("/admin/server/test-email", { method: "POST" })) });
+    } catch (requestError) {
+      setResult({ sent: false, message: requestError.message });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="srv-test-email">
+      <button type="button" className="btn btn-sm btn-outline-primary" onClick={send} disabled={sending}>{sending ? "Sending…" : "Send a test email to me"}</button>
+      {result && <p className={result.sent ? "text-success" : "text-danger"} role="status">{result.message}</p>}
     </div>
   );
 };

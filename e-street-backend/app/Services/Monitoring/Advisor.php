@@ -3,6 +3,8 @@
 namespace App\Services\Monitoring;
 
 use App\Models\Category;
+use App\Models\LoginAttempt;
+use App\Models\LoginBlock;
 use App\Models\MonitorProblem;
 use App\Models\Order;
 use App\Models\Product;
@@ -31,8 +33,8 @@ class Advisor
         $health ??= ServerHealth::snapshot();
         $production = app()->environment('production');
         $items = [];
-        $add = function (string $key, string $severity, string $title, string $detail, ?string $tab = null, array $commands = []) use (&$items) {
-            $items[] = compact('key', 'severity', 'title', 'detail', 'tab', 'commands');
+        $add = function (string $key, string $severity, string $title, string $detail, ?string $tab = null, array $commands = [], ?string $link = null) use (&$items) {
+            $items[] = compact('key', 'severity', 'title', 'detail', 'tab', 'commands', 'link');
         };
 
         if (($disk = $health['disk']) && $disk['status'] !== 'ok') {
@@ -69,7 +71,11 @@ class Advisor
         }
         if ($production && in_array($app['mailer'], ['log', 'array'], true)) {
             $add('mail', 'warning', 'Emails aren’t being sent',
-                "MAIL_MAILER is “{$app['mailer']}”, so order, password and seller emails only go into the log. Set up an email service (such as Amazon SES or your domain’s SMTP) in .env.", 'overview');
+                "MAIL_MAILER is “{$app['mailer']}”, so order, password and seller emails only go into the log. Set up an email service (such as Amazon SES or your domain’s SMTP) in .env, then send a test email from Server details.", 'overview');
+        } elseif ($production && ($domain = preg_replace('/^www\./', '', (string) parse_url((string) config('app.frontend_url'), PHP_URL_HOST)))
+            && !str_ends_with(strtolower((string) $app['mail_from']), '@' . strtolower($domain))) {
+            $add('mail-from', 'warning', "Emails are sent from {$app['mail_from']}",
+                'Set MAIL_FROM_ADDRESS to an address at your own domain (e.g. support@elitezaar.com), verified with your email service, or emails may be rejected or land in spam.', 'overview');
         }
         if ($production && str_starts_with((string) config('services.razorpay.key_id'), 'rzp_test_')) {
             $add('payments', 'warning', 'Online payments are in test mode', 'Razorpay test keys are set, so shoppers can’t really pay online. Add the live keys to .env.', 'overview');
@@ -77,6 +83,18 @@ class Advisor
         if (!$health['background']['running']) {
             $add('background', $production ? 'warning' : 'info', $health['background']['last_check_at'] ? 'Automatic checks stopped running' : 'Automatic checks aren’t running yet',
                 'Without them you won’t be alerted about a full disk or new problems, and old uploads aren’t cleared. The next deploy sets them up; to do it now, add this line with “sudo crontab -u www-data -e”:', 'overview', [$health['background']['cron']]);
+        }
+
+        // Sign-in security (Admin › Security): a locked admin account, or many wrong passwords at once.
+        $adminEmails = User::storeAdmins()->map(fn (User $admin) => strtolower($admin->email))->all();
+        foreach (LoginBlock::query()->active()->where('type', LoginBlock::ACCOUNT)->whereIn('value', $adminEmails)->get() as $block) {
+            $add("admin-locked:{$block->value}", 'critical', "Admin account locked: {$block->value}",
+                "{$block->attempts} wrong passwords in a row. If that wasn’t you, someone may be trying to get into the admin panel — change that password, and check the sign-in log.", null, [], '/admin/security');
+        }
+        $failedLastHour = LoginAttempt::query()->where('outcome', LoginAttempt::FAILED)->where('created_at', '>=', now()->subHour());
+        if (($failed = (clone $failedLastHour)->count()) >= 20) {
+            $add('login-attack', 'warning', "{$failed} wrong sign-ins in the last hour",
+                'From ' . (clone $failedLastHour)->distinct()->count('ip') . ' addresses. Someone may be guessing passwords; accounts and addresses are blocked automatically, and you can block more by hand.', null, [], '/admin/security');
         }
 
         $logBytes = array_sum(array_column(ServerHealth::logFiles(), 'size'));
