@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Delivery;
 use App\Services\Gst;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -43,10 +44,13 @@ class GstController extends Controller
         $seller = $request->user();
 
         return response()->json([
-            'business' => $seller->only(['name', 'legal_name', 'gstin', 'business_address', 'business_state']),
+            'business' => $seller->only(self::BUSINESS_FIELDS),
             ...self::choices(),
         ], 200);
     }
+
+    /** What sellers see and keep here; the pickup PIN code is used for delivery estimates (App\Services\Delivery). */
+    private const BUSINESS_FIELDS = ['name', 'legal_name', 'gstin', 'business_address', 'business_state', 'pickup_pincode'];
 
     public function updateBusiness(Request $request)
     {
@@ -55,14 +59,20 @@ class GstController extends Controller
             'gstin' => ['nullable', 'string', 'max:15', Gst::gstinRule()],
             'business_address' => ['required_with:gstin', 'nullable', 'string', 'max:500'],
             'business_state' => ['nullable', Rule::in(array_keys(Gst::STATES))],
+            'pickup_pincode' => ['nullable', 'string', 'max:12', Delivery::pincodeRule()],
         ], ['business_address.required_with' => 'Add your registered business address; it appears on your invoices.']);
 
         $seller = $request->user();
+        // Older app versions don't send it, so it only changes when it's there.
+        if ($request->exists('pickup_pincode')) {
+            $seller->forceFill(['pickup_pincode' => Delivery::normalise($validated['pickup_pincode'] ?? null) ?: null]);
+        }
+        unset($validated['pickup_pincode']);
         $seller->update([...$validated, ...self::stateFromGstin($validated, 'business_state')]);
 
         return response()->json([
             'message' => $seller->gstin ? 'Business details saved. Your invoices will show GST.' : 'Business details saved.',
-            'business' => $seller->only(['name', 'legal_name', 'gstin', 'business_address', 'business_state']),
+            'business' => $seller->only(self::BUSINESS_FIELDS),
         ], 200);
     }
 

@@ -15,6 +15,7 @@ import ManageReviews from './components/admin/reviews/ManageReviews';
 import ManageCommissions from './components/admin/commissions/ManageCommissions';
 import ManageSellers from './components/admin/sellers/ManageSellers';
 import ManageCategoryRequests from './components/categoryRequests/ManageCategoryRequests';
+import ManageDelivery from './components/admin/delivery/ManageDelivery';
 import VendorCategoryRequests from './components/categoryRequests/VendorCategoryRequests';
 import ServerHealth from './components/admin/server/ServerHealth';
 import Security from './components/admin/security/Security';
@@ -151,6 +152,7 @@ function App() {
           <Route path="/admin/bulk-products" element={<AdminRequireAuth><BulkProducts portal="admin" /></AdminRequireAuth>} />
           <Route path="/admin/sellers" element={<AdminRequireAuth><ManageSellers /></AdminRequireAuth>} />
           <Route path="/admin/category-requests" element={<AdminRequireAuth><ManageCategoryRequests /></AdminRequireAuth>} />
+          <Route path="/admin/delivery" element={<AdminRequireAuth><ManageDelivery /></AdminRequireAuth>} />
           <Route path="/vendor/category-requests" element={<AdminRequireAuth role="vendor"><VendorCategoryRequests /></AdminRequireAuth>} />
           <Route path="/admin/server" element={<AdminRequireAuth><ServerHealth /></AdminRequireAuth>} />
           <Route path="/admin/security" element={<AdminRequireAuth><Security /></AdminRequireAuth>} />

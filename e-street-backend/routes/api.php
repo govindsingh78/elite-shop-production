@@ -3,6 +3,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CategoryRequestController;
+use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\DeviceTokenController;
 use App\Http\Controllers\GstController;
 use App\Http\Controllers\InvoiceController;
@@ -24,6 +25,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\CommissionController;
 use App\Http\Controllers\Admin\SellerController;
 use App\Http\Controllers\Admin\CategoryRequestController as AdminCategoryRequestController;
+use App\Http\Controllers\Admin\DeliveryController as AdminDeliveryController;
 use App\Http\Controllers\Admin\SecurityController;
 use App\Http\Controllers\Admin\ServerController;
 use App\Http\Controllers\AccountPhoneController;
@@ -72,6 +74,8 @@ Route::middleware('throttle:20,1')->group(function () {
 });
 Route::post('/payments/razorpay/webhook', [PaymentController::class, 'webhook']);
 Route::get('/storefront/categories', [CategoryController::class, 'navigation']);
+// The product page's "Delivery to": whether we deliver to a PIN code, and roughly when.
+Route::get('/storefront/delivery', [DeliveryController::class, 'check'])->middleware('throttle:60,1,delivery-check');
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->middleware('throttle:30,1');
 // The printable invoice, from a signed link (order pages, the app and emails), so no sign-in is needed.
 Route::get('/invoices/{invoice}/print', [InvoiceController::class, 'print'])
@@ -218,6 +222,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('admin/sellers', [SellerController::class, 'index']);
         Route::get('admin/sellers/{seller}', [SellerController::class, 'show'])->whereNumber('seller');
         Route::patch('admin/sellers/{seller}/status', [SellerController::class, 'updateStatus'])->whereNumber('seller');
+        Route::get('admin/delivery', [AdminDeliveryController::class, 'index']);
+        Route::put('admin/delivery/settings', [AdminDeliveryController::class, 'updateSettings']);
+        Route::get('admin/delivery/check', [AdminDeliveryController::class, 'check']);
+        Route::post('admin/delivery/areas', [AdminDeliveryController::class, 'store']);
+        Route::put('admin/delivery/areas/{area}', [AdminDeliveryController::class, 'update'])->whereNumber('area');
+        Route::delete('admin/delivery/areas/{area}', [AdminDeliveryController::class, 'destroy'])->whereNumber('area');
         Route::get('admin/category-requests', [AdminCategoryRequestController::class, 'index']);
         Route::post('admin/category-requests/{categoryRequest}/approve', [AdminCategoryRequestController::class, 'approve'])->whereNumber('categoryRequest');
         Route::post('admin/category-requests/{categoryRequest}/decline', [AdminCategoryRequestController::class, 'decline'])->whereNumber('categoryRequest');

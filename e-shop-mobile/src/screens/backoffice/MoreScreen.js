@@ -51,6 +51,7 @@ export default function MoreScreen({ portal }) {
             <ListRow icon="calculator-outline" title="GST settings" subtitle="Registration, invoice numbers, default rates" onPress={() => router.push("/admin/gst")} />
             <ListRow icon="pie-chart-outline" title="Commissions" subtitle="Seller earnings and payouts" onPress={() => router.push("/admin/commissions")} />
             <ListRow icon="albums-outline" title="Catalog" subtitle="Categories, brands and shipping" onPress={() => router.push("/admin/catalog")} />
+            <ListRow icon="location-outline" title="Delivery areas" subtitle="PIN codes we deliver to, and delivery estimates" onPress={() => router.push("/admin/delivery")} />
           </>
         ) : (
           <>

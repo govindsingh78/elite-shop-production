@@ -7,6 +7,7 @@ import { useCart } from "../context/CartContext";
 import { formatPrice } from "./currency";
 import StorefrontProductCard from "./StorefrontProductCard";
 import { ProductReturnsNote } from "./PolicyBits";
+import DeliveryCheck from "./DeliveryCheck";
 import WishlistButton from "./WishlistButton";
 import ProductReviews from "./ProductReviews";
 import { Stars } from "./ReviewBits";
@@ -327,6 +328,8 @@ const Product = () => {
                     <WishlistButton product={product} variant="detail" />
                   </div>
                   {!soldOut && <button type="button" className="pd-buy-now" onClick={buyNow}>Buy now — {formatPrice(price * quantity)}</button>}
+
+                  <DeliveryCheck key={product.id} productId={product.id} />
 
                   <ul className="pd-perks">
                     {perks.map((perk) => (

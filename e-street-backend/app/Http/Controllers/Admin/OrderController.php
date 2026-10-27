@@ -12,6 +12,7 @@ use App\Models\ProductSize;
 use App\Models\ShippingMethod;
 use App\Models\User;
 use App\Services\Commissions;
+use App\Services\Delivery;
 use App\Services\Gst;
 use App\Services\Invoices;
 use App\Services\Messenger;
@@ -96,6 +97,10 @@ class OrderController extends Controller
             'billing_name.required_with' => 'Add the business name registered with this GSTIN.',
         ]);
         $placeOfSupply = Gst::placeOfSupply($validated['state'] ?? null, $validated['country'] ?? null);
+        // Only to PIN codes we deliver to (Admin › Delivery areas).
+        if ($problem = Delivery::checkoutProblem($validated['postal_code'] ?? null, $validated['country'] ?? null)) {
+            throw ValidationException::withMessages(['postal_code' => $problem]);
+        }
 
         if ($validated['payment_method'] === 'razorpay' && !app(Razorpay::class)->configured()) {
             throw ValidationException::withMessages(['payment_method' => 'Online payment is not available right now. Please choose cash on delivery.']);

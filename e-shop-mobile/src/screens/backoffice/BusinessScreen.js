@@ -24,6 +24,7 @@ function BusinessForm({ initial, states }) {
     gstin: initial.gstin || "",
     business_address: initial.business_address || "",
     business_state: initial.business_state || "",
+    pickup_pincode: initial.pickup_pincode || "",
   });
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
@@ -38,9 +39,9 @@ function BusinessForm({ initial, states }) {
     try {
       const result = await request("/vendor/business", {
         method: "PUT",
-        body: { ...values, gstin: values.gstin.trim().toUpperCase(), business_state: values.business_state || null },
+        body: { ...values, gstin: values.gstin.trim().toUpperCase(), business_state: values.business_state || null, pickup_pincode: values.pickup_pincode || null },
       });
-      setValues((current) => ({ ...current, gstin: result.business.gstin || "", business_state: result.business.business_state || "" }));
+      setValues((current) => ({ ...current, gstin: result.business.gstin || "", business_state: result.business.business_state || "", pickup_pincode: result.business.pickup_pincode || "" }));
       toast(result.message);
     } catch (saveError) {
       setErrors(saveError.fieldErrors || {});
@@ -72,6 +73,18 @@ function BusinessForm({ initial, states }) {
           options={states.map((state) => ({ value: state.code, label: state.name }))}
           onChange={(value) => change("business_state", value)}
           error={errors.business_state}
+        />
+      </Card>
+      <Card style={{ marginTop: 12 }}>
+        <TextField
+          label="Pickup PIN code"
+          keyboardType="number-pad"
+          maxLength={6}
+          placeholder="e.g. 302016"
+          hint="Where couriers collect your parcels. Shoppers see delivery dates worked out from here (only your state is shown)."
+          value={values.pickup_pincode}
+          onChangeText={(text) => change("pickup_pincode", text.replace(/\D/g, ""))}
+          error={errors.pickup_pincode}
         />
       </Card>
     </Screen>

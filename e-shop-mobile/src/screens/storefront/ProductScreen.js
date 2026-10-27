@@ -6,6 +6,7 @@ import ProductCard from "@/components/ProductCard";
 import { Button, Card, EmptyState, IconButton, KeyValue, Loader, QuantityStepper, Row, Screen, SectionHeader, T } from "@/components/ui";
 import WishlistButton from "@/components/WishlistButton";
 import ProductReviewsSection from "@/components/ProductReviewsSection";
+import DeliveryCheck from "@/components/DeliveryCheck";
 import { Stars } from "@/components/ReviewBits";
 import { useCart } from "@/context/CartContext";
 import { useToast } from "@/context/ToastContext";
@@ -178,6 +179,8 @@ export default function ProductScreen() {
         {!soldOut ? (
           <Button title="Buy now" variant="teal" icon="flash-outline" onPress={() => add(true)} style={{ marginTop: 18 }} />
         ) : null}
+
+        <DeliveryCheck key={product.id} productId={product.id} />
 
         <View style={styles.perks}>
           {[["cash-outline", "Cash on delivery"], ["navigate-outline", "Live tracking"], ["shield-checkmark-outline", "Secure checkout"]].map(([icon, label]) => (

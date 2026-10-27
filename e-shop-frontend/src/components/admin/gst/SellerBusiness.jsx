@@ -10,6 +10,7 @@ const asForm = (business) => ({
   gstin: business.gstin || "",
   business_address: business.business_address || "",
   business_state: business.business_state || "",
+  pickup_pincode: business.pickup_pincode || "",
 });
 
 /** A seller's business and GST details, printed on the invoices issued for their sales. */
@@ -37,7 +38,7 @@ const SellerBusiness = () => {
     try {
       const data = await gstRequest("vendor", "/vendor/business", {
         method: "PUT",
-        body: { ...values, gstin: values.gstin.trim().toUpperCase(), business_state: values.business_state || null },
+        body: { ...values, gstin: values.gstin.trim().toUpperCase(), business_state: values.business_state || null, pickup_pincode: values.pickup_pincode || null },
       });
       setValues(asForm(data.business));
       toast.success(data.message);
@@ -92,6 +93,12 @@ const SellerBusiness = () => {
                   {states.map((state) => <option key={state.code} value={state.code}>{state.name}</option>)}
                 </select>
                 {fieldError("business_state")}
+              </div>
+              <div className="col-md-4">
+                <label htmlFor="pickup_pincode" className="form-label">Pickup PIN code</label>
+                <input id="pickup_pincode" inputMode="numeric" maxLength={6} className={`form-control ${errors.pickup_pincode ? "is-invalid" : ""}`} value={values.pickup_pincode} onChange={(event) => setValues((current) => ({ ...current, pickup_pincode: event.target.value.replace(/\D/g, "") }))} placeholder="e.g. 302016" />
+                {fieldError("pickup_pincode")}
+                <div className="form-text">Where couriers collect your parcels. Shoppers see delivery dates worked out from here (only your state is shown).</div>
               </div>
             </div>
             <button type="submit" className="btn btn-primary mt-4" disabled={saving}>{saving ? "Saving…" : "Save details"}</button>

@@ -3025,3 +3025,50 @@ body.voice-search-open { overflow: hidden; }
 .category-request-also { margin: 10px 0 0; color: #9a6512; font-size: .86rem; font-weight: 600; }
 .category-request-answer { margin: 12px 0 0; border-radius: 10px; padding: 9px 12px; color: #1f5d52; background: #e8f4f0; font-size: .9rem; }
 .category-request-form { margin-top: 14px; border: 1px solid #d6e7df; border-radius: 12px; padding: 14px; background: #f8fbf9; }
+
+/* ---------- Delivery: the product page's PIN code check, and Admin › Delivery areas ---------- */
+.pd-delivery { margin-top: 22px; border-top: 1px solid #edf0eb; padding-top: 18px;
+    h2 { margin: 0; color: #1d2f28; font-size: 1.05rem; font-weight: 700; }
+    > p { margin: 4px 0 10px; color: #78847e; font-size: .86rem; }
+}
+.pd-delivery-form { display: flex; align-items: center; max-width: 420px; border: 1px solid #dfe5e1; border-radius: 10px; background: #fff; transition: border-color .15s, box-shadow .15s;
+    &:focus-within { border-color: #2f7d70; box-shadow: 0 0 0 3px rgba(47, 125, 112, .12); }
+    &.is-invalid { border-color: #c0503f; }
+    input { flex: 1; min-width: 0; border: 0; padding: 11px 14px; background: transparent; font-size: .95rem; letter-spacing: .04em; outline: none; }
+    button { border: 0; padding: 0 16px; color: #c4502f; background: none; font-size: .82rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    button:disabled { color: #9aa49e; }
+}
+.pd-delivery-error { margin: 6px 0 0; color: #a63d2f; font-size: .84rem; }
+.pd-delivery-result { display: flex; gap: 10px; max-width: 520px; margin-top: 12px; border-radius: 12px; padding: 12px 14px;
+    > div { display: flex; flex-direction: column; gap: 2px; }
+    strong { color: #13291f; font-size: .95rem; }
+    span:not(.pd-delivery-icon) { color: #4c5d55; font-size: .86rem; }
+    small { color: #8b968f; font-size: .78rem; }
+    &.is-ok { background: #ecf6f0; }
+    &.is-no { background: #fcefec;
+        strong { color: #7c3328; font-weight: 600; }
+    }
+}
+.pd-delivery-icon { display: grid; width: 24px; height: 24px; flex-shrink: 0; place-items: center; border-radius: 50%; color: #fff; background: #2e8b57; font-size: .75rem; font-weight: 800;
+    .is-no & { background: #c0503f; }
+}
+.delivery-mode { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; border: 1px solid #e3e9e5; border-radius: 12px; padding: 12px 14px; cursor: pointer;
+    input { margin-top: 4px; accent-color: #1f6f63; }
+    strong, small { display: block; }
+    strong { color: #13291f; }
+    small { color: #78847e; }
+    &.is-active { border-color: #1f6f63; background: #f3faf7; }
+}
+.delivery-areas { margin: 0; padding: 0; list-style: none;
+    > li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; border-top: 1px solid #edf0eb; padding: 12px 0; }
+    > li.is-blocked .delivery-area-code strong { color: #a63d2f; }
+}
+.delivery-area-code { min-width: 220px;
+    strong { display: block; color: #13291f; font-size: 1.02rem; letter-spacing: .04em; }
+    small { color: #8b968f; }
+}
+.delivery-area-name { flex: 1; min-width: 120px; color: #3f4f48; }
+.delivery-area-actions { display: flex; gap: 4px; margin-left: auto; }
+.delivery-area-edit { display: flex; flex: 1; flex-wrap: wrap; align-items: center; gap: 8px;
+    .form-control, .form-select { width: auto; min-width: 140px; }
+}
