@@ -101,6 +101,7 @@ export default function CustomerOrderDetailScreen() {
             />
           ))}
           <KeyValue label="Subtotal" value={formatPrice(order.subtotal)} />
+          {Number(order.discount_amount) > 0 ? <KeyValue label={`Coupon ${order.coupon_code}`} value={`−${formatPrice(order.discount_amount)}`} /> : null}
           <KeyValue label={order.shipping_method?.name ? `Delivery · ${order.shipping_method.name}` : "Delivery"} value={Number(order.shipping_amount) > 0 ? formatPrice(order.shipping_amount) : "Free"} />
           <KeyValue label="Payment" value={paymentMethodLabel(order.payment_method)} />
           <KeyValue label="Total" value={formatPrice(order.total)} strong last={!(Number(order.tax_total) > 0)} />

@@ -133,11 +133,17 @@ export default function OrderManageScreen({ portal: portalKey }) {
           {order.total != null ? (
             <>
               <KeyValue label="Subtotal" value={formatPrice(order.subtotal)} />
+              {Number(order.discount_amount) > 0 ? <KeyValue label={`Coupon ${order.coupon_code}`} value={`−${formatPrice(order.discount_amount)}`} /> : null}
               <KeyValue label="Delivery" value={Number(order.shipping_amount) > 0 ? formatPrice(order.shipping_amount) : "Free"} />
               <KeyValue label="Total" value={formatPrice(order.total)} strong last={!(Number(order.tax_total) > 0)} />
               {Number(order.tax_total) > 0 ? <KeyValue label="Includes GST" value={formatPrice(order.tax_total)} last /> : null}
             </>
-          ) : <KeyValue label="Your items" value={formatPrice(order.vendor_subtotal)} strong last />}
+          ) : (
+            <>
+              {(order.items || []).some((item) => Number(item.discount_amount) > 0) ? <KeyValue label={`Coupon ${order.coupon_code}`} value={`−${formatPrice((order.items || []).reduce((sum, item) => sum + Number(item.discount_amount || 0), 0))}`} /> : null}
+              <KeyValue label="Your items" value={formatPrice(order.vendor_subtotal)} strong last />
+            </>
+          )}
           {order.billing_gstin ? <T variant="small" style={{ marginTop: 8 }}>Bill to {order.billing_name} · GSTIN {order.billing_gstin}</T> : null}
         </Card>
 

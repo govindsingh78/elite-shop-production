@@ -117,15 +117,17 @@ const OrderDetails = ({ portal = "admin" }) => {
                           <thead><tr><th>Product</th><th>SKU</th><th>Qty</th><th>Unit price</th><th>Subtotal</th></tr></thead>
                           <tbody>
                             {(order.items || []).map((item) => (
-                              <tr key={item.id}><td>{item.product_title}{item.size && <div className="small text-muted">Size <strong>{item.size}</strong></div>}</td><td>{item.sku || "—"}</td><td>{item.quantity}</td><td>{money(item.unit_price)}</td><td>{money(item.line_total)}</td></tr>
+                              <tr key={item.id}><td>{item.product_title}{item.size && <div className="small text-muted">Size <strong>{item.size}</strong></div>}</td><td>{item.sku || "—"}</td><td>{item.quantity}</td><td>{money(item.unit_price)}</td><td>{money(Number(item.unit_price) * item.quantity)}{Number(item.discount_amount) > 0 && <div className="small text-success">−{money(item.discount_amount)} coupon</div>}</td></tr>
                             ))}
                           </tbody>
                         </table>
                       </div>
                       <div className="card-body ms-auto" style={{ minWidth: 250 }}>
+                        {isVendor && (order.items || []).some((item) => Number(item.discount_amount) > 0) && <div className="d-flex justify-content-between small text-muted"><span>Coupon {order.coupon_code}</span><span>−{money((order.items || []).reduce((sum, item) => sum + Number(item.discount_amount || 0), 0))}</span></div>}
                         {isVendor && <div className="d-flex justify-content-between fw-bold"><span>Your sales</span><span>{money(order.vendor_subtotal)}</span></div>}
                         {order.total !== undefined && <>
                           <div className={`d-flex justify-content-between${isVendor ? " text-muted small mt-2" : ""}`}><span>{isVendor ? "Order subtotal" : "Subtotal"}</span><span>{money(order.subtotal)}</span></div>
+                          {!isVendor && Number(order.discount_amount) > 0 && <div className="d-flex justify-content-between text-success"><span>Coupon {order.coupon_code}</span><span>−{money(order.discount_amount)}</span></div>}
                           <div className={`d-flex justify-content-between${isVendor ? " text-muted small" : ""}`}><span>Shipping</span><span>{money(order.shipping_amount)}</span></div>
                           {!isVendor && <div className="d-flex justify-content-between border-top mt-2 pt-2 fw-bold"><span>Total</span><span>{money(order.total)}</span></div>}
                           {!isVendor && Number(order.tax_total) > 0 && <div className="d-flex justify-content-between small text-muted"><span>Includes GST</span><span>{money(order.tax_total)}</span></div>}

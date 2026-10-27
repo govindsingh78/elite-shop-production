@@ -54,6 +54,7 @@ export default function OrderConfirmationScreen() {
         </Row>
         {(order.items || []).map((item, index, list) => <OrderItemRow key={item.id} item={item} last={index === list.length - 1} />)}
         <KeyValue label="Subtotal" value={formatPrice(order.subtotal)} />
+        {Number(order.discount_amount) > 0 ? <KeyValue label={`Coupon ${order.coupon_code}`} value={`−${formatPrice(order.discount_amount)}`} /> : null}
         <KeyValue label="Delivery" value={Number(order.shipping_amount) > 0 ? formatPrice(order.shipping_amount) : "Free"} />
         <KeyValue label="Payment" value={paymentMethodLabel(order.payment_method)} />
         <KeyValue label="Total" value={formatPrice(order.total)} strong last />

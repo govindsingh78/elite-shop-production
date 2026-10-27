@@ -86,6 +86,8 @@ class Invoices
                 'hsn_code' => $tax['hsn_code'],
                 'quantity' => (int) $item->quantity,
                 'unit_price' => (float) $item->unit_price,
+                // A coupon's share, taken off before GST (the total is what was paid).
+                'discount' => (float) $item->discount_amount,
                 'gst_rate' => $registered ? $tax['gst_rate'] : 0.0,
                 'taxable_value' => $tax['taxable_value'],
                 'cgst' => $tax['cgst'],

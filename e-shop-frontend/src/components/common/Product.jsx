@@ -8,6 +8,7 @@ import { formatPrice } from "./currency";
 import StorefrontProductCard from "./StorefrontProductCard";
 import { ProductReturnsNote } from "./PolicyBits";
 import DeliveryCheck from "./DeliveryCheck";
+import ProductOffers from "./ProductOffers";
 import WishlistButton from "./WishlistButton";
 import ProductReviews from "./ProductReviews";
 import { Stars } from "./ReviewBits";
@@ -329,6 +330,7 @@ const Product = () => {
                   </div>
                   {!soldOut && <button type="button" className="pd-buy-now" onClick={buyNow}>Buy now — {formatPrice(price * quantity)}</button>}
 
+                  <ProductOffers key={`offers-${product.id}`} productId={product.id} productTitle={product.title} />
                   <DeliveryCheck key={product.id} productId={product.id} />
 
                   <ul className="pd-perks">

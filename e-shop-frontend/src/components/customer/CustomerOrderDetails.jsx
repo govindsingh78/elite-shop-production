@@ -158,12 +158,13 @@ const CustomerOrderDetails = () => {
                         <small>{item.size ? `Size ${item.size} · ` : ""}{formatPrice(item.unit_price)} × {item.quantity}{item.sku ? ` · SKU ${item.sku}` : ""}</small>
                         {delivered && item.product_id && <Link to={`${orderItemPath(item)}#reviews`} className="customer-review-link">★ Rate &amp; review</Link>}
                       </span>
-                      <strong>{formatPrice(item.line_total)}</strong>
+                      <strong>{formatPrice(Number(item.unit_price) * item.quantity)}</strong>
                     </li>
                   ))}
                 </ul>
                 <dl className="customer-totals">
                   <div><dt>Subtotal</dt><dd>{formatPrice(order.subtotal)}</dd></div>
+                  {Number(order.discount_amount) > 0 && <div className="co-discount"><dt>Coupon {order.coupon_code}</dt><dd>−{formatPrice(order.discount_amount)}</dd></div>}
                   <div><dt>Shipping{order.shipping_method ? ` · ${order.shipping_method.name}` : ""}</dt><dd>{Number(order.shipping_amount) ? formatPrice(order.shipping_amount) : "Free"}</dd></div>
                   <div className="customer-totals-grand"><dt>Total</dt><dd>{formatPrice(order.total)}</dd></div>
                   {Number(order.tax_total) > 0 && <div className="customer-totals-gst"><dt>Includes GST</dt><dd>{formatPrice(order.tax_total)}</dd></div>}

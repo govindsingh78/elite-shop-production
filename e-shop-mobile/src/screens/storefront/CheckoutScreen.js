@@ -3,12 +3,14 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AddressFields from "@/components/AddressFields";
+import CouponBox from "@/components/CouponBox";
 import { PolicyConsent, PolicySummaryCard } from "@/components/PolicyBits";
 import { Button, Card, EmptyState, KeyValue, Loader, Notice, Row, Screen, Segmented, SwitchRow, T, TextField } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import { useToast } from "@/context/ToastContext";
 import { api } from "@/lib/api";
+import { saveCode } from "@/lib/coupons";
 import { formatPrice } from "@/lib/format";
 import { colors, fonts, radius } from "@/theme";
 
@@ -23,7 +25,7 @@ const PAYMENT_OPTIONS = [
 ];
 
 export default function CheckoutScreen() {
-  const { isCustomer, user, signIn, startSession, request } = useAuth();
+  const { isCustomer, user, session, signIn, startSession, request } = useAuth();
   const { items, subtotal, clearCart, setLastOrder } = useCart();
   const toast = useToast();
 
@@ -50,6 +52,8 @@ export default function CheckoutScreen() {
   const [fieldErrors, setFieldErrors] = useState({});
   const [wantsGstInvoice, setWantsGstInvoice] = useState(false);
   const [acceptPolicy, setAcceptPolicy] = useState(false);
+  // The coupon in use: the API's answer for it ({ code, discount, message }).
+  const [coupon, setCoupon] = useState(null);
 
   useEffect(() => {
     api("/storefront/shipping-methods").then((methods) => {
@@ -77,7 +81,8 @@ export default function CheckoutScreen() {
 
   const addresses = isCustomer && addressBook.userId === user?.id ? addressBook.list : null;
   const shipping = shippingMethods.find((method) => method.id === shippingId);
-  const total = subtotal + Number(shipping?.price || 0);
+  const discount = Number(coupon?.discount || 0);
+  const total = subtotal - discount + Number(shipping?.price || 0);
   const selectedAddress = addresses?.find((address) => address.id === addressChoice);
   const usingSaved = isCustomer && !!selectedAddress;
   const paymentOptions = useMemo(() => PAYMENT_OPTIONS.filter((option) => !option.online || onlineAvailable), [onlineAvailable]);
@@ -137,6 +142,7 @@ export default function CheckoutScreen() {
       accept_policy: acceptPolicy,
       billing_name: wantsGstInvoice ? form.billing_name.trim() : null,
       billing_gstin: wantsGstInvoice ? form.billing_gstin.trim() : null,
+      coupon_code: coupon?.code || null,
       items: items.map(({ id, quantity, size_id: sizeId }) => ({ product_id: id, quantity, ...(sizeId ? { size_id: sizeId } : {}) })),
     };
 
@@ -155,6 +161,8 @@ export default function CheckoutScreen() {
       if (data.customer_token && data.customer) await startSession(data.customer_token, data.customer, "customer");
 
       clearCart();
+      // The coupon is used; it's not offered again next time.
+      saveCode("");
       setLastOrder(data.data);
       if (data.payment_token) {
         router.replace({ pathname: "/payment", params: { orderId: String(data.data.id), token: data.payment_token, method: payment } });
@@ -164,6 +172,8 @@ export default function CheckoutScreen() {
     } catch (orderError) {
       setFieldErrors(orderError.fieldErrors || {});
       setError(orderError.message);
+      // The coupon stopped working since it was applied (used up, expired…): take it off so the order can go ahead.
+      if (orderError.fieldErrors?.coupon_code) setCoupon(null);
     } finally {
       setPlacing(false);
     }
@@ -297,7 +307,9 @@ export default function CheckoutScreen() {
           </Row>
         ))}
         <View style={styles.summaryLine} />
+        <CouponBox items={items} email={isCustomer ? user?.email : form.customer_email} token={isCustomer ? session?.token : null} applied={coupon} onApplied={setCoupon} />
         <KeyValue label="Subtotal" value={formatPrice(subtotal)} />
+        {discount > 0 ? <KeyValue label={`Coupon ${coupon.code}`} value={`−${formatPrice(discount)}`} /> : null}
         <KeyValue label="Delivery" value={shipping ? (Number(shipping.price) > 0 ? formatPrice(shipping.price) : "Free") : "Free"} />
         <KeyValue label="Total" value={formatPrice(total)} strong last />
       </Card>

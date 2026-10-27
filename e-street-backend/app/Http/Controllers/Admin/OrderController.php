@@ -12,6 +12,7 @@ use App\Models\ProductSize;
 use App\Models\ShippingMethod;
 use App\Models\User;
 use App\Services\Commissions;
+use App\Services\Coupons;
 use App\Services\Delivery;
 use App\Services\Gst;
 use App\Services\Invoices;
@@ -90,6 +91,7 @@ class OrderController extends Controller
             // Business buyers can have their GSTIN on the invoice, to claim input tax credit.
             'billing_gstin' => ['nullable', 'string', 'max:15', Gst::gstinRule()],
             'billing_name' => ['nullable', 'required_with:billing_gstin', 'string', 'max:255'],
+            'coupon_code' => ['nullable', 'string', 'max:30'],
             // Shoppers must agree to the Return & Refund Policy; the version they saw is kept on the order.
             'accept_policy' => ['accepted'],
         ], [
@@ -150,6 +152,8 @@ class OrderController extends Controller
 
             $subtotal = 0;
             $items = [];
+            // Each line's product and seller, and its value before any coupon.
+            $lines = [];
             $sellerRates = [];
             $sellers = [];
             $taxTotal = 0.0;
@@ -190,11 +194,8 @@ class OrderController extends Controller
                 $commissionRate = $product->vendor_id
                     ? ($sellerRates[$product->vendor_id] ??= $seller ? Commissions::rateFor($seller) : Commissions::defaultRate())
                     : null;
-                // GST included in the price, worked out for the supplier (the seller, or Elitezaar) and delivery state.
-                $tax = Gst::forLine($product, $unitPrice, $lineTotal, $seller, $placeOfSupply);
-                $taxTotal += $tax['cgst'] + $tax['sgst'] + $tax['igst'];
+                $lines[] = ['product' => $product, 'seller' => $seller, 'amount' => $lineTotal];
                 $items[] = [
-                    ...$tax,
                     'product_id' => $product->id,
                     'size_id' => $size?->size_id,
                     'size' => $size?->name,
@@ -205,9 +206,29 @@ class OrderController extends Controller
                     'unit_price' => $unitPrice,
                     'line_total' => $lineTotal,
                     'commission_rate' => $commissionRate,
-                    'commission_amount' => $commissionRate !== null ? Commissions::amount($lineTotal, $commissionRate) : null,
                 ];
             }
+
+            // A coupon comes off the lines it covers (App\Services\Coupons); each line's GST and commission follow.
+            $applied = filled($validated['coupon_code'] ?? null)
+                ? Coupons::apply($validated['coupon_code'], $lines, $customer ?? $request->user('sanctum'), $validated['customer_email'])
+                : null;
+            foreach ($items as $index => $item) {
+                $gross = $item['line_total'];
+                $discount = (float) ($applied['shares'][$index] ?? 0);
+                $paid = round($gross - $discount, 2);
+                // GST included in the price paid, worked out for the supplier (the seller, or Elitezaar) and delivery state.
+                $tax = Gst::forLine($lines[$index]['product'], $paid / $item['quantity'], $paid, $lines[$index]['seller'], $placeOfSupply);
+                $taxTotal += $tax['cgst'] + $tax['sgst'] + $tax['igst'];
+                // A seller's product carries Elitezaar's commission. When Elitezaar pays for a coupon, it comes out of
+                // the commission, so the seller earns what they would have without it.
+                $rate = $item['commission_rate'];
+                $commission = $rate === null ? null : ($discount > 0 && $applied['coupon']->funded_by === 'store'
+                    ? round(Commissions::amount($gross, $rate) - $discount, 2)
+                    : Commissions::amount($paid, $rate));
+                $items[$index] = [...$tax, ...$item, 'discount_amount' => $discount, 'line_total' => $paid, 'commission_amount' => $commission];
+            }
+            $discountTotal = (float) ($applied['discount'] ?? 0);
 
             $shippingMethod = !empty($validated['shipping_method_id'])
                 ? ShippingMethod::query()->where('status', 1)->findOrFail($validated['shipping_method_id'])
@@ -231,9 +252,12 @@ class OrderController extends Controller
                 'postal_code' => $validated['postal_code'] ?? null,
                 'country' => $validated['country'] ?? '',
                 'subtotal' => $subtotal,
+                'coupon_id' => $applied['coupon']->id ?? null,
+                'coupon_code' => $applied['coupon']->code ?? null,
+                'discount_amount' => $discountTotal,
                 'shipping_amount' => $shippingAmount,
                 'shipping_method_id' => $shippingMethod?->id,
-                'total' => $subtotal + $shippingAmount,
+                'total' => round($subtotal - $discountTotal + $shippingAmount, 2),
                 'payment_method' => $validated['payment_method'],
                 'payment_status' => 'unpaid',
                 'status' => 'pending',

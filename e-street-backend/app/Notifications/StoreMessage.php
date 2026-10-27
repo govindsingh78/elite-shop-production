@@ -95,7 +95,8 @@ abstract class StoreMessage extends Notification
         return collect($items)->map(fn (OrderItem $item) => [
             'name' => $item->product_title,
             'meta' => implode(' · ', array_filter([$item->size ? "Size {$item->size}" : null, "Qty {$item->quantity}"])),
-            'amount' => $withAmounts ? self::inr($item->line_total) : null,
+            // Before any coupon: emails show the coupon as a line of its own.
+            'amount' => $withAmounts ? self::inr((float) $item->unit_price * $item->quantity) : null,
         ])->values()->all();
     }
 
@@ -127,6 +128,12 @@ abstract class StoreMessage extends Notification
         $size = $item->size ? " (size {$item->size})" : '';
 
         return "{$item->product_title}{$size} × {$item->quantity}" . ($withTotal ? ' — ' . self::inr($item->line_total) : '');
+    }
+
+    /** "Coupon AW30" and "−₹300.00", for an order's totals; nothing without a coupon. */
+    protected static function couponTotal(?string $code, float $discount): array
+    {
+        return $discount > 0 ? [['label' => $code ? "Coupon {$code}" : 'Coupon', 'value' => '−' . self::inr($discount)]] : [];
     }
 
     public static function siteUrl(string $path): string

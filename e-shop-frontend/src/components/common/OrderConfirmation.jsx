@@ -102,7 +102,7 @@ const OrderConfirmation = () => {
                             {item.product_id ? <Link to={orderItemPath(item)}><strong>{item.product_title}</strong></Link> : <strong>{item.product_title}</strong>}
                             <small>{item.size ? `Size ${item.size} · ` : ""}{formatPrice(item.unit_price)} × {item.quantity}</small>
                           </span>
-                          <strong className="co-item-total">{formatPrice(item.line_total)}</strong>
+                          <strong className="co-item-total">{formatPrice(Number(item.unit_price) * item.quantity)}</strong>
                         </li>
                       ))}
                     </ul>
@@ -117,6 +117,7 @@ const OrderConfirmation = () => {
                       <h2>Payment summary</h2>
                       <dl>
                         <div><dt>Subtotal</dt><dd>{formatPrice(order.subtotal)}</dd></div>
+                        {Number(order.discount_amount) > 0 && <div className="co-discount"><dt>Coupon {order.coupon_code}</dt><dd>−{formatPrice(order.discount_amount)}</dd></div>}
                         <div><dt>Delivery</dt><dd className={Number(order.shipping_amount) === 0 ? "is-free" : ""}>{Number(order.shipping_amount) === 0 ? "Free" : formatPrice(order.shipping_amount)}</dd></div>
                         <div className="cart-summary-total"><dt>Total</dt><dd>{formatPrice(order.total)}</dd></div>
                         {Number(order.tax_total) > 0 && <div className="co-gst-line"><dt>Includes GST</dt><dd>{formatPrice(order.tax_total)}</dd></div>}

@@ -3072,3 +3072,108 @@ body.voice-search-open { overflow: hidden; }
 .delivery-area-edit { display: flex; flex: 1; flex-wrap: wrap; align-items: center; gap: 8px;
     .form-control, .form-select { width: auto; min-width: 140px; }
 }
+
+/* ---------- Coupons: product page offers, checkout, Admin › Coupons ---------- */
+.pd-offers { margin-top: 22px;
+    h2 { margin: 0 0 10px; color: #1d2f28; font-size: 1.05rem; font-weight: 700; }
+}
+.pd-offer-list { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x mandatory; scrollbar-width: thin; }
+.pd-offer { position: relative; display: flex; flex: 0 0 300px; flex-direction: column; min-width: 0; border: 1px solid #f2e3d6; border-radius: 14px; padding: 12px 14px; background: linear-gradient(120deg, #fff8f1 0%, #fde8d8 100%); scroll-snap-align: start;
+    &.pd-offer--1 { border-color: #eadff3; background: linear-gradient(120deg, #fdf6ff 0%, #f3e3fb 100%); }
+    &.pd-offer--2 { border-color: #d9ece3; background: linear-gradient(120deg, #f4fbf7 0%, #dff3ea 100%); }
+    > p { overflow: hidden; margin: 4px 0 0; padding-bottom: 14px; color: #4c5d55; font-size: .86rem; text-overflow: ellipsis; white-space: nowrap; }
+}
+.pd-offer-top { display: flex; align-items: center; gap: 8px;
+    strong { overflow: hidden; flex: 1; min-width: 0; color: #1d2f28; font-size: .92rem; text-overflow: ellipsis; white-space: nowrap; }
+}
+.pd-offer-badge { display: grid; width: 20px; height: 20px; flex-shrink: 0; place-items: center; border-radius: 50%; color: #fff; background: linear-gradient(145deg, #1f4ea8, #3b7be0); font-size: .66rem; font-weight: 800; box-shadow: 0 0 0 2px #f6c445; }
+.pd-offer-terms { flex-shrink: 0; border: 0; padding: 0; color: #2563eb; background: none; font-size: .74rem; font-weight: 700; white-space: nowrap; }
+/* The dashed perforation, with a notch at each end. */
+.pd-offer-actions { position: relative; display: flex; align-items: center; gap: 10px; border-top: 1.5px dashed rgba(29, 47, 40, .14); padding-top: 12px;
+    &::before, &::after { position: absolute; top: -8px; width: 14px; height: 14px; border-radius: 50%; background: #fff; content: ""; }
+    &::before { left: -22px; }
+    &::after { right: -22px; }
+}
+.pd-offer-code { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-width: 124px; height: 34px; border: 1.5px dashed #9cc0ff; border-radius: 6px; padding: 0 14px; color: #fff; background: #2563eb; font-size: .9rem; font-weight: 800; letter-spacing: .06em;
+    svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; }
+    &:hover { background: #1d4fd0; }
+}
+.pd-offer-share { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid #9cc0ff; border-radius: 6px; color: #2563eb; background: #fff;
+    svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+    &:hover { background: #eef4ff; }
+}
+.pd-offer-modal-backdrop { position: fixed; inset: 0; z-index: 1090; display: grid; place-items: center; padding: 16px; background: rgba(12, 26, 20, .55); }
+.pd-offer-modal { position: relative; width: 100%; max-width: 440px; border-radius: 18px; padding: 24px 22px 20px; background: #fff; box-shadow: 0 24px 60px rgba(0, 0, 0, .25);
+    .btn-close { position: absolute; top: 16px; right: 16px; }
+    h3 { margin: 10px 0 4px; color: #13291f; font-size: 1.15rem; font-weight: 700; }
+    h4 { margin: 16px 0 6px; color: #8a7a5e; font-size: .74rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+    ul { margin: 0 0 12px; padding-left: 18px; color: #3f4f48; font-size: .9rem; }
+    li + li { margin-top: 4px; }
+    > p { margin: 0; color: #5f6e66; font-size: .9rem; }
+}
+.pd-offer-modal-code { display: inline-block; border: 1.5px dashed #9cc0ff; border-radius: 6px; padding: 3px 12px; color: #2563eb; background: #eef4ff; font-weight: 800; letter-spacing: .06em; }
+.pd-offer-modal-terms { margin-bottom: 14px !important; border-radius: 10px; padding: 10px 12px; background: #faf7f1; white-space: pre-line; }
+@media (max-width: 575.98px) {
+    .pd-offer { flex-basis: 84%; }
+}
+
+.co-coupon { margin: 4px 0 16px; border: 1px dashed #cfe1d9; border-radius: 14px; padding: 14px; background: #fbfdfc;
+    h3 { margin: 0 0 10px; color: #1d2f28; font-size: .95rem; font-weight: 700; }
+}
+.co-coupon-form { display: flex; overflow: hidden; border: 1px solid #dfe5e1; border-radius: 10px; background: #fff;
+    input { flex: 1; min-width: 0; border: 0; padding: 10px 12px; font-weight: 700; letter-spacing: .06em; outline: none; text-transform: uppercase;
+        &::placeholder { font-weight: 400; letter-spacing: 0; text-transform: none; }
+    }
+    button { border: 0; padding: 0 16px; color: #2563eb; background: none; font-weight: 800; }
+    button:disabled { color: #9aa49e; }
+    &:focus-within { border-color: #2f7d70; }
+}
+.co-coupon-error { margin: 8px 0 0; color: #a63d2f; font-size: .84rem; }
+.co-coupon-applied { display: flex; align-items: center; gap: 10px; border-radius: 10px; padding: 10px 12px; background: #ecf6f0;
+    > span { display: grid; width: 24px; height: 24px; flex-shrink: 0; place-items: center; border-radius: 50%; color: #fff; background: #2e8b57; font-size: .75rem; font-weight: 800; }
+    > div { flex: 1; display: flex; flex-direction: column; }
+    strong { color: #13291f; letter-spacing: .03em; }
+    small { color: #2e6b4a; }
+}
+.co-coupon-offers { margin: 10px 0 0; padding: 0; list-style: none;
+    li { display: flex; align-items: center; gap: 10px; border-top: 1px solid #edf0eb; padding: 9px 0; }
+    li > div { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    strong { color: #2563eb; letter-spacing: .05em; }
+    span { color: #3f4f48; font-size: .85rem; }
+    small { color: #8b968f; }
+}
+.co-discount { color: #2e8b57; }
+
+.coupon-list { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.coupon-card { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; border: 1px solid rgba(26, 45, 38, .08); border-radius: 16px; padding: 16px 18px; background: #fff; box-shadow: 0 9px 25px rgba(25, 47, 40, .045);
+    &.is-paused, &.is-expired, &.is-used_up { opacity: .75; }
+}
+.coupon-card-code { display: flex; flex-direction: column; align-items: center; min-width: 130px; border: 1.5px dashed #9cc0ff; border-radius: 10px; padding: 10px 12px; background: #eef4ff;
+    span { color: #1d4fd0; font-size: 1.05rem; font-weight: 800; letter-spacing: .06em; }
+    small { color: #4c5d55; font-weight: 600; }
+}
+.coupon-card-body { flex: 1; min-width: 240px;
+    h2 { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; color: #13291f; font-size: 1.02rem; font-weight: 700; }
+    p { margin: 4px 0 2px; color: #5f6e66; font-size: .86rem; }
+    small { color: #8b968f; }
+}
+.coupon-card-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.coupon-scope { display: grid; gap: 14px; border: 1px solid #e3e9e5; border-radius: 12px; padding: 14px; background: #fbfcfa; }
+.coupon-scope-categories { display: flex; flex-wrap: wrap; gap: 10px 22px;
+    fieldset { display: flex; flex-direction: column; gap: 2px; min-width: 150px; }
+}
+.coupon-chip-check { display: flex; align-items: center; gap: 6px; color: #3f4f48; font-size: .9rem; cursor: pointer;
+    input { accent-color: #1f6f63; }
+    small { color: #8b968f; }
+}
+.coupon-product-results { margin: 8px 0 0; padding: 0; list-style: none;
+    li { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #edf0eb; padding: 4px 0; font-size: .88rem; }
+    small { color: #8b968f; }
+}
+.coupon-chosen { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;
+    span { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 3px 4px 3px 12px; color: #1f5d52; background: #e8f4f0; font-size: .84rem; }
+    button { width: 20px; height: 20px; border: 0; border-radius: 50%; color: #1f5d52; background: rgba(31, 93, 82, .12); line-height: 1; }
+}
+.coupon-preview { flex-basis: auto; max-width: 340px; }
+// Beside a long form, the preview and the Create button stay in view under the site header.
+@media (min-width: 1200px) { .coupon-form-side { position: sticky; top: 125px; align-self: flex-start; } }

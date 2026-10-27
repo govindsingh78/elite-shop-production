@@ -9,6 +9,8 @@ class OrderItem extends Model
     protected $fillable = [
         'order_id', 'product_id', 'size_id', 'size', 'vendor_id', 'product_title', 'sku', 'quantity', 'unit_price', 'line_total',
         'commission_rate', 'commission_amount', 'hsn_code', 'gst_rate', 'taxable_value', 'cgst', 'sgst', 'igst',
+        // The line's share of a coupon; line_total is what was paid after it.
+        'discount_amount',
     ];
 
     // Customers see order items too; the commission is between Elitezaar and the seller.
@@ -18,6 +20,7 @@ class OrderItem extends Model
         'quantity' => 'integer',
         'unit_price' => 'decimal:2',
         'line_total' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
         'commission_rate' => 'decimal:2',
         'commission_amount' => 'decimal:2',
         'gst_rate' => 'decimal:2',

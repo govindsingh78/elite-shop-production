@@ -55,7 +55,7 @@ class SellerNewOrder extends StoreMessage
                 'type' => 'items',
                 'title' => 'To pack',
                 'items' => self::itemRows($this->items),
-                'totals' => [['label' => 'Your items', 'value' => self::inr($this->items->sum('line_total')), 'strong' => true]],
+                'totals' => [...self::couponTotal($this->order->coupon_code, (float) $this->items->sum('discount_amount')), ['label' => 'Your items', 'value' => self::inr($this->items->sum('line_total')), 'strong' => true]],
             ],
             [
                 'type' => 'facts',

@@ -12,6 +12,7 @@ const adminLinks = [
   { label: "Reviews", to: "/admin/manage-reviews", icon: <path d="M12 3.4l2.65 5.37 5.93.86-4.29 4.18 1.01 5.9L12 16.92l-5.3 2.79 1.01-5.9-4.29-4.18 5.93-.86L12 3.4Z" /> },
   { label: "Sellers", to: "/admin/sellers", icon: <><path d="M3 10V5h18v5M5 10v10h14V10M9 20v-6h6v6" /><path d="M3 10a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0" /></> },
   { label: "GST & invoices", to: "/admin/invoices", icon: <><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z" /><path d="M9 8h6M9 12h6M9 16h3" /></> },
+  { label: "Coupons", to: "/admin/coupons", icon: <><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4V8Z" /><path d="m9.5 14.5 5-5M9.5 9.5h.01M14.5 14.5h.01" /></> },
   { label: "Commissions", to: "/admin/commissions", icon: <><path d="M19 5 5 19" /><circle cx="7" cy="7" r="2.5" /><circle cx="17" cy="17" r="2.5" /></> },
   { label: "Brands", to: "/admin/manage-brands", icon: <><path d="m12 3 2.2 5 5.5.6-4.1 3.7 1.2 5.4-4.8-2.8-4.8 2.8 1.2-5.4-4.1-3.7 5.5-.6L12 3Z" /></> },
   { label: "Sizes", to: "/admin/manage-sizes", icon: <><path d="M3 8h18v8H3z" /><path d="M7 8v3M11 8v4M15 8v3M19 8v4" /></> },

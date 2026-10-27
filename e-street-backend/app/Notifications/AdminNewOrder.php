@@ -53,7 +53,7 @@ class AdminNewOrder extends StoreMessage
                 'type' => 'items',
                 'title' => "Order #{$order->id}",
                 'items' => self::itemRows($order->items),
-                'totals' => [['label' => 'Total', 'value' => self::inr($order->total), 'strong' => true]],
+                'totals' => [...self::couponTotal($order->coupon_code, (float) $order->discount_amount), ['label' => 'Total', 'value' => self::inr($order->total), 'strong' => true]],
             ],
             [
                 'type' => 'facts',

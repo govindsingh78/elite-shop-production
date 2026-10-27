@@ -90,7 +90,8 @@
         <table>
             <thead>
                 <tr>
-                    <th>#</th><th>Item</th><th>HSN/SAC</th><th>Qty</th><th>Price</th><th>Taxable value</th>
+                    @php $discounted = collect($invoice->lines)->sum(fn ($line) => $line['discount'] ?? 0) > 0; @endphp
+                    <th>#</th><th>Item</th><th>HSN/SAC</th><th>Qty</th><th>Price</th>@if ($discounted)<th>Discount</th>@endif<th>Taxable value</th>
                     @if ($taxInvoice)
                         <th>GST</th>
                         @if ($interState)<th>IGST</th>@else<th>CGST</th><th>SGST</th>@endif
@@ -106,6 +107,7 @@
                         <td>{{ $line['hsn_code'] ?? '—' }}</td>
                         <td>{{ $line['quantity'] }}</td>
                         <td>{{ $money($line['unit_price']) }}</td>
+                        @if ($discounted)<td>{{ !empty($line['discount']) ? '−' . $money($line['discount']) : '—' }}</td>@endif
                         <td>{{ $money($line['taxable_value']) }}</td>
                         @if ($taxInvoice)
                             <td>{{ $rate($line['gst_rate']) }}</td>

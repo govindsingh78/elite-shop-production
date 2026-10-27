@@ -65,6 +65,7 @@ class OrderPlaced extends StoreMessage
                 'items' => self::itemRows($order->items),
                 'totals' => [
                     ['label' => 'Subtotal', 'value' => self::inr($order->subtotal ?? $order->items->sum('line_total'))],
+                    ...self::couponTotal($order->coupon_code, (float) $order->discount_amount),
                     ['label' => 'Delivery', 'value' => (float) $order->shipping_amount > 0 ? self::inr($order->shipping_amount) : 'Free'],
                     ['label' => 'Total', 'value' => self::inr($order->total), 'strong' => true],
                 ],

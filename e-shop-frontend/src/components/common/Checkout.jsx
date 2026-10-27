@@ -10,6 +10,8 @@ import { loadRazorpay, methodDisplay, paymentRequest } from "./razorpay";
 import LocationFields from "./LocationFields";
 import { DEFAULT_COUNTRY, postalLabel } from "./geo";
 import { PolicyAgreement } from "./PolicyBits";
+import CouponBox from "./CouponBox";
+import { saveCode } from "./coupons";
 
 const POLICY_REQUIRED = "Please read and accept the Return & Refund Policy to place your order.";
 
@@ -58,6 +60,8 @@ const Checkout = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
+  // The coupon in use: the API's answer for it ({ code, discount, message }).
+  const [coupon, setCoupon] = useState(null);
   const [wantsGstInvoice, setWantsGstInvoice] = useState(false);
   const [onlineAvailable, setOnlineAvailable] = useState(false);
   const [paymentChoice, setPaymentChoice] = useState("cod");
@@ -125,7 +129,8 @@ const Checkout = () => {
 
   const shipping = shippingMethods.find((method) => String(method.id) === shippingMethodId);
   const shippingAmount = Number(shipping?.price || 0);
-  const total = useMemo(() => subtotal + shippingAmount, [subtotal, shippingAmount]);
+  const discount = Number(coupon?.discount || 0);
+  const total = useMemo(() => subtotal - discount + shippingAmount, [subtotal, discount, shippingAmount]);
   const selectedAddress = savedAddresses.find((address) => String(address.id) === selectedAddressId);
   const usingSavedAddress = isCustomer && addressMode === "saved" && !!selectedAddress;
   const awaitingSignIn = !isCustomer && shopperType === "returning";
@@ -278,6 +283,7 @@ const Checkout = () => {
         accept_policy: acceptPolicy,
         billing_name: wantsGstInvoice ? form.billing_name.trim() : null,
         billing_gstin: wantsGstInvoice ? form.billing_gstin.trim().toUpperCase() : null,
+        coupon_code: coupon?.code || null,
         items: items.map(({ id, quantity, size_id: sizeId }) => ({ product_id: id, quantity, ...(sizeId ? { size_id: sizeId } : {}) })),
       };
       const response = await fetch(`${apiUrl}/orders`, {
@@ -295,10 +301,14 @@ const Checkout = () => {
         const validationErrors = {};
         Object.entries(data.errors || {}).forEach(([field, messages]) => { validationErrors[field] = messages[0]; });
         setFieldErrors(validationErrors);
+        // The coupon stopped working since it was applied (used up, expired…): take it off so the order can go ahead.
+        if (validationErrors.coupon_code) setCoupon(null);
         setError(Object.values(data.errors || {}).flat()[0] || data.message || "Please check the information and try again.");
         return;
       }
       if (!response.ok) throw new Error(data.message || "Unable to place order.");
+      // The coupon is used; it's not offered again next time.
+      saveCode("");
 
       if (isCustomer && !usingSavedAddress && saveNewAddress) {
         // The order is already placed, so a failure here must not block the confirmation page.
@@ -566,8 +576,18 @@ const Checkout = () => {
                       </li>
                     ))}
                   </ul>
+                  {!pendingPayment && (
+                    <CouponBox
+                      items={items}
+                      email={isCustomer ? user.user?.email : form.customer_email}
+                      token={isCustomer ? localStorage.getItem("customerToken") : null}
+                      applied={coupon}
+                      onApplied={setCoupon}
+                    />
+                  )}
                   <dl>
                     <div><dt>Subtotal</dt><dd>{formatPrice(subtotal)}</dd></div>
+                    {discount > 0 && <div className="co-discount"><dt>Coupon {coupon.code}</dt><dd>−{formatPrice(discount)}</dd></div>}
                     <div><dt>Delivery{shipping ? ` · ${shipping.name}` : ""}</dt><dd className={shippingAmount === 0 ? "is-free" : ""}>{shippingAmount === 0 ? "Free" : formatPrice(shippingAmount)}</dd></div>
                     <div className="cart-summary-total"><dt>Total</dt><dd>{formatPrice(total)}</dd></div>
                   </dl>

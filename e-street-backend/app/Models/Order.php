@@ -14,6 +14,8 @@ class Order extends Model
         'shipping_method_id', 'total', 'payment_method', 'payment_status', 'status', 'tracking_number', 'courier_name', 'estimated_delivery_date', 'notes',
         'billing_name', 'billing_gstin', 'place_of_supply', 'tax_total', 'shipping_gst_rate', 'shipping_tax',
         'policy_version', 'policy_accepted_at',
+        // A coupon: subtotal is before it, total after it.
+        'coupon_id', 'coupon_code', 'discount_amount',
     ];
 
     // Payment fields are only ever set by the payment flow, never mass-assigned.
@@ -26,6 +28,7 @@ class Order extends Model
         'policy_accepted_at' => 'datetime',
         'estimated_delivery_date' => 'date:Y-m-d',
         'subtotal' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
         'shipping_amount' => 'decimal:2',
         'total' => 'decimal:2',
     ];

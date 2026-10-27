@@ -18,6 +18,8 @@ export default function AdminLayout() {
       <Stack.Screen name="invoices" options={{ title: "GST & invoices" }} />
       <Stack.Screen name="gst" options={{ title: "GST settings" }} />
       <Stack.Screen name="delivery" options={{ title: "Delivery areas" }} />
+      <Stack.Screen name="coupons" options={{ title: "Coupons" }} />
+      <Stack.Screen name="coupon-form" options={{ title: "Coupon" }} />
       <Stack.Screen name="seller/[id]" options={{ title: "Seller" }} />
       <Stack.Screen name="commissions" options={{ title: "Commissions" }} />
       <Stack.Screen name="commission/[id]" options={{ title: "Seller" }} />

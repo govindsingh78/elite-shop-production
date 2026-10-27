@@ -70,7 +70,7 @@ export function OrderItemRow({ item, last, onReview }) {
           </Pressable>
         ) : null}
       </View>
-      <T variant="strong">{formatPrice(item.line_total)}</T>
+      <T variant="strong">{formatPrice(Number(item.unit_price) * item.quantity)}</T>
     </View>
   );
 }
