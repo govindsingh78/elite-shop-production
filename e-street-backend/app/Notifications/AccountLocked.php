@@ -3,7 +3,6 @@
 namespace App\Notifications;
 
 use App\Models\LoginBlock;
-use Illuminate\Notifications\Messages\MailMessage;
 
 /** To the account's owner: 3 wrong passwords locked their account, and how to unlock it. */
 class AccountLocked extends StoreMessage
@@ -29,9 +28,17 @@ class AccountLocked extends StoreMessage
         return "Someone entered the wrong password for your account {$this->block->attempts} times, so signing in with a password is blocked until {$until} (India time). If it was you, reset your password to unlock it now. If it wasn’t, your account is safe — but choose a password you don’t use anywhere else.";
     }
 
-    protected function mailDetails(MailMessage $mail): MailMessage
+    protected function mailSections(): array
     {
-        return $mail->line('Last attempt from: ' . ($this->device ? "{$this->device}, " : '') . "IP address {$this->ip}.");
+        return [[
+            'type' => 'facts',
+            'title' => 'Last attempt',
+            'rows' => [
+                ['label' => 'Device', 'value' => $this->device],
+                ['label' => 'IP address', 'value' => $this->ip],
+                ['label' => 'Locked until', 'value' => $this->block->blocked_until->copy()->timezone('Asia/Kolkata')->format('j M Y, g:i a') . ' (India time)'],
+            ],
+        ]];
     }
 
     public function webPath(): ?string

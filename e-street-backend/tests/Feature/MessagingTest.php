@@ -101,12 +101,15 @@ class MessagingTest extends TestCase
         $this->placeOrder(['customer_email' => 'guest@example.com']);
 
         Notification::assertSentOnDemand(OrderPlaced::class, function (OrderPlaced $message, array $channels, object $notifiable) {
-            $mail = $message->toMail($notifiable)->render()->toHtml();
+            $mail = (string) $message->toMail($notifiable)->render();
+            // The order summary table: the line, then the totals.
+            $summary = preg_replace('/\s+/', ' ', strip_tags($mail));
 
             return $notifiable->routes['mail'] === 'guest@example.com' && $channels === ['mail']
                 && $message->webPath() === null
-                && str_contains($mail, 'Linen shirt × 2 — ₹3,000.00') && str_contains($mail, 'Total: ₹3,500.00')
-                && str_contains($mail, '14 Civil Lines, Jaipur, Rajasthan, 302006') && str_contains($mail, 'Hello Asha,');
+                && str_contains($summary, 'Linen shirt Qty 2 ₹3,000.00') && str_contains($summary, 'Total ₹3,500.00')
+                && str_contains($mail, '14 Civil Lines, Jaipur, Rajasthan, 302006') && str_contains($mail, 'Hello Asha,')
+                && str_contains($mail, 'you placed an order on Elitezaar with this address');
         });
     }
 

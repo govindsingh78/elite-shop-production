@@ -3,7 +3,6 @@
 namespace App\Notifications;
 
 use App\Models\Order;
-use Illuminate\Notifications\Messages\MailMessage;
 
 /** To the shopper: their order reached a milestone worth hearing about (dispatched, out for delivery…). */
 class OrderProgress extends StoreMessage
@@ -77,18 +76,28 @@ class OrderProgress extends StoreMessage
         return $this->order->customer_name;
     }
 
-    protected function mailDetails(MailMessage $mail): MailMessage
+    protected function mailSections(): array
     {
-        foreach ($this->order->items as $item) {
-            $mail->line(self::itemLine($item));
+        $order = $this->order;
+        $sections = [['type' => 'items', 'title' => "Order #{$order->id}", 'items' => self::itemRows($order->items, false)]];
+        if (in_array($this->milestone, ['dispatched', 'out_for_delivery', 'delivery_attempted'], true) && ($order->courier_name || $order->tracking_number)) {
+            $sections[] = ['type' => 'facts', 'rows' => [
+                ['label' => 'Courier', 'value' => $order->courier_name],
+                ['label' => 'Tracking number', 'value' => $order->tracking_number],
+            ]];
         }
         // Invoices are issued when the order ships.
         if (in_array($this->milestone, ['dispatched', 'delivered'], true)) {
-            foreach ($this->order->invoices()->where('status', 'issued')->orderBy('id')->get() as $invoice) {
-                $mail->line("[Download invoice {$invoice->number}](" . self::siteUrl($invoice->printPath()) . ") from {$invoice->supplier['name']}");
+            $invoices = $order->invoices()->where('status', 'issued')->orderBy('id')->get();
+            if ($invoices->isNotEmpty()) {
+                $sections[] = ['type' => 'links', 'title' => $invoices->count() === 1 ? 'Your invoice' : 'Your invoices', 'links' => $invoices->map(fn ($invoice) => [
+                    'label' => "Invoice {$invoice->number}",
+                    'url' => self::siteUrl($invoice->printPath()),
+                    'hint' => "from {$invoice->supplier['name']}",
+                ])->all()];
             }
         }
 
-        return $mail;
+        return $sections;
     }
 }

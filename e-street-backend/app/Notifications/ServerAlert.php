@@ -2,7 +2,6 @@
 
 namespace App\Notifications;
 
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Str;
 
 /** To the store admins: the scheduled check found server trouble or new problems people ran into. */
@@ -49,19 +48,23 @@ class ServerAlert extends StoreMessage
         return implode(' ', $parts);
     }
 
-    protected function mailDetails(MailMessage $mail): MailMessage
+    protected function mailSections(): array
     {
-        foreach ($this->items as $item) {
-            $mail->line("**{$item['title']}** — {$item['detail']}");
-        }
-        if ($this->problems) {
-            $mail->line("**New problems ({$this->problemCount})**");
-            foreach ($this->problems as $problem) {
-                $mail->line("• {$problem['title']} — {$problem['hits']}×" . ($problem['who'] ? ", mostly {$problem['who']}" : ''));
-            }
-        }
-
-        return $mail;
+        return [
+            $this->items ? [
+                'type' => 'list',
+                'title' => 'Needs attention',
+                'items' => array_map(fn (array $item) => ['title' => $item['title'], 'detail' => $item['detail']], $this->items),
+            ] : null,
+            $this->problems ? [
+                'type' => 'list',
+                'title' => "New problems ({$this->problemCount})",
+                'items' => array_map(fn (array $problem) => [
+                    'title' => $problem['title'],
+                    'detail' => "{$problem['hits']}×" . ($problem['who'] ? ", mostly {$problem['who']}" : ''),
+                ], $this->problems),
+            ] : null,
+        ];
     }
 
     public function webPath(): ?string

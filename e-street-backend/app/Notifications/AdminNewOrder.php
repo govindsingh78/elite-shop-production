@@ -3,7 +3,6 @@
 namespace App\Notifications;
 
 use App\Models\Order;
-use Illuminate\Notifications\Messages\MailMessage;
 
 /** To the store admins: a new order has been confirmed. */
 class AdminNewOrder extends StoreMessage
@@ -45,12 +44,25 @@ class AdminNewOrder extends StoreMessage
         return 'Open the order';
     }
 
-    protected function mailDetails(MailMessage $mail): MailMessage
+    protected function mailSections(): array
     {
-        foreach ($this->order->items as $item) {
-            $mail->line(self::itemLine($item, true));
-        }
+        $order = $this->order;
 
-        return $mail->line("Delivering to {$this->order->city}" . ($this->order->state ? ", {$this->order->state}" : '') . '.');
+        return [
+            [
+                'type' => 'items',
+                'title' => "Order #{$order->id}",
+                'items' => self::itemRows($order->items),
+                'totals' => [['label' => 'Total', 'value' => self::inr($order->total), 'strong' => true]],
+            ],
+            [
+                'type' => 'facts',
+                'rows' => [
+                    ['label' => 'Customer', 'value' => $order->customer_name],
+                    ['label' => 'Payment', 'value' => $order->payment_status === 'paid' ? 'Paid online' : 'Cash on delivery'],
+                    ['label' => 'Delivering to', 'value' => $order->city . ($order->state ? ", {$order->state}" : '')],
+                ],
+            ],
+        ];
     }
 }

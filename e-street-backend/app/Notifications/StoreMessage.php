@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Mail\BrandedMail;
 use App\Models\OrderItem;
 use App\Notifications\Channels\ExpoPushChannel;
 use Illuminate\Notifications\AnonymousNotifiable;
@@ -44,10 +45,24 @@ abstract class StoreMessage extends Notification
         return 'View details';
     }
 
-    /** Lines after the opening sentence: items, totals, addresses… */
-    protected function mailDetails(MailMessage $mail): MailMessage
+    /** The small label above the email's headline. */
+    protected function eyebrow(): string
     {
-        return $mail;
+        return match ($this->kind()) {
+            'order' => 'Order update',
+            'listing' => 'Catalogue',
+            'payout' => 'Payouts',
+            'seller' => 'Seller account',
+            'server' => 'Server & health',
+            'security' => 'Account security',
+            default => 'Elitezaar',
+        };
+    }
+
+    /** Details below the message (items, totals, addresses…), as sections of App\Mail\BrandedMail. */
+    protected function mailSections(): array
+    {
+        return [];
     }
 
     protected function greetingName(object $notifiable): ?string
@@ -58,16 +73,30 @@ abstract class StoreMessage extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         $name = trim(explode(' ', (string) $this->greetingName($notifiable))[0] ?? '');
-        $mail = (new MailMessage())
-            ->subject($this->subject())
-            ->greeting($name !== '' ? "Hello {$name}," : 'Hello,')
-            ->line($this->body());
-        $mail = $this->mailDetails($mail);
-        if ($path = $this->webPath()) {
-            $mail->action($this->actionLabel(), self::siteUrl($path));
-        }
+        $path = $this->webPath();
 
-        return $mail->salutation('Warm regards, Team Elitezaar');
+        return BrandedMail::message($this->subject(), $this->title(), [
+            'eyebrow' => $this->eyebrow(),
+            'greeting' => $name !== '' ? "Hello {$name}," : 'Hello,',
+            'paragraphs' => [$this->body()],
+            'sections' => $this->mailSections(),
+            'action' => $path ? ['label' => $this->actionLabel(), 'url' => self::siteUrl($path)] : null,
+            'audience' => BrandedMail::audience($notifiable),
+        ]);
+    }
+
+    /**
+     * Order lines for an "items" section: the product, its size and quantity, and the line total.
+     *
+     * @param iterable<OrderItem> $items
+     */
+    protected static function itemRows(iterable $items, bool $withAmounts = true): array
+    {
+        return collect($items)->map(fn (OrderItem $item) => [
+            'name' => $item->product_title,
+            'meta' => implode(' · ', array_filter([$item->size ? "Size {$item->size}" : null, "Qty {$item->quantity}"])),
+            'amount' => $withAmounts ? self::inr($item->line_total) : null,
+        ])->values()->all();
     }
 
     /** Kept for the in-app inbox. */

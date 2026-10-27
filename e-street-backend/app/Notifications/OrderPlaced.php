@@ -3,7 +3,6 @@
 namespace App\Notifications;
 
 use App\Models\Order;
-use Illuminate\Notifications\Messages\MailMessage;
 
 /** To the shopper: their order is confirmed, with what they bought and where it's going. */
 class OrderPlaced extends StoreMessage
@@ -54,18 +53,30 @@ class OrderPlaced extends StoreMessage
         return $this->order->customer_name;
     }
 
-    protected function mailDetails(MailMessage $mail): MailMessage
+    protected function mailSections(): array
     {
         $order = $this->order;
-        $mail->line('**Your order**');
-        foreach ($order->items as $item) {
-            $mail->line(self::itemLine($item, true));
-        }
-        $mail->line('Delivery: ' . ((float) $order->shipping_amount > 0 ? self::inr($order->shipping_amount) : 'Free'))
-            ->line('**Total: ' . self::inr($order->total) . '** · ' . ($order->payment_status === 'paid' ? 'Paid online' : 'Cash on delivery'));
-
         $address = implode(', ', array_filter([$order->address, $order->city, $order->state, $order->postal_code]));
 
-        return $mail->line("Delivering to: {$order->customer_name}, {$address}");
+        return [
+            [
+                'type' => 'items',
+                'title' => "Order #{$order->id}",
+                'items' => self::itemRows($order->items),
+                'totals' => [
+                    ['label' => 'Subtotal', 'value' => self::inr($order->subtotal ?? $order->items->sum('line_total'))],
+                    ['label' => 'Delivery', 'value' => (float) $order->shipping_amount > 0 ? self::inr($order->shipping_amount) : 'Free'],
+                    ['label' => 'Total', 'value' => self::inr($order->total), 'strong' => true],
+                ],
+            ],
+            [
+                'type' => 'facts',
+                'rows' => [
+                    ['label' => 'Payment', 'value' => $order->payment_status === 'paid' ? 'Paid online' : 'Cash on delivery'],
+                    ['label' => 'Delivering to', 'value' => "{$order->customer_name}, {$address}"],
+                    ['label' => 'Ordered on', 'value' => $order->created_at?->copy()->timezone('Asia/Kolkata')->format('j M Y, g:i a')],
+                ],
+            ],
+        ];
     }
 }

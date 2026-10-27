@@ -3,7 +3,6 @@
 namespace App\Notifications;
 
 use App\Models\Product;
-use Illuminate\Notifications\Messages\MailMessage;
 
 /** To a seller: the team approved their listing, or sent it back with a note. */
 class ListingReviewed extends StoreMessage
@@ -54,8 +53,8 @@ class ListingReviewed extends StoreMessage
         return $this->approved() ? 'View the listing' : 'Update the listing';
     }
 
-    protected function mailDetails(MailMessage $mail): MailMessage
+    protected function mailSections(): array
     {
-        return $this->approved() ? $mail : $mail->line('Save your changes and it comes straight back to us for another look.');
+        return $this->approved() ? [] : [['type' => 'note', 'tone' => 'warning', 'text' => 'Save your changes and it comes straight back to us for another look.']];
     }
 }

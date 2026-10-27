@@ -4,7 +4,6 @@ namespace App\Notifications;
 
 use App\Models\Order;
 use App\Models\OrderItem;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Collection;
 
 /** To a seller: a confirmed order includes their products, so it's time to pack. */
@@ -49,13 +48,22 @@ class SellerNewOrder extends StoreMessage
         return 'View the order';
     }
 
-    protected function mailDetails(MailMessage $mail): MailMessage
+    protected function mailSections(): array
     {
-        foreach ($this->items as $item) {
-            $mail->line(self::itemLine($item, true));
-        }
-
-        return $mail->line("Ship to: {$this->order->city}" . ($this->order->state ? ", {$this->order->state}" : '')
-            . ' · ' . ($this->order->payment_method === 'cod' ? 'Cash on delivery' : 'Paid online'));
+        return [
+            [
+                'type' => 'items',
+                'title' => 'To pack',
+                'items' => self::itemRows($this->items),
+                'totals' => [['label' => 'Your items', 'value' => self::inr($this->items->sum('line_total')), 'strong' => true]],
+            ],
+            [
+                'type' => 'facts',
+                'rows' => [
+                    ['label' => 'Ship to', 'value' => $this->order->city . ($this->order->state ? ", {$this->order->state}" : '')],
+                    ['label' => 'Payment', 'value' => $this->order->payment_method === 'cod' ? 'Cash on delivery' : 'Paid online'],
+                ],
+            ],
+        ];
     }
 }
