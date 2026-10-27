@@ -28,6 +28,7 @@
         { "type": "p", "text": "We collect only what we need to run your account and deliver your orders:" },
         { "type": "list", "items": [
           "Account details: your name, email address, phone number and password. Your password is stored only as a secure one-way hash, so nobody at Elitezaar can read it.",
+          "Sign-in codes by SMS: if you confirm your mobile number to sign in with it, we keep a note that it's confirmed and send each 6-digit code to it by text message. We store codes only in a scrambled form, and each one expires after 5 minutes.",
           "Google sign-in: if you continue with Google, Google shares your name, email address and Google account ID with us. We don't receive your Google password or access to anything else in your Google account.",
           "Delivery addresses: the name, phone number and address you save or enter at checkout.",
           "Orders: what you buy, prices, the delivery method, your contact details, the order's status and tracking, and when you accepted our Terms and Return & Refund Policy. This includes orders placed as a guest.",
@@ -89,6 +90,7 @@
           "Sellers: the seller of the items in your order sees your name, contact details and delivery address, so they can pack and ship it. Sellers may use these details only to fulfil your order.",
           "Delivery partners: the courier delivering your order receives your name, phone number and address.",
           "Razorpay: our payment partner processes online payments under its own privacy policy and security standards.",
+          "SMS provider: if you sign in with your mobile number, our SMS partner receives the number and the code so it can deliver the text message.",
           "Google: if you use Google sign-in. Our website also loads its fonts from Google, which receives your IP address when you visit.",
           "Service providers: Amazon Web Services (AWS), which hosts our servers and database, and the email service that sends our account and order emails. They may use your information only to provide their service to us.",
           "Authorities: when the law requires it, for example to comply with a court order or a lawful request from a government agency, or to protect the rights and safety of our users and Elitezaar.",
@@ -113,7 +115,8 @@
         { "type": "list", "items": [
           "Photos: if you're a seller, the app asks for access to your photos so you can add pictures to your product listings. It uses only the photos you pick.",
           "Secure storage: your sign-in session is kept in your phone's secure storage, and your bag and wishlist are stored on your device.",
-          "The app doesn't use your location, contacts, camera or microphone, and it doesn't contain advertising or analytics trackers."
+          "Microphone: only when you tap the microphone to search by voice. Your phone turns your speech into text, and we receive only the text.",
+          "The app doesn't use your location, contacts or camera, and it doesn't contain advertising or analytics trackers."
         ] }
       ]
     },

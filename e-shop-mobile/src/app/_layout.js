@@ -124,7 +124,7 @@ function RootNavigator({ fontsReady }) {
         <Stack.Screen name="forgot-password" options={{ title: "Reset password" }} />
 
         <Stack.Protected guard={!!portal}>
-          <Stack.Screen name="change-password" options={{ title: "Change password" }} />
+          <Stack.Screen name="change-password" options={{ title: "Password & sign-in" }} />
         </Stack.Protected>
         <Stack.Protected guard={portal === "customer"}>
           <Stack.Screen name="customer" options={{ headerShown: false }} />

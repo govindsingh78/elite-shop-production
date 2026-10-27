@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Notifications\ResetPasswordNotification;
+use App\Services\Security\PhoneOtp;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -69,6 +70,15 @@ class User extends Authenticatable
     {
         // A seller made any other way than signing up (by an admin, or a role change) starts approved.
         static::saving(function (User $user) {
+            // The phone in standard form for finding accounts by number. A different number has to be confirmed
+            // again before it can be used to sign in (just reformatting it doesn't).
+            if ($user->isDirty('phone')) {
+                $phone = PhoneOtp::normalise($user->phone);
+                if ($phone !== $user->getOriginal('phone_e164') && !$user->isDirty('phone_verified_at')) {
+                    $user->phone_verified_at = null;
+                }
+                $user->phone_e164 = $phone;
+            }
             if ($user->role === 'seller' && $user->seller_status === null) {
                 $user->seller_status = self::SELLER_APPROVED;
                 $user->seller_status_at = now();
@@ -157,6 +167,7 @@ class User extends Authenticatable
         'password',
         'remember_token',
         'google_id',
+        'phone_e164',
     ];
 
     /**
@@ -171,6 +182,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'commission_rate' => 'decimal:2',
             'seller_status_at' => 'datetime',
+            'phone_verified_at' => 'datetime',
         ];
     }
 }

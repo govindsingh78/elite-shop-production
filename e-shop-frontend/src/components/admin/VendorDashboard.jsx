@@ -157,7 +157,7 @@ const VendorDashboard = () => {
                   {canSell ? <Link to="/vendor/products/create"><span>＋</span>List a new product</Link> : <Link to="/vendor/business"><span>🏢</span>Business & GST details</Link>}
                   <Link to="/vendor/products"><span>📦</span>My products ({stats?.total_products ?? "–"})</Link>
                   <Link to="/vendor/orders"><span>🚚</span>Orders to ship ({stats?.to_ship ?? "–"})</Link>
-                  <Link to="/vendor/change-password"><span>🔒</span>Change password</Link>
+                  <Link to="/vendor/change-password"><span>🔒</span>Password &amp; sign-in</Link>
                 </section>
               </div>
             </div>

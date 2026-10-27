@@ -3,6 +3,7 @@
 use App\Models\LoginBlock;
 use App\Models\User;
 use App\Services\Security\LoginGuard;
+use App\Services\Security\PhoneOtp;
 use App\Services\Monitoring\Advisor;
 use App\Services\Monitoring\MailCheck;
 use App\Services\Monitoring\ServerHealth;
@@ -67,6 +68,7 @@ Artisan::command('monitor:tidy', function () {
     $this->info(ServerHealth::cleanTempUploads(72)['message']);
     Speed::prune();
     Advisor::prune();
+    PhoneOtp::prune();
 
     return 0;
 })->purpose('Remove old photo uploads and old monitoring data');

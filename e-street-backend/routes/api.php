@@ -24,7 +24,9 @@ use App\Http\Controllers\Admin\CommissionController;
 use App\Http\Controllers\Admin\SellerController;
 use App\Http\Controllers\Admin\SecurityController;
 use App\Http\Controllers\Admin\ServerController;
+use App\Http\Controllers\AccountPhoneController;
 use App\Http\Controllers\ConsentController;
+use App\Http\Controllers\PhoneLoginController;
 use App\Http\Controllers\MonitorController;
 use App\Http\Controllers\Vendor\EarningsController as VendorEarningsController;
 use App\Http\Middleware\EnsureAdmin;
@@ -50,6 +52,9 @@ Route::post('/vendor/register', [AuthController::class, 'registerVendor'])->midd
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:5,1');
 Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:5,1');
 Route::get('/auth/providers', [GoogleAuthController::class, 'providers']);
+// Signing in with a mobile number and a code sent by SMS (for numbers confirmed on an account).
+Route::post('/auth/otp/send', [PhoneLoginController::class, 'send'])->middleware('throttle:5,1,otp-send');
+Route::post('/auth/otp/verify', [PhoneLoginController::class, 'verify'])->middleware('throttle:10,1,otp-verify');
 // Its own rate-limit bucket ("google-signin"): unnamed throttles share one count per IP across routes.
 Route::middleware('throttle:60,1,google-signin')->prefix('auth/google')->group(function () {
     Route::get('redirect', [GoogleAuthController::class, 'redirect']);
@@ -132,6 +137,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/change-password', [PasswordController::class, 'update']);
+    // The sign-in phone number of whoever is signed in: confirm it with a code, or turn phone sign-in off.
+    Route::get('account/phone', [AccountPhoneController::class, 'show']);
+    Route::post('account/phone/send', [AccountPhoneController::class, 'send'])->middleware('throttle:5,1,otp-send');
+    Route::post('account/phone/verify', [AccountPhoneController::class, 'verify'])->middleware('throttle:10,1,otp-verify');
+    Route::delete('account/phone', [AccountPhoneController::class, 'destroy']);
 
     // Messages: this phone's push notifications, and the inbox of everything the user was sent.
     Route::middleware('throttle:30,1,device-tokens')->group(function () {

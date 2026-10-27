@@ -37,7 +37,7 @@ const portals = {
       ["Seller dashboard", "/vendor/dashboard", "Sales, orders and stock", "dashboard"],
       ["My products", "/vendor/products", "Manage your listings", "box"],
       ["My orders", "/vendor/orders", "Ship and track orders", "receipt"],
-      ["Change password", "/vendor/change-password", "Keep your account secure", "lock"],
+      ["Password & sign-in", "/vendor/change-password", "Keep your account secure", "lock"],
     ],
   },
   admin: {
@@ -48,7 +48,7 @@ const portals = {
       ["Orders", "/admin/manage-orders", "Fulfilment and tracking", "receipt"],
       ["Products", "/admin/manage-products", "The full catalog", "box"],
       ["Customers & users", "/admin/manage-users", "Accounts and roles", "users"],
-      ["Change password", "/admin/change-password", "Keep your account secure", "lock"],
+      ["Password & sign-in", "/admin/change-password", "Keep your account secure", "lock"],
     ],
   },
 };

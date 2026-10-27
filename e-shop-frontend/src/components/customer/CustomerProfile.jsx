@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { apiUrl } from "../common/http";
+import PhoneSignInSettings from "../common/PhoneSignInSettings";
 import { AdminAuthContext } from "../context/AdminAuth";
 import CustomerShell from "./CustomerShell";
 import { customerRequest, formatDate } from "./customerApi";
@@ -122,6 +123,8 @@ const CustomerProfile = () => {
             </form>
           </section>
         </div>
+        {/* Saving a different mobile number above clears its confirmation, so the card reloads. */}
+        <div className="col-12"><PhoneSignInSettings key={account?.phone || ""} portal="customer" className="customer-panel" /></div>
       </div>
     </CustomerShell>
   );

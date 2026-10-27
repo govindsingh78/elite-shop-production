@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { router } from "expo-router";
+import { PhoneSignInCard } from "@/components/PhoneSignIn";
 import { Button, Notice, Screen, T, TextField } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 
-/** Shared by customers, vendors and admins. Other devices are signed out by the API. */
+/** Password & sign-in, shared by customers, vendors and admins. Other devices are signed out by the API. */
 export default function ChangePasswordScreen() {
   const { request } = useAuth();
   const toast = useToast();
@@ -45,6 +46,7 @@ export default function ChangePasswordScreen() {
       <TextField label="New password" secure hint="At least 8 characters, different from your current one" value={values.password} onChangeText={(text) => change("password", text)} error={errors.password} />
       <TextField label="Confirm new password" secure value={values.password_confirmation} onChangeText={(text) => change("password_confirmation", text)} error={errors.password_confirmation} />
       <Button title="Update password" icon="key-outline" loading={loading} onPress={submit} />
+      <PhoneSignInCard style={{ marginTop: 28 }} />
     </Screen>
   );
 }

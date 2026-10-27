@@ -1,12 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Pressable, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import AuthHero from "@/components/AuthHero";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
+import { OtpSignIn } from "@/components/PhoneSignIn";
 import { Button, Notice, Row, Screen, Segmented, T, TextField } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { firstName } from "@/lib/format";
+import { fetchAuthProviders } from "@/lib/googleSignIn";
 import { colors } from "@/theme";
 
 const TITLES = {
@@ -26,9 +28,26 @@ export default function LoginScreen() {
   const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  // "Mobile number" (a code by SMS) appears once the API can send codes.
+  const [method, setMethod] = useState("email");
+  const [phoneAvailable, setPhoneAvailable] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    fetchAuthProviders().then((options) => active && setPhoneAvailable(!!options.phone));
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const switchPortal = (next) => {
     setPortal(next);
+    setError("");
+    setFieldErrors({});
+  };
+
+  const switchMethod = (next) => {
+    setMethod(next);
     setError("");
     setFieldErrors({});
   };
@@ -94,13 +113,35 @@ export default function LoginScreen() {
       <T variant="h1" style={{ marginTop: 4 }}>{copy.title}</T>
       <T variant="body" style={{ marginTop: 4, marginBottom: 18 }}>{copy.subtitle}</T>
 
+      {phoneAvailable ? (
+        <Segmented
+          options={[{ value: "email", label: "Email" }, { value: "phone", label: "Mobile number" }]}
+          value={method}
+          onChange={switchMethod}
+          style={{ marginBottom: 16 }}
+        />
+      ) : null}
       {error ? <Notice tone="error" message={error} style={{ marginBottom: 14 }} /> : null}
-      <TextField label={portal === "vendor" ? "Seller email" : "Email address"} keyboardType="email-address" autoCapitalize="none" autoComplete="email" textContentType="emailAddress" value={email} onChangeText={setEmail} error={fieldErrors.email} icon="mail-outline" />
-      <TextField label="Password" secure autoComplete="password" textContentType="password" value={password} onChangeText={setPassword} onSubmitEditing={submit} error={fieldErrors.password} icon="lock-closed-outline" />
-      <Pressable onPress={() => router.push({ pathname: "/forgot-password", params: { email } })} style={{ alignSelf: "flex-end", marginTop: -4, marginBottom: 16 }}>
-        <T variant="strong" color={colors.tealDark}>Forgot password?</T>
-      </Pressable>
-      <Button title="Sign in" icon="log-in-outline" loading={loading} disabled={googleLoading} onPress={submit} />
+      {phoneAvailable && method === "phone" ? (
+        <OtpSignIn
+          key={portal}
+          portal={portal}
+          disabled={googleLoading}
+          onSignedIn={(session) => {
+            toast(`Welcome back, ${firstName(session.user?.name)}`);
+            enterPortal();
+          }}
+        />
+      ) : (
+        <>
+          <TextField label={portal === "vendor" ? "Seller email" : "Email address"} keyboardType="email-address" autoCapitalize="none" autoComplete="email" textContentType="emailAddress" value={email} onChangeText={setEmail} error={fieldErrors.email} icon="mail-outline" />
+          <TextField label="Password" secure autoComplete="password" textContentType="password" value={password} onChangeText={setPassword} onSubmitEditing={submit} error={fieldErrors.password} icon="lock-closed-outline" />
+          <Pressable onPress={() => router.push({ pathname: "/forgot-password", params: { email } })} style={{ alignSelf: "flex-end", marginTop: -4, marginBottom: 16 }}>
+            <T variant="strong" color={colors.tealDark}>Forgot password?</T>
+          </Pressable>
+          <Button title="Sign in" icon="log-in-outline" loading={loading} disabled={googleLoading} onPress={submit} />
+        </>
+      )}
       <GoogleSignInButton
         title={portal === "admin" ? "Sign in with Google" : "Continue with Google"}
         loading={googleLoading}

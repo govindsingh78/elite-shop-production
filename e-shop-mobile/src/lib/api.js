@@ -44,10 +44,13 @@ export async function api(path, { method = "GET", body, form, token, query } = {
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     const fieldErrors = firstErrors(data.errors || data.error);
-    const message = response.status === 429
+    // A 429 with retry_after (e.g. sign-in codes) says exactly how long to wait; plain throttling doesn't.
+    const message = response.status === 429 && !data.retry_after
       ? "Too many attempts. Please wait a minute and try again."
       : Object.values(fieldErrors)[0] || data.message || `Something went wrong (${response.status}). Please try again.`;
-    throw new ApiError(message, response.status, fieldErrors);
+    const error = new ApiError(message, response.status, fieldErrors);
+    error.retryAfter = data.retry_after || null;
+    throw error;
   }
   return data;
 }

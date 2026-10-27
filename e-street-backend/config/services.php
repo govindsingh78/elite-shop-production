@@ -36,6 +36,20 @@ return [
     ],
 
     // Online payments (UPI, net banking, cards). Online checkout is hidden until both keys are set.
+    // SMS for sign-in codes (OTP): msg91, 2factor or twilio. "log" only writes codes to the log, for development;
+    // phone sign-in stays hidden on the live site until a real provider is set.
+    'sms' => [
+        'driver' => env('SMS_DRIVER', 'log'),
+        'msg91' => ['authkey' => env('MSG91_AUTH_KEY'), 'template_id' => env('MSG91_OTP_TEMPLATE_ID')],
+        '2factor' => ['api_key' => env('TWOFACTOR_API_KEY'), 'template' => env('TWOFACTOR_OTP_TEMPLATE')],
+        'twilio' => [
+            'sid' => env('TWILIO_ACCOUNT_SID'),
+            'token' => env('TWILIO_AUTH_TOKEN'),
+            'from' => env('TWILIO_FROM'),
+            'messaging_service_sid' => env('TWILIO_MESSAGING_SERVICE_SID'),
+        ],
+    ],
+
     'razorpay' => [
         'key_id' => env('RAZORPAY_KEY_ID'),
         'key_secret' => env('RAZORPAY_KEY_SECRET'),

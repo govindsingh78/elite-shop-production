@@ -68,7 +68,7 @@ export default function MoreScreen({ portal }) {
         <ListRow icon="refresh-circle-outline" title="Return & refund policy" subtitle="Returns, refunds and cancellations" onPress={() => router.push("/return-policy")} />
         <ListRow icon="document-text-outline" title="Terms & conditions" subtitle="The terms for shopping and selling" onPress={() => router.push("/terms")} />
         <ListRow icon="lock-closed-outline" title="Privacy policy" subtitle="How we use and protect your data" onPress={() => router.push("/privacy")} />
-        <ListRow icon="key-outline" title="Change password" onPress={() => router.push("/change-password")} />
+        <ListRow icon="key-outline" title="Password & sign-in" onPress={() => router.push("/change-password")} />
         <ListRow icon="log-out-outline" title="Sign out" danger onPress={askSignOut} last />
       </Card>
       {portal === "vendor" ? <SupportCard audience="seller" style={{ marginTop: 14 }} /> : null}

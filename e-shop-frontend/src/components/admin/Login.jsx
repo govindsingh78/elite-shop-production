@@ -2,6 +2,7 @@ import React, { useContext, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { apiUrl } from "../common/http";
 import GoogleSignInButton from "../common/GoogleSignInButton";
+import SignInMethods from "../common/SignInMethods";
 import { AdminAuthContext } from "../context/AdminAuth";
 import CustomerAuthShell from "../customer/CustomerAuthShell";
 
@@ -64,6 +65,7 @@ const Login = ({ portal = "admin" }) => {
     <CustomerAuthShell portal={isVendor ? "vendor" : "admin"} eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.subtitle}>
       {location.state?.message && <div className="alert alert-success" role="status">{location.state.message}</div>}
       {error && <div className="alert alert-danger" role="alert">{error}</div>}
+      <SignInMethods portal={isVendor ? "vendor" : "admin"} onSignedIn={(result) => { login(result); navigate(location.state?.from || copy.dashboard, { replace: true }); }}>
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
           <label htmlFor="portal-email" className="form-label">{isVendor ? "Seller email" : "Work email"}</label>
@@ -79,6 +81,7 @@ const Login = ({ portal = "admin" }) => {
         <div className="text-end mb-4"><Link to="/forgot-password" className="customer-link">Forgot password?</Link></div>
         <button type="submit" className="btn btn-primary btn-lg w-100 customer-submit" disabled={loading}>{loading ? "Signing in…" : copy.button}</button>
       </form>
+      </SignInMethods>
       <GoogleSignInButton portal={isVendor ? "vendor" : "admin"} from={location.state?.from} label={isVendor ? "Continue with Google" : "Sign in with Google"} onError={setError} />
 
       {isVendor ? (

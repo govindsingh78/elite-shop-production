@@ -2948,3 +2948,23 @@ body.voice-search-open { overflow: hidden; }
 .header-search-mobile { display: grid; width: 42px; height: 42px; margin-left: auto; margin-right: 6px; place-items: center; border: 1px solid rgba(33, 59, 51, .14); border-radius: 50%; color: #2f6f63; background: linear-gradient(145deg, #eef6f3, #dcebe5);
     svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; }
 }
+
+/* ---------- Sign in with a mobile number ---------- */
+.signin-methods { display: flex; gap: 4px; margin-bottom: 18px; border-radius: 12px; padding: 4px; background: #eef3f0;
+    button { flex: 1; border: 0; border-radius: 9px; padding: 9px 12px; color: #5d6d65; background: transparent; font-weight: 700; transition: background-color .15s, color .15s; }
+    button:hover { color: #18372e; }
+    button.is-active { color: #18372e; background: #fff; box-shadow: 0 1px 4px rgba(24, 55, 46, .12); }
+    button:focus-visible { outline: 3px solid rgba(53, 125, 112, .35); outline-offset: 1px; }
+}
+.otp-code { font-variant-numeric: tabular-nums; letter-spacing: .5em; text-align: center; }
+.otp-links { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px; margin-top: 8px;
+    .btn-link { padding-left: 0; padding-right: 0; color: #357d70; font-weight: 600; text-decoration: none; }
+}
+.phone-signin {
+    h2 { margin: 0 0 6px; color: #172b25; font-size: 1.2rem; font-weight: 700; }
+    > p { color: #66756c; font-size: .92rem; }
+    .otp-code { max-width: 220px; }
+}
+.phone-signin--card { max-width: 500px; }
+.phone-signin-status span { display: inline-grid; width: 22px; height: 22px; place-items: center; margin-right: 4px; border-radius: 50%; color: #fff; background: #1f6f63; font-size: .75rem; }
+.phone-signin-form { max-width: 360px; margin-top: 12px; }

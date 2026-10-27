@@ -21,7 +21,11 @@ class NewAdminSignIn extends StoreMessage
 
     public function body(): string
     {
-        $how = $this->method === 'google' ? 'with Google' : 'with your password';
+        $how = match ($this->method) {
+            'google' => 'with Google',
+            'otp' => 'with a code sent to your phone',
+            default => 'with your password',
+        };
 
         return 'Your Elitezaar admin account was signed in to ' . $how . ' from ' . ($this->device ? "{$this->device}, " : '')
             . "IP address {$this->ip}, at " . now()->timezone('Asia/Kolkata')->format('j M, g:i a') . ' (India time). If this wasn’t you, change your password now and check Admin › Security.';

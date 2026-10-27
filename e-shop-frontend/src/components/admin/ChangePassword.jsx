@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Layout from "../common/Layout";
 import Sidebar from "../common/Sidebar";
 import { apiUrl } from "../common/http";
+import PhoneSignInSettings from "../common/PhoneSignInSettings";
 import { toast } from "react-toastify";
 import { portalConfig, portalToken } from "./portal";
 import "react-toastify/dist/ReactToastify.css";
@@ -118,7 +119,7 @@ const ChangePassword = ({ portal = "admin" }) => {
 
               {/* Right Content Area */}
               <div className="container-fluid p-4">
-                <h2 className="mb-4">Change Password</h2>
+                <h2 className="mb-4">Password &amp; sign-in</h2>
 
                 <div className="card shadow-sm" style={{ maxWidth: 500 }}>
                   <div className="card-body">
@@ -146,6 +147,8 @@ const ChangePassword = ({ portal = "admin" }) => {
                     </form>
                   </div>
                 </div>
+
+                <PhoneSignInSettings portal={portal} className="card card-body shadow-sm mt-4 phone-signin--card" />
               </div>
             </div>
           </div>

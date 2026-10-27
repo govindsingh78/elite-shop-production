@@ -97,10 +97,10 @@ class GoogleSignInTest extends TestCase
 
     public function test_buttons_are_offered_only_once_google_is_configured(): void
     {
-        $this->getJson('/api/auth/providers')->assertOk()->assertExactJson(['google' => true]);
+        $this->getJson('/api/auth/providers')->assertOk()->assertJsonPath('google', true);
 
         config(['services.google.client_secret' => null]);
-        $this->getJson('/api/auth/providers')->assertOk()->assertExactJson(['google' => false]);
+        $this->getJson('/api/auth/providers')->assertOk()->assertJsonPath('google', false);
     }
 
     public function test_new_shopper_signs_up_with_google(): void

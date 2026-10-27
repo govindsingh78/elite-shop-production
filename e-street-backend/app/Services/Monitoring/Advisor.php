@@ -15,6 +15,7 @@ use App\Notifications\ServerAlert;
 use App\Services\GoogleSignIn;
 use App\Services\Gst;
 use App\Services\Messenger;
+use App\Services\Security\PhoneOtp;
 use Illuminate\Support\Carbon;
 use Throwable;
 
@@ -179,6 +180,9 @@ class Advisor
         }
         if (!app(GoogleSignIn::class)->configured()) {
             $add('google', 'Turn on “Continue with Google”', 'Shoppers sign up faster with one tap. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to the backend’s .env.');
+        }
+        if (!PhoneOtp::enabled()) {
+            $add('phone-sign-in', 'Turn on signing in with a mobile number', 'Codes by SMS need an SMS provider: set SMS_DRIVER (msg91, 2factor or twilio) and its keys in the backend’s .env.');
         }
 
         return $items;

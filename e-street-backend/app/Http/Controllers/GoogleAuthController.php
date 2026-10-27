@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Services\GoogleSignIn;
 use App\Services\Security\LoginGuard;
+use App\Services\Security\PhoneOtp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
@@ -36,7 +37,7 @@ class GoogleAuthController extends Controller
     /** Which sign-in options the login screens may offer. */
     public function providers()
     {
-        return response()->json(['google' => $this->google->configured()]);
+        return response()->json(['google' => $this->google->configured(), 'phone' => PhoneOtp::enabled()]);
     }
 
     public function redirect(Request $request)

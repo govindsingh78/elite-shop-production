@@ -98,7 +98,7 @@ const Sidebar = ({ variant = "admin" }) => {
           <nav className="admin-sidebar-nav">
             <NavLink to={config.passwordPath} onClick={() => setMobileOpen(false)} className={({ isActive }) => `admin-sidebar-link${isActive ? " is-active" : ""}`}>
               <NavIcon><><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 1 1 8 0v3M12 14v3" /></></NavIcon>
-              <span>Change password</span>
+              <span>Password &amp; sign-in</span>
               <span className="admin-sidebar-link-arrow" aria-hidden="true">↗</span>
             </NavLink>
           </nav>

@@ -133,7 +133,7 @@ function CustomerDashboard() {
         <NotificationsRow />
         <ListRow icon="location-outline" title="Addresses" subtitle={`${stats?.saved_addresses ?? "Your"} saved address${stats?.saved_addresses === 1 ? "" : "es"}`} onPress={() => router.push("/customer/addresses")} />
         <ListRow icon="person-outline" title="Profile" subtitle="Name and phone number" onPress={() => router.push("/customer/profile")} />
-        <ListRow icon="key-outline" title="Change password" onPress={() => router.push("/change-password")} />
+        <ListRow icon="key-outline" title="Password & sign-in" onPress={() => router.push("/change-password")} />
         <ListRow icon="information-circle-outline" title="About Elitezaar" subtitle="Our story and what we promise" onPress={() => router.push("/about")} />
         <ListRow icon="refresh-circle-outline" title="Return & refund policy" subtitle="Returns, refunds and cancellations" onPress={() => router.push("/return-policy")} />
         <ListRow icon="document-text-outline" title="Terms & conditions" subtitle="The terms for shopping and selling" onPress={() => router.push("/terms")} />

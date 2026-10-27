@@ -2,6 +2,7 @@ import React, { useContext, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { apiUrl } from "../common/http";
 import GoogleSignInButton from "../common/GoogleSignInButton";
+import SignInMethods from "../common/SignInMethods";
 import { AdminAuthContext } from "../context/AdminAuth";
 import CustomerAuthShell from "./CustomerAuthShell";
 
@@ -46,6 +47,7 @@ const CustomerLogin = () => {
     <CustomerAuthShell eyebrow="Welcome back" title="Sign in to your account" subtitle="Track orders, manage addresses and check out faster.">
       {location.state?.message && <div className="alert alert-success" role="status">{location.state.message}</div>}
       {error && <div className="alert alert-danger" role="alert">{error}</div>}
+      <SignInMethods portal="customer" onSignedIn={(result) => { login(result); navigate(redirectTo, { replace: true }); }}>
       <form onSubmit={handleSubmit} noValidate={false}>
         <div className="mb-3">
           <label htmlFor="customer-email" className="form-label">Email address</label>
@@ -61,6 +63,7 @@ const CustomerLogin = () => {
         <div className="text-end mb-4"><Link to="/forgot-password" className="customer-link">Forgot password?</Link></div>
         <button type="submit" className="btn btn-primary btn-lg w-100 customer-submit" disabled={loading}>{loading ? "Signing in…" : "Sign in"}</button>
       </form>
+      </SignInMethods>
       <GoogleSignInButton portal="customer" from={location.state?.from} onError={setError} />
       <div className="customer-auth-divider"><span>New to Elitezaar?</span></div>
       <Link to="/customer/register" state={location.state} className="btn btn-outline-secondary btn-lg w-100">Create an account</Link>

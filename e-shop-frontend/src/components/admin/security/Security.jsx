@@ -11,7 +11,7 @@ const OUTCOMES = {
   blocked: { label: "Turned away", tone: "danger" },
 };
 const PORTALS = { admin: "Admin", vendor: "Seller", customer: "Shopper" };
-const METHODS = { google: "with Google", password_change: "changing password" };
+const METHODS = { google: "with Google", otp: "with an SMS code", password_change: "changing password" };
 const DURATIONS = [
   { hours: 24, label: "24 hours" },
   { hours: 168, label: "7 days" },
