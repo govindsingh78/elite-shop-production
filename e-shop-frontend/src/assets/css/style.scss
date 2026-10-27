@@ -2996,3 +2996,32 @@ body.voice-search-open { overflow: hidden; }
     .start-selling-actions .btn { width: 100%; }
     .start-selling-points { flex-direction: column; align-items: center; }
 }
+
+/* ---------- Category requests: sellers ask for a missing category, admins answer ---------- */
+.category-ask { margin: 22px 0 6px; border: 1px dashed #d9e3dd; border-radius: 14px; padding: 16px 18px; background: #fbfcfa; }
+.category-ask-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 10px;
+    h2 { margin: 0; color: #172b25; font-size: 1rem; font-weight: 700; }
+    p { margin: 2px 0 0; color: #78847e; font-size: .86rem; }
+}
+.category-ask-row { margin-top: 14px; border-top: 1px solid #e7ece8; padding-top: 14px;
+    .category-ask-head + & { border-top: 0; }
+}
+.customer-panel .category-ask-row { margin-top: 0; border-top: 0; padding-top: 0; }
+.category-ask-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px; margin-top: 8px;
+    p { margin: 0; color: #8b968f; font-size: .8rem; }
+}
+.category-ask-list { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none;
+    > li { border: 1px solid #e3e9e5; border-radius: 12px; padding: 12px 14px; }
+}
+.category-ask-list-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px;
+    strong { color: #13291f; }
+    > span:not(.seller-status) { font-size: .86rem; }
+}
+.category-ask-list-note { margin: 6px 0 0; color: #5f6e66; font-size: .9rem; }
+.category-ask-list-meta { margin: 6px 0 0; color: #78847e; font-size: .84rem;
+    a { color: #357d70; font-weight: 700; text-decoration: none; }
+}
+.category-request-place { color: #78847e; font-size: .86rem; font-weight: 500; }
+.category-request-also { margin: 10px 0 0; color: #9a6512; font-size: .86rem; font-weight: 600; }
+.category-request-answer { margin: 12px 0 0; border-radius: 10px; padding: 9px 12px; color: #1f5d52; background: #e8f4f0; font-size: .9rem; }
+.category-request-form { margin-top: 14px; border: 1px solid #d6e7df; border-radius: 12px; padding: 14px; background: #f8fbf9; }

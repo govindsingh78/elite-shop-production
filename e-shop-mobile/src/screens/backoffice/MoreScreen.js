@@ -45,6 +45,7 @@ export default function MoreScreen({ portal }) {
             <ListRow icon="shield-checkmark-outline" title="Security" subtitle="Sign-in log, locked accounts, blocked addresses" onPress={() => router.push("/admin/security")} />
             <ListRow icon="pulse-outline" title="Server & health" subtitle="Disk space, problems and speed" onPress={() => router.push("/admin/server")} />
             <ListRow icon="storefront-outline" title="Sellers" subtitle="Approve new sellers, deactivate accounts" onPress={() => router.push("/admin/sellers")} />
+            <ListRow icon="pricetags-outline" title="Category requests" subtitle="Categories sellers asked for" onPress={() => router.push("/admin/category-requests")} />
             <ListRow icon="pie-chart-outline" title="Commissions" subtitle="Seller earnings and payouts" onPress={() => router.push("/admin/commissions")} />
             <ListRow icon="albums-outline" title="Catalog" subtitle="Categories, brands and shipping" onPress={() => router.push("/admin/catalog")} />
           </>
@@ -53,6 +54,7 @@ export default function MoreScreen({ portal }) {
             <ListRow icon="wallet-outline" title="Earnings" subtitle="What you’ve earned and been paid" onPress={() => router.push("/vendor/earnings")} />
             <ListRow icon="briefcase-outline" title="Business & GST" subtitle="GSTIN and address for your invoices" onPress={() => router.push("/vendor/business")} />
             <ListRow icon="add-circle-outline" title="Add a product" subtitle="List something new" onPress={() => router.push("/vendor/product-form")} />
+            <ListRow icon="pricetags-outline" title="Category requests" subtitle="Ask us to add a category you need" onPress={() => router.push("/vendor/category-requests")} />
           </>
         )}
         <NotificationsRow />

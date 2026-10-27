@@ -193,6 +193,11 @@ const SellerCard = ({ seller, onChanged }) => {
         </form>
       )}
 
+      {seller.pending_category_requests > 0 && (
+        <Link to="/admin/category-requests" className="seller-card-link me-3">
+          Asked for {seller.pending_category_requests} new {seller.pending_category_requests === 1 ? "category" : "categories"} →
+        </Link>
+      )}
       {(status === "approved" || status === "deactivated") && <Link to={`/admin/commissions/${seller.id}`} className="seller-card-link">Commission & payouts →</Link>}
     </li>
   );

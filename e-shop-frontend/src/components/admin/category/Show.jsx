@@ -2,14 +2,22 @@ import React, { useEffect, useState } from "react";
 import Layout from "../../common/Layout";
 import Sidebar from "../../common/Sidebar";
 import { apiUrl } from "../../common/http";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { commissionRequest } from "../commissions/commissions";
+import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 
 const Show = () => {
   const [categories, setCategories] = useState([]); // State to store categories
   const [loading, setLoading] = useState(true); // State to handle loading
+  const [waitingRequests, setWaitingRequests] = useState(0); // Categories sellers asked for, not yet answered
   const navigate = useNavigate(); // Get navigate function from useNavigate hook
+
+  useEffect(() => {
+    commissionRequest("admin", "/admin/category-requests?status=pending")
+      .then((data) => setWaitingRequests(data.counts?.pending || 0))
+      .catch(() => {});
+  }, []);
 
   // Fetch categories from API
   useEffect(() => {
@@ -80,6 +88,15 @@ const Show = () => {
               {/* Right Content Area */}
               <div className="container-fluid p-4">
                 <h2 className="mb-4">Category Listing</h2>
+                {waitingRequests > 0 && (
+                  <Link to="/admin/category-requests" className="review-callout">
+                    <span className="review-callout-text">
+                      <strong>{waitingRequests} category {waitingRequests === 1 ? "request" : "requests"} from sellers</strong>
+                      <small>Sellers asked for categories the store doesn’t have yet. Add them or decline with a reason.</small>
+                    </span>
+                    <span className="review-callout-cta">Review <span aria-hidden="true">→</span></span>
+                  </Link>
+                )}
                 {/* Create Category Button */}
                 <button
                   className="btn btn-primary mb-3 justify-content-end float-end"

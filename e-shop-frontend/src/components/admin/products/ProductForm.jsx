@@ -133,6 +133,7 @@ const ProductForm = ({
               {categories.map((category) => <option key={category.id} value={category.id}>{category.label || category.name}</option>)}
             </select>
             {fieldError("category_id")}
+            {portal === "vendor" && <div className="form-text">Can’t find the right category? <Link to="/vendor/category-requests">Ask us to add it</Link></div>}
           </div>
           <div className="mb-3">
             <label htmlFor="brand_id" className="form-label">Brand</label>

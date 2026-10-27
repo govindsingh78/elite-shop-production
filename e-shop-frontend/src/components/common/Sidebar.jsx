@@ -24,6 +24,7 @@ const adminLinks = [
 const vendorLinks = [
   { label: "Overview", to: "/vendor/dashboard", icon: <><rect x="3" y="3" width="8" height="8" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="13" y="13" width="8" height="8" rx="1.5" /></> },
   { label: "My products", to: "/vendor/products", icon: <><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z" /><path d="m4.4 7.7 7.6 4.4 7.6-4.4M12 12v9" /></> },
+  { label: "Category requests", to: "/vendor/category-requests", icon: <><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 9h18M9 9v11M15 13v5M12.5 15.5h5" /></> },
   { label: "My orders", to: "/vendor/orders", icon: <><path d="M5 3h14v18l-2.5-1.7L14 21l-2-1.7L9.5 21 7 19.3 5 21V3Z" /><path d="M8 8h8M8 12h8M8 16h4" /></> },
   { label: "Invoices", to: "/vendor/invoices", icon: <><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z" /><path d="M9 8h6M9 12h6M9 16h3" /></> },
   { label: "Business & GST", to: "/vendor/business", icon: <><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18" /></> },

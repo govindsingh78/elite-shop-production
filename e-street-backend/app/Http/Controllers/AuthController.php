@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Http\Requests\CustomerAddressRequest;
 use App\Models\LoginBlock;
 use App\Notifications\SellerJoined;
+use App\Services\CategoryRequests;
 use App\Services\Messenger;
 use App\Services\Security\LoginGuard;
 
@@ -158,34 +159,53 @@ class AuthController extends Controller
         ], 201);
     }
 
-    /** Register a vendor account. New sellers wait for an admin to approve them before they can list products. */
+    /**
+     * Register a vendor account. New sellers wait for an admin to approve them before they can list products, and
+     * can ask for up to 3 categories the store doesn't have yet.
+     */
     public function registerVendor(Request $request)
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'category_requests' => ['sometimes', 'array', 'max:' . CategoryRequests::AT_SIGN_UP],
+            ...CategoryRequests::rules('category_requests.*.'),
+        ], [
+            'category_requests.max' => 'You can ask for up to ' . CategoryRequests::AT_SIGN_UP . ' categories now, and more after you sign in.',
+            ...CategoryRequests::messages('category_requests.*.'),
         ]);
+        $categoryRequests = CategoryRequests::forSignUp($validated['category_requests'] ?? []);
 
         $user = self::createSeller([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-        ]);
+        ], $categoryRequests);
+
+        $asked = $categoryRequests ? ' We’ve passed your category requests to our team too.' : '';
 
         return response()->json([
-            'message' => 'Seller account created. Sign in to add your business details; you can list products once our team approves your account.',
+            'message' => "Seller account created. Sign in to add your business details; you can list products once our team approves your account.{$asked}",
             'user' => $user,
         ], 201);
     }
 
-    /** A seller who signed up themselves (with a password or Google): waiting for approval, and the admins are told. */
-    public static function createSeller(array $attributes): User
+    /**
+     * A seller who signed up themselves (with a password or Google): waiting for approval, and the admins are told,
+     * along with any categories they asked for.
+     *
+     * @param list<array{name: string, parent_id: ?int, note: ?string}> $categoryRequests
+     */
+    public static function createSeller(array $attributes, array $categoryRequests = []): User
     {
-        $user = User::forceCreate([...$attributes, 'role' => 'seller', 'seller_status' => User::SELLER_PENDING, 'seller_status_at' => now()]);
-        Messenger::send(User::storeAdmins(), new SellerJoined($user));
+        return DB::transaction(function () use ($attributes, $categoryRequests) {
+            $user = User::forceCreate([...$attributes, 'role' => 'seller', 'seller_status' => User::SELLER_PENDING, 'seller_status_at' => now()]);
+            $requests = collect($categoryRequests)->map(fn (array $item) => CategoryRequests::record($user, $item['name'], $item['parent_id'], $item['note']));
+            Messenger::send(User::storeAdmins(), new SellerJoined($user, $requests->map->label()->all()));
 
-        return $user;
+            return $user;
+        });
     }
 
     public function forgotPassword(Request $request)

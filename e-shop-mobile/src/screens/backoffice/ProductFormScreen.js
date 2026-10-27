@@ -225,6 +225,11 @@ export default function ProductFormScreen({ portal: portalKey }) {
           <TextField label="Short description" value={values.short_description} onChangeText={(text) => change("short_description", text)} error={errors.short_description} multiline />
           <TextField label="Description" value={values.description} onChangeText={(text) => change("description", text)} error={errors.description} multiline />
           <SelectField label="Category" value={values.category_id} options={toOptions(options.categories)} onChange={(value) => change("category_id", value)} error={errors.category_id} />
+          {isVendor ? (
+            <Pressable onPress={() => router.push("/vendor/category-requests")} hitSlop={6} style={{ marginTop: -6, marginBottom: 12 }}>
+              <T variant="small">Can’t find the right category? <T variant="strong" color={colors.tealDark} style={{ fontSize: 14 }}>Ask us to add it</T></T>
+            </Pressable>
+          ) : null}
           <SelectField label="Brand" value={values.brand_id} options={toOptions(options.brands)} onChange={(value) => change("brand_id", value)} error={errors.brand_id} />
         </Card>
 

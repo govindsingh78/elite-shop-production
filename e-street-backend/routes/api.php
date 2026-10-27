@@ -2,6 +2,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CategoryRequestController;
 use App\Http\Controllers\DeviceTokenController;
 use App\Http\Controllers\GstController;
 use App\Http\Controllers\InvoiceController;
@@ -22,6 +23,7 @@ use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\CommissionController;
 use App\Http\Controllers\Admin\SellerController;
+use App\Http\Controllers\Admin\CategoryRequestController as AdminCategoryRequestController;
 use App\Http\Controllers\Admin\SecurityController;
 use App\Http\Controllers\Admin\ServerController;
 use App\Http\Controllers\AccountPhoneController;
@@ -123,6 +125,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('products', VendorProductController::class)->only(['index', 'show'])->names('vendor.products');
         Route::get('orders', [VendorOrderController::class, 'index']);
         Route::get('orders/{order}', [VendorOrderController::class, 'show']);
+        // Asking for a category the store doesn't have yet (also while waiting for approval).
+        Route::get('category-requests', [CategoryRequestController::class, 'index']);
+        Route::post('category-requests', [CategoryRequestController::class, 'store'])->middleware('throttle:10,1,category-requests');
+        Route::delete('category-requests/{categoryRequest}', [CategoryRequestController::class, 'destroy'])->whereNumber('categoryRequest');
 
         // Listing products and handling orders: approved sellers only.
         Route::middleware(EnsureSellerCanSell::class)->group(function () {
@@ -207,6 +213,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('admin/sellers', [SellerController::class, 'index']);
         Route::get('admin/sellers/{seller}', [SellerController::class, 'show'])->whereNumber('seller');
         Route::patch('admin/sellers/{seller}/status', [SellerController::class, 'updateStatus'])->whereNumber('seller');
+        Route::get('admin/category-requests', [AdminCategoryRequestController::class, 'index']);
+        Route::post('admin/category-requests/{categoryRequest}/approve', [AdminCategoryRequestController::class, 'approve'])->whereNumber('categoryRequest');
+        Route::post('admin/category-requests/{categoryRequest}/decline', [AdminCategoryRequestController::class, 'decline'])->whereNumber('categoryRequest');
         Route::get('admin/commissions', [CommissionController::class, 'index']);
         Route::put('admin/commissions/settings', [CommissionController::class, 'updateSettings']);
         Route::get('admin/commissions/sellers/{seller}', [CommissionController::class, 'show'])->whereNumber('seller');
