@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import PagedList from "@/components/PagedList";
 import ProductCard from "@/components/ProductCard";
+import StartSelling from "@/components/StartSelling";
 import VoiceSearchButton from "@/components/VoiceSearch";
 import { Button, Chip, EmptyState, OptionSheet, Row, T, TextField } from "@/components/ui";
 import { api } from "@/lib/api";
@@ -155,7 +156,9 @@ export default function ShopScreen() {
         contentStyle={styles.list}
         header={header}
         renderItem={(item) => <View style={styles.cell}><ProductCard product={item} /></View>}
-        empty={<EmptyState icon="search-outline" title="No pieces found" message="Try another collection, brand or search phrase." actionLabel="Show everything" onAction={showEverything} />}
+        empty={meta.total === 0 && !search && !brand && !price.min && !price.max
+          ? <StartSelling collection={category ? heading : null} onBrowseAll={showEverything} style={styles.startSelling} />
+          : <EmptyState icon="search-outline" title="No pieces found" message="Try another collection, brand or search phrase." actionLabel="Show everything" onAction={showEverything} />}
       />
 
       <OptionSheet visible={sortOpen} title="Sort by" options={SORTS} value={sort} onClose={() => setSortOpen(false)} onSelect={(value) => { setSort(value); setSortOpen(false); }} />
@@ -239,6 +242,7 @@ function SearchUnderstanding({ info, spoken }) {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.cream },
   list: { paddingHorizontal: 0, paddingTop: 0 },
+  startSelling: { marginHorizontal: 16, marginTop: 6, marginBottom: 24 },
   top: { paddingHorizontal: 16 },
   searchBox: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 16, borderWidth: 1, borderColor: colors.line, borderRadius: radius.pill, paddingHorizontal: 16, height: 48, backgroundColor: colors.white, ...shadow.card },
   searchInput: { flex: 1, height: "100%", color: colors.text, fontFamily: fonts.bodySemi, fontSize: 16 },

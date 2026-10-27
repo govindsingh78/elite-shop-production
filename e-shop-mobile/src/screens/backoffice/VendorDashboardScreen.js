@@ -35,6 +35,13 @@ export default function VendorDashboardScreen() {
       <SellerAccountNotice account={data?.account} style={{ marginTop: 14 }} />
       {loading ? <Loader /> : stats ? (
         <>
+          {canSell && stats.total_products === 0 ? (
+            <Card style={{ marginTop: 14 }}>
+              <T variant="h3">Start selling your products</T>
+              <T variant="body" style={{ marginTop: 4 }}>List your first product today. It takes about a minute, and it goes live in the store once our team approves it.</T>
+              <Button title="List your first product" icon="add" onPress={() => router.push("/vendor/product-form")} style={{ marginTop: 14 }} />
+            </Card>
+          ) : null}
           {canSell && (stats.pending_review || stats.rejected) ? (
             <Pressable onPress={() => router.push({ pathname: "/vendor/products", params: { approval: stats.rejected ? "rejected" : "pending" } })} style={({ pressed }) => [{ marginTop: 14 }, pressed && { opacity: 0.85 }]}>
               <Notice

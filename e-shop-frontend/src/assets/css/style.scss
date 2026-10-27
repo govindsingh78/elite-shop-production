@@ -1872,6 +1872,8 @@ a:hover > .brand-logo .brand-mark { transform: rotate(-6deg) scale(1.04); }
 .review-callout.is-rejected { border-color: #f0d3cc; background: linear-gradient(105deg, #fcefec, #fbfaf6); }
 .review-callout.is-earnings { border-color: #cfe6dc; background: linear-gradient(105deg, #ebf6f1, #fbfaf6); }
 .review-callout.is-earnings .review-callout-icon { color: #1f6f63; background: #d6ede4; }
+.review-callout.is-start { border-color: #cfe6dc; background: linear-gradient(105deg, #ebf6f1, #fffdf8); }
+.review-callout.is-start .review-callout-icon { color: #fff; background: linear-gradient(145deg, #2f8f7a, #18372e); }
 
 /* Commissions (admin) and earnings (seller hub) */
 .commission-back { display: inline-flex; margin-bottom: 14px; color: #357d70; font-weight: 700; text-decoration: none; }
@@ -2968,3 +2970,29 @@ body.voice-search-open { overflow: hidden; }
 .phone-signin--card { max-width: 500px; }
 .phone-signin-status span { display: inline-grid; width: 22px; height: 22px; place-items: center; margin-right: 4px; border-radius: 50%; color: #fff; background: #1f6f63; font-size: .75rem; }
 .phone-signin-form { max-width: 360px; margin-top: 12px; }
+
+/* ---------- Start selling: an empty store or collection invites sellers ---------- */
+.start-selling { display: grid; justify-items: center; border: 1px solid #eadfcc; border-radius: 22px; padding: 44px 28px 36px; text-align: center; background: radial-gradient(circle at 50% 0, #fdf1df, #fffdf8 62%);
+    h2 { margin: 6px 0 8px; color: #13291f; font-size: clamp(1.55rem, 3vw, 2.1rem); font-weight: 700; letter-spacing: -.03em; }
+    > p { max-width: 520px; margin: 0 0 22px; color: #5f6e66; }
+}
+.start-selling-icon { display: grid; width: 66px; height: 66px; margin-bottom: 16px; place-items: center; border-radius: 50%; color: #fff; background: linear-gradient(145deg, #2f8f7a, #18372e); box-shadow: 0 14px 28px rgba(24, 55, 46, .25);
+    svg { width: 30px; height: 30px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+}
+.start-selling-eyebrow { color: #b07a3f; font-size: .72rem; font-weight: 700; letter-spacing: .18em; }
+.start-selling-actions { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px 20px;
+    .btn { border-radius: 999px; padding: 11px 26px; font-weight: 700; }
+    a:not(.btn) { color: #2f6f63; font-weight: 600; text-decoration: none; }
+    a:not(.btn):hover { color: #18372e; text-decoration: underline; }
+}
+.start-selling-points { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 22px; margin: 24px 0 0; padding: 18px 0 0; border-top: 1px solid #efe6d6; list-style: none; color: #6b7a72; font-size: .86rem;
+    li::before { margin-right: 6px; color: #2f8f7a; font-weight: 700; content: "✓"; }
+}
+.start-selling-browse { margin-top: 18px; color: #6b7a72; font-size: .9rem; font-weight: 600; text-decoration: none;
+    &:hover { color: #18372e; }
+}
+@media (max-width: 575.98px) {
+    .start-selling { padding: 34px 18px 28px; }
+    .start-selling-actions .btn { width: 100%; }
+    .start-selling-points { flex-direction: column; align-items: center; }
+}

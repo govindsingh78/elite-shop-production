@@ -11,6 +11,7 @@ import { apiUrl } from "./http";
 import { formatPrice } from "./currency";
 import { useStorefrontCategories } from "./useStorefrontCategories";
 import StorefrontProductCard from "./StorefrontProductCard";
+import StartSelling from "./StartSelling";
 import BannerImage1 from "../../assets/images/banner-1.jpg";
 import BannerImage2 from "../../assets/images/banner-2.jpg";
 import founderPhoto from "../../assets/images/founder.jpg";
@@ -217,7 +218,7 @@ const Collections = ({ categories, covers }) => {
               <Link key={category.id} to={`/shop/${category.slug}`} className={`lp-collection${index === 0 ? " is-large" : ""}`}>
                 {cover?.image ? <img src={cover.image} alt="" loading="lazy" /> : <span className="lp-collection-fallback">{category.name.charAt(0)}</span>}
                 <span className="lp-collection-copy">
-                  <small>{cover ? `${cover.total} ${cover.total === 1 ? "piece" : "pieces"}` : "Collection"}</small>
+                  <small>{cover ? (cover.total ? `${cover.total} ${cover.total === 1 ? "piece" : "pieces"}` : "Coming soon") : "Collection"}</small>
                   <strong>{category.name}</strong>
                   <span className="lp-collection-cta">Shop now <span aria-hidden="true">→</span></span>
                 </span>
@@ -413,6 +414,7 @@ const HomeContent = () => {
           {[1, 2, 3, 4].map((item) => <div className="col-6 col-xl-3" key={item}><div className="sp-skeleton"><span /><i /><b /></div></div>)}
         </div></div></section>
       )}
+      {latest && stats.products === 0 && <section className="lp-section"><div className="container"><StartSelling /></div></section>}
       <Collections categories={categories} covers={covers} />
       <ProductGrid eyebrow="NEW ARRIVALS" title="Just landed" copy="Fresh pieces, added this week." products={latestProducts.slice(0, 8)} link="/shop" linkLabel="View all" />
       <FounderNote />
@@ -420,7 +422,7 @@ const HomeContent = () => {
       <ProductGrid tone="warm" eyebrow="OFFERS" title="Offers you’ll love" copy="Our best prices right now — while stock lasts." products={deals} link="/shop?sort=price_asc" linkLabel="Shop by price" />
       <Brands brands={brands} />
       <HowItWorks online={online} />
-      <SellerCta />
+      {!(latest && stats.products === 0) && <SellerCta />}
     </main>
   );
 };

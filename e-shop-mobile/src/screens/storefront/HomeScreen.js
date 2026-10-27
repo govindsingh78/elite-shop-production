@@ -6,6 +6,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import BrandLogo from "@/components/BrandLogo";
 import { DiwaliGreeting, Toran } from "@/components/Diwali";
 import ProductCard from "@/components/ProductCard";
+import StartSelling from "@/components/StartSelling";
 import { Button, Chip, IconButton, Notice, Screen, SectionHeader, T } from "@/components/ui";
 import { useCart } from "@/context/CartContext";
 import { api } from "@/lib/api";
@@ -61,6 +62,7 @@ export default function HomeScreen() {
   const cardWidth = Math.min(200, (width - 32 - 14) / 2.15);
   const [season] = useState(diwaliSeason);
 
+  const emptyStore = !loading && data?.total === 0;
   const offers = useMemo(() => (data?.latest || []).filter((product) => discountOf(product) > 0).sort((a, b) => discountOf(b) - discountOf(a)), [data]);
 
   return (
@@ -103,6 +105,7 @@ export default function HomeScreen() {
 
       <View style={styles.section}>
         {error ? <Notice tone="warning" title="We couldn’t load the latest pieces" message={error} /> : null}
+        {emptyStore ? <StartSelling style={styles.block} /> : null}
 
         {data?.categories?.length ? (
           <View style={styles.block}>
@@ -118,7 +121,7 @@ export default function HomeScreen() {
                     )}
                     <LinearGradient colors={["rgba(10,31,25,0)", "rgba(10,31,25,0.85)"]} style={StyleSheet.absoluteFill} start={{ x: 0, y: 0.35 }} end={{ x: 0, y: 1 }} />
                     <View style={styles.collectionCopy}>
-                      <Text style={styles.collectionCount}>{cover ? `${cover.total} ${cover.total === 1 ? "piece" : "pieces"}` : "Collection"}</Text>
+                      <Text style={styles.collectionCount}>{cover ? (cover.total ? `${cover.total} ${cover.total === 1 ? "piece" : "pieces"}` : "Coming soon") : "Collection"}</Text>
                       <Text style={styles.collectionName}>{category.name}</Text>
                       <Text style={styles.collectionCta}>Shop now →</Text>
                     </View>
@@ -168,7 +171,7 @@ export default function HomeScreen() {
           ))}
         </View>
 
-        <LinearGradient colors={["#1f4a3d", "#0a1f19"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.seller}>
+        {emptyStore ? null : <LinearGradient colors={["#1f4a3d", "#0a1f19"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.seller}>
           <Text style={styles.sellerBadge}>FOR SELLERS</Text>
           <Text style={styles.sellerTitle}>Sell on Elitezaar</Text>
           <Text style={styles.sellerCopy}>Open your store in under a minute. List products, ship orders and track sales from your phone.</Text>
@@ -176,7 +179,7 @@ export default function HomeScreen() {
           <Pressable onPress={() => router.push({ pathname: "/login", params: { portal: "vendor" } })} style={{ marginTop: 12, alignSelf: "center" }}>
             <Text style={styles.sellerLink}>Already selling? Sign in to the seller hub</Text>
           </Pressable>
-        </LinearGradient>
+        </LinearGradient>}
       </View>
     </Screen>
   );

@@ -61,6 +61,17 @@ const VendorDashboard = () => {
             {error && <div className="alert alert-danger" role="alert">{error}</div>}
             <SellerAccountBanner account={data?.account} />
 
+            {canSell && stats?.total_products === 0 && (
+              <Link to="/vendor/products/create" className="review-callout is-start">
+                <span className="review-callout-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 10h16l-1.5-5h-13L4 10Z" /><path d="M5 10v9h14v-9" /><path d="M10 19v-5h4v5" /></svg></span>
+                <span className="review-callout-text">
+                  <strong>Start selling your products</strong>
+                  <small>List your first product today. It takes about a minute, and it goes live in the store once our team approves it.</small>
+                </span>
+                <span className="review-callout-cta">List a product <span aria-hidden="true">→</span></span>
+              </Link>
+            )}
+
             {canSell && stats && (stats.pending_review > 0 || stats.rejected > 0) && (
               <Link to={`/vendor/products?approval=${stats.rejected ? "rejected" : "pending"}`} className={`review-callout${stats.rejected ? " is-rejected" : ""}`}>
                 <span className="review-callout-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M7 3h10M7 21h10M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9" /></svg></span>

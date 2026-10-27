@@ -4,6 +4,7 @@ import Layout from "./Layout";
 import { apiUrl } from "./http";
 import { useStorefrontCategories } from "./useStorefrontCategories";
 import StorefrontProductCard from "./StorefrontProductCard";
+import StartSelling from "./StartSelling";
 import { formatPrice } from "./currency";
 import { openSearch, voiceSearchSupported } from "./voice";
 import { breadcrumbs, summarize, useSeo } from "./seo";
@@ -264,6 +265,8 @@ const Shop = () => {
                 <div className="row g-3 g-md-4">{[1, 2, 3, 4, 5, 6].map((item) => <div className="col-6 col-xl-4" key={item}><div className="sp-skeleton"><span /><i /><b /></div></div>)}</div>
               ) : products.length ? (
                 <div className="row g-3 g-md-4">{products.map((product, index) => <div className="col-6 col-xl-4 sp-grid-item" style={{ "--item-index": index }} key={product.id}><StorefrontProductCard product={product} /></div>)}</div>
+              ) : !error && totalProducts === 0 && !search && !brandId && !minPriceFilter && !maxPriceFilter ? (
+                <StartSelling collection={activeCategory?.name} />
               ) : (
                 <div className="shop-empty-state"><span>✦</span><h3>No pieces found</h3><p>Try another collection, brand, or search phrase.</p><button type="button" className="btn btn-primary" onClick={clearFilters}>Show all products</button></div>
               )}
