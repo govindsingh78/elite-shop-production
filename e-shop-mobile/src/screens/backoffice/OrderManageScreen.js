@@ -26,6 +26,7 @@ export default function OrderManageScreen({ portal: portalKey }) {
 
   const [update, setUpdate] = useState({ status: "", location: "", description: "" });
   const [posting, setPosting] = useState(false);
+  const [issuing, setIssuing] = useState(false);
 
   if (loading) return <Loader />;
   if (error && !order) return <Screen><EmptyState icon="alert-circle-outline" title="Order unavailable" message={error} /></Screen>;
@@ -33,6 +34,20 @@ export default function OrderManageScreen({ portal: portalKey }) {
   // Vendors may change shipping only when every item in the order is theirs.
   const canManage = portalKey === "admin" || order.can_manage_shipping;
   const amount = portalKey === "vendor" && !order.can_manage_shipping ? order.vendor_subtotal : order.total;
+
+  // Admins can issue invoices early, e.g. for orders that shipped before invoices existed.
+  const issueInvoices = async () => {
+    setIssuing(true);
+    try {
+      const result = await request(`/admin/orders/${order.id}/invoices`, { method: "POST" });
+      setOrder((current) => ({ ...current, invoice_links: result.invoice_links }));
+      toast(result.message);
+    } catch (issueError) {
+      toast(issueError.message, "error");
+    } finally {
+      setIssuing(false);
+    }
+  };
 
   const postUpdate = async () => {
     if (!update.status) {
@@ -126,7 +141,10 @@ export default function OrderManageScreen({ portal: portalKey }) {
           {order.billing_gstin ? <T variant="small" style={{ marginTop: 8 }}>Bill to {order.billing_name} · GSTIN {order.billing_gstin}</T> : null}
         </Card>
 
-        <InvoiceLinks invoices={order.invoice_links} emptyText="Issued automatically when the order ships." style={{ marginTop: 12 }} />
+        <InvoiceLinks invoices={order.invoice_links} emptyText={portalKey === "vendor" ? "Issued automatically when the order ships, one for your items." : "Issued automatically when the order ships: one per seller, and one from Elitezaar for its own products and delivery."} style={{ marginTop: 12 }} />
+        {portalKey === "admin" && !order.invoice_links?.length && !["pending", "cancelled"].includes(order.status) ? (
+          <Button title="Issue invoices now" icon="document-text-outline" variant="outline" small block={false} loading={issuing} onPress={issueInvoices} style={{ marginTop: 10 }} />
+        ) : null}
 
         {!canManage ? (
           <Notice tone="info" title="Shipping is handled by the store team" message="This order includes items from other sellers, so the store team manages its shipping and tracking." style={{ marginTop: 12 }} />

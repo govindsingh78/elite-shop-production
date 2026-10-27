@@ -200,6 +200,21 @@ class GstInvoiceTest extends TestCase
         $this->assertStringContainsString("S{$this->seller->id}/2627/0001", $csv);
         $this->assertStringNotContainsString('EZ/2627/0001', $csv, 'a seller only gets their own invoices');
         $this->actingAs($this->customer)->get('/api/admin/gst/report?month=2026-10')->assertForbidden();
+
+        // The app opens the report in the phone's browser from a short-lived signed link, as the person who asked.
+        $link = $this->actingAs($this->seller)->getJson('/api/vendor/gst/report-link?month=2026-10')->assertOk()->json('url');
+        $this->app['auth']->forgetGuards();
+        $signed = $this->get($link)->assertOk()->streamedContent();
+        $this->assertStringContainsString("S{$this->seller->id}/2627/0001", $signed);
+        $this->assertStringNotContainsString('EZ/2627/0001', $signed);
+        $this->get(str_replace("/report/{$this->seller->id}", "/report/{$this->admin->id}", $link))->assertForbidden();
+        $adminLink = $this->actingAs($this->admin)->getJson('/api/admin/gst/report-link?month=2026-10&vendor_id=store')->assertOk()->json('url');
+        $this->app['auth']->forgetGuards();
+        $storeOnly = $this->get($adminLink)->assertOk()->streamedContent();
+        $this->assertStringContainsString('EZ/2627/0001', $storeOnly);
+        $this->assertStringNotContainsString("S{$this->seller->id}/2627/0001", $storeOnly);
+        $this->travel(11)->minutes();
+        $this->get($link)->assertForbidden();
     }
 
     public function test_admins_and_sellers_keep_their_gst_details(): void

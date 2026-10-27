@@ -1,13 +1,14 @@
 import React, { useState } from "react";
-import { Linking, Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
-import { Button, Card, ListRow, Loader, Notice, Pill, Screen, SectionHeader, Stat, T } from "@/components/ui";
+import { Button, Card, ListRow, Loader, Notice, Pill, Screen, SectionHeader, Segmented, Stat, T } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
-import { SITE_URL } from "@/lib/config";
+import { confirmAction } from "@/lib/confirm";
 import { timeAgo } from "@/lib/format";
 import { useLoad } from "@/lib/useLoad";
 import { colors, fonts, radius } from "@/theme";
+import { LogPanel, SpeedPanel, StoragePanel, TestEmailCard, formatBytes } from "./ServerTabs";
 
 const SEVERITY = {
   critical: { label: "Urgent", color: colors.danger, background: colors.dangerSoft },
@@ -17,31 +18,48 @@ const SEVERITY = {
 const AUDIENCES = { customer: "shoppers", seller: "sellers", admin: "admins", guest: "visitors", system: "background tasks" };
 const SOURCES = { server: "Server", website: "Website", app: "App" };
 
-const bytes = (value) => {
-  const units = ["bytes", "KB", "MB", "GB", "TB"];
-  let size = Number(value) || 0;
-  let unit = 0;
-  while (size >= 1024 && unit < units.length - 1) {
-    size /= 1024;
-    unit += 1;
-  }
-  return `${size.toFixed(unit ? 1 : 0)} ${units[unit]}`;
-};
+const bytes = formatBytes;
+const TABS = [{ value: "overview", label: "Overview" }, { value: "speed", label: "Speed" }, { value: "storage", label: "Storage" }, { value: "log", label: "Log" }];
 
-/** Admin: the server's health at a glance, what needs attention, the latest problems and suggestions. */
+/**
+ * Admin: the server's health at a glance, what needs attention, the latest problems and suggestions; then page and
+ * API speed, what fills the disk (with clean-ups), and the raw log — the same as the website's Server & health.
+ */
 export default function ServerScreen() {
   const { request } = useAuth();
+  const toast = useToast();
+  const [tab, setTab] = useState("overview");
   const { data, loading, refreshing, error, reload } = useLoad(() => request("/admin/server"), [request], { refocus: true });
+  const tabs = <Segmented options={TABS} value={tab} onChange={setTab} style={{ marginBottom: 14 }} />;
 
+  if (tab !== "overview") {
+    return <Screen keyboard>{tabs}{tab === "speed" ? <SpeedPanel /> : tab === "storage" ? <StoragePanel /> : <LogPanel />}</Screen>;
+  }
   if (loading) return <Loader label="Checking the server…" />;
-  if (!data) return <Screen><Notice tone="error" message={error || "Couldn’t check the server."} /></Screen>;
+  if (!data) return <Screen>{tabs}<Notice tone="error" message={error || "Couldn’t check the server."} /></Screen>;
   const { health, attention, suggestions, problems } = data;
   const { disk, memory, cpu, database, background } = health;
   const urgent = attention.filter((item) => item.severity !== "info").length;
   const tone = (status) => (status === "critical" || status === "warning" ? "danger" : "emerald");
 
+  const resolveAll = () => confirmAction({
+    title: "Mark every open problem fixed?",
+    message: "Any that happen again will reopen and alert you.",
+    confirmLabel: "Mark all fixed",
+    destructive: false,
+    onConfirm: async () => {
+      try {
+        toast((await request("/admin/server/problems/resolve-all", { method: "POST" })).message);
+        reload();
+      } catch (resolveError) {
+        toast(resolveError.message, "error");
+      }
+    },
+  });
+
   return (
     <Screen refreshing={refreshing} onRefresh={reload}>
+      {tabs}
       <Notice
         tone={urgent ? "warning" : "success"}
         title={urgent ? `${urgent} ${urgent === 1 ? "thing needs" : "things need"} your attention` : "Everything looks healthy"}
@@ -66,7 +84,7 @@ export default function ServerScreen() {
         </Card>
       )) : <Card><T variant="body">Nothing right now. Disk, memory, database, settings, problems and speed all look fine.</T></Card>}
 
-      <SectionHeader eyebrow={problems.open ? `${problems.open} open · ${problems.last_day} in the last 24 hours` : "What people run into"} title="Latest problems" style={{ marginTop: 22 }} />
+      <SectionHeader eyebrow={problems.open ? `${problems.open} open · ${problems.last_day} in the last 24 hours` : "What people run into"} title="Latest problems" actionLabel={problems.open ? "Mark all fixed" : undefined} onAction={resolveAll} style={{ marginTop: 22 }} />
       {problems.latest.length
         ? problems.latest.map((problem) => <ProblemCard key={problem.id} problem={problem} onChanged={reload} />)
         : <Card><T variant="body">No open problems. Nobody has run into an error lately.</T></Card>}
@@ -89,8 +107,7 @@ export default function ServerScreen() {
         </>
       ) : null}
 
-      <Button title="Speed, storage & log on the website" icon="open-outline" variant="outline" style={{ marginTop: 18 }} onPress={() => Linking.openURL(`${SITE_URL}/admin/server`)} />
-      {Platform.OS !== "web" ? <T variant="small" center style={{ marginTop: 8 }}>Clean-ups and the full log are on the website’s admin panel.</T> : null}
+      <TestEmailCard style={{ marginTop: 22 }} />
     </Screen>
   );
 }

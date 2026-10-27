@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\Invoices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\URL;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /** Invoices: the printable copy, and lists and GST reports for admins, sellers and shoppers. */
@@ -75,6 +76,30 @@ class InvoiceController extends Controller
             }
             fclose($out);
         }, "elitezaar-gst-{$request->input('month')}.csv", ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /**
+     * A link to a month's report that works for 10 minutes without signing in, as whoever asked for it: the app opens
+     * it in the phone's browser, which can't send the app's sign-in.
+     */
+    public function reportLink(Request $request)
+    {
+        $validated = $request->validate(['month' => ['required', 'date_format:Y-m'], 'vendor_id' => ['nullable', 'string', 'max:20']]);
+        $url = URL::temporarySignedRoute('invoices.report', now()->addMinutes(10), array_filter([
+            'user' => $request->user()->id,
+            'month' => $validated['month'],
+            'vendor_id' => $validated['vendor_id'] ?? null,
+        ]), absolute: false);
+
+        return response()->json(['url' => $url]);
+    }
+
+    /** The report from a link made by reportLink(), for the user it was made for. */
+    public function signedReport(Request $request, User $user): StreamedResponse
+    {
+        $request->setUserResolver(fn () => $user);
+
+        return $this->report($request);
     }
 
     private function filtered(Request $request)

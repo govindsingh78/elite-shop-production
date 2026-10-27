@@ -76,6 +76,9 @@ Route::get('/sitemap.xml', [SitemapController::class, 'index'])->middleware('thr
 // The printable invoice, from a signed link (order pages, the app and emails), so no sign-in is needed.
 Route::get('/invoices/{invoice}/print', [InvoiceController::class, 'print'])
     ->name('invoices.print')->middleware(['signed:relative', 'throttle:60,1'])->whereNumber('invoice');
+// A month's GST report from a 10-minute signed link (the app opens it in the phone's browser).
+Route::get('/invoices/report/{user}', [InvoiceController::class, 'signedReport'])
+    ->name('invoices.report')->middleware(['signed:relative', 'throttle:20,1,gst-report'])->whereNumber('user');
 // Cookie choices made on the website (Accept all / Necessary only / custom), kept as a record.
 Route::post('/consents', [ConsentController::class, 'store'])->middleware('throttle:20,1,consents');
 // The website and app report crashes people run into, and how fast pages loaded, for Server & health.
@@ -120,6 +123,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('business', [GstController::class, 'business']);
         Route::put('business', [GstController::class, 'updateBusiness']);
         Route::get('gst/report', [InvoiceController::class, 'report'])->middleware('throttle:20,1,gst-report');
+        Route::get('gst/report-link', [InvoiceController::class, 'reportLink'])->middleware('throttle:20,1,gst-report');
         Route::get('bulk-products/template', [BulkProductController::class, 'template']);
         Route::get('bulk-products/export', [BulkProductController::class, 'export']);
         Route::apiResource('products', VendorProductController::class)->only(['index', 'show'])->names('vendor.products');
@@ -193,6 +197,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('admin/gst/settings', [GstController::class, 'settings']);
         Route::put('admin/gst/settings', [GstController::class, 'updateSettings']);
         Route::get('admin/gst/report', [InvoiceController::class, 'report'])->middleware('throttle:20,1,gst-report');
+        Route::get('admin/gst/report-link', [InvoiceController::class, 'reportLink'])->middleware('throttle:20,1,gst-report');
         Route::post('admin/orders/{order}/invoices', [AdminOrderController::class, 'issueInvoices']);
         Route::get('admin/security', [SecurityController::class, 'index']);
         Route::get('admin/consents', [ConsentController::class, 'index']);
