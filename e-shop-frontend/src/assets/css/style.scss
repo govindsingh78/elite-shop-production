@@ -469,6 +469,16 @@ ul{
     a:hover { color: #e0b77d; }
 }
 @media (min-width: 992px) { .store-helpline { margin: 0 auto; } }
+// Right of the top bar: the store's GSTIN, then the shop link.
+.store-announcement-end { display: inline-flex; flex: none; align-items: center; gap: 14px; }
+.store-announcement-gst {
+    display: inline-flex; align-items: center; gap: 5px; color: #c9d6cd; white-space: nowrap;
+    svg { width: 14px; height: 14px; fill: none; stroke: #e0b77d; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+    strong { color: #fff; font-weight: 700; letter-spacing: .04em; }
+}
+@media (min-width: 768px) { .store-announcement-gst + .store-announcement-link { border-left: 1px solid rgba(255, 255, 255, .22); padding-left: 14px; } }
+// Beside the festive message on smaller laptops, the shop link (also in the menu) makes way so the bar stays one line.
+@media (min-width: 992px) and (max-width: 1199.98px) { .store-announcement-gst + .store-announcement-link { display: none !important; } }
 
 .store-header {
     z-index: 1030;

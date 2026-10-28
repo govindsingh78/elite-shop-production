@@ -9,6 +9,7 @@ import { HeartIcon } from "./WishlistButton";
 import AccountMenu from "./AccountMenu";
 import { formatPrice } from "./currency";
 import { SUPPORT_PHONES } from "./support";
+import { useBusiness } from "./business";
 import { diwaliSeason } from "./festive";
 import { DiyaIcon } from "./Diwali";
 import { openSearch } from "./voice";
@@ -92,6 +93,7 @@ const Header = () => {
   const [expanded, setExpanded] = useState(false);
   const { pathname } = useLocation();
   const [festive] = useState(diwaliSeason);
+  const business = useBusiness();
 
   const closeMenu = () => setExpanded(false);
 
@@ -112,7 +114,15 @@ const Header = () => {
               </React.Fragment>
             ))}
           </span>
-          <Link to="/shop" className="store-announcement-link d-none d-md-inline">{festive ? "Shop the festive edit" : "Explore the edit"} <span aria-hidden="true">↗</span></Link>
+          <span className="store-announcement-end">
+            {business?.gstin && (
+              <span className="store-announcement-gst" title={`GST registered business${business.state ? ` in ${business.state}` : ""}`}>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3Z" /><path d="m9 12 2 2 4-4" /></svg>
+                GSTIN <strong>{business.gstin}</strong>
+              </span>
+            )}
+            <Link to="/shop" className="store-announcement-link d-none d-md-inline">{festive ? "Shop the festive edit" : "Explore the edit"} <span aria-hidden="true">↗</span></Link>
+          </span>
         </div>
       </div>
       <header className="store-header sticky-top">
