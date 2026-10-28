@@ -4,6 +4,7 @@ import BrandLogo from "./BrandLogo";
 import { COOKIE_POLICY_PATH, openCookieSettings } from "./consent";
 import { useStorefrontCategories } from "./useStorefrontCategories";
 import { SUPPORT_EMAIL, SUPPORT_PHONES } from "./support";
+import { GST_SEARCH_URL, useBusiness } from "./business";
 import founderPhoto from "../../assets/images/founder.jpg";
 
 const PERKS = [
@@ -14,6 +15,7 @@ const PERKS = [
 
 const Footer = () => {
     const { categories } = useStorefrontCategories();
+    const business = useBusiness();
     const year = new Date().getFullYear();
 
     return (
@@ -36,6 +38,16 @@ const Footer = () => {
                                 <img src={founderPhoto} alt="" width="44" height="44" loading="lazy" />
                                 <span><small>Founded with care by</small><strong>Govind Singh</strong></span>
                             </Link>
+                            {business?.gstin && (
+                                <div className="store-footer-gst">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3Z" /><path d="m9 12 2 2 4-4" /></svg>
+                                    <span>
+                                        <small>GST registered business{business.state ? ` · ${business.state}` : ""}</small>
+                                        <strong>GSTIN {business.gstin}</strong>
+                                        <a href={GST_SEARCH_URL} target="_blank" rel="noreferrer">Verify on the GST portal <span aria-hidden="true">↗</span></a>
+                                    </span>
+                                </div>
+                            )}
                         </div>
                         <div className="col-lg-2 col-6">
                             <h2 className="store-footer-heading">Explore</h2>

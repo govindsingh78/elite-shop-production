@@ -40,9 +40,10 @@ class Gst
 
     private const STORE_DEFAULTS = [
         'legal_name' => 'Elitezaar',
-        'gstin' => null,
+        // Elitezaar's registration (Rajasthan); Admin › GST & invoices can change it.
+        'gstin' => '08FBEPS1441B2ZW',
         'address' => '',
-        'state_code' => null,
+        'state_code' => '08',
         'invoice_prefix' => 'EZ',
         // Clothing and footwear under GST 2.0 (from 22 Sept 2025): 5% up to ₹2,500 a piece, 18% above.
         'default_rate' => 5,

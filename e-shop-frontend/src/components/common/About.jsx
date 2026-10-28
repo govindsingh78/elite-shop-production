@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import Layout from "./Layout";
 import { useStorefrontCategories } from "./useStorefrontCategories";
 import { SUPPORT_EMAIL, SUPPORT_PHONES } from "./support";
+import { GST_SEARCH_URL, useBusiness } from "./business";
 import founderPhoto from "../../assets/images/founder.jpg";
 import { FOUNDER, ORGANIZATION_ID, SITE_URL, breadcrumbs, useSeo } from "./seo";
 
@@ -47,6 +48,7 @@ const STEPS = [
 
 const About = () => {
   const { categories } = useStorefrontCategories();
+  const business = useBusiness();
   // "Read our story" links straight to the founder section.
   useEffect(() => {
     if (window.location.hash === "#founder") document.getElementById("founder")?.scrollIntoView();
@@ -266,6 +268,22 @@ const About = () => {
                 </a>
               </div>
             </div>
+            {business?.gstin && (
+              <div className="ab-business">
+                <div>
+                  <span className="shop-eyebrow">BUSINESS DETAILS</span>
+                  <h2>A GST registered business</h2>
+                  <p>Elitezaar is registered under GST in India. Look us up with our GSTIN on the <a href={GST_SEARCH_URL} target="_blank" rel="noreferrer">GST portal</a>.</p>
+                </div>
+                <dl>
+                  <div><dt>Store</dt><dd>Elitezaar</dd></div>
+                  {business.legal_name && business.legal_name !== "Elitezaar" && <div><dt>Legal name</dt><dd>{business.legal_name}</dd></div>}
+                  <div><dt>GSTIN</dt><dd className="ab-business-gstin">{business.gstin}</dd></div>
+                  {business.state && <div><dt>Registered in</dt><dd>{business.state}, India</dd></div>}
+                  {business.address && <div><dt>Registered address</dt><dd>{business.address}</dd></div>}
+                </dl>
+              </div>
+            )}
             <p className="ab-credits">
               Country, state and city lists in our address forms come from the{" "}
               <a href="https://github.com/dr5hn/countries-states-cities-database" target="_blank" rel="noreferrer">Countries States Cities Database</a>

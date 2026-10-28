@@ -5,8 +5,9 @@ import { LinearGradient } from "expo-linear-gradient";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import BrandLogo from "@/components/BrandLogo";
 import SupportCard from "@/components/SupportCard";
-import { Button, Card, Chip, Screen, SectionHeader, T } from "@/components/ui";
+import { Button, Card, Chip, KeyValue, Screen, SectionHeader, T } from "@/components/ui";
 import { api } from "@/lib/api";
+import { GST_SEARCH_URL, useBusiness } from "@/lib/business";
 import { useLoad } from "@/lib/useLoad";
 import { colors, fonts, radius } from "@/theme";
 
@@ -34,6 +35,7 @@ const STEPS = [
 /** About Elitezaar: who we are, what we promise, and how to reach us. */
 export default function AboutScreen() {
   const { data: categories } = useLoad(() => api("/storefront/categories"), []);
+  const business = useBusiness();
 
   return (
     <Screen>
@@ -132,6 +134,8 @@ export default function AboutScreen() {
 
       <SupportCard style={styles.section} />
 
+      {business?.gstin ? <BusinessCard business={business} /> : null}
+
       <T variant="small" center style={styles.credits}>
         Country, state and city lists in our address forms come from the{" "}
         <Text style={styles.link} onPress={() => Linking.openURL("https://github.com/dr5hn/countries-states-cities-database")}>Countries States Cities Database</Text>
@@ -139,6 +143,27 @@ export default function AboutScreen() {
         <Text style={styles.link} onPress={() => Linking.openURL("https://opendatacommons.org/licenses/odbl/1-0/")}>Open Database License</Text>.
       </T>
     </Screen>
+  );
+}
+
+/** The registered business behind the store, with its GSTIN to look up on the GST portal. */
+function BusinessCard({ business }) {
+  const rows = [
+    ["Store", "Elitezaar"],
+    business.legal_name && business.legal_name !== "Elitezaar" ? ["Legal name", business.legal_name] : null,
+    ["GSTIN", business.gstin],
+    business.state ? ["Registered in", `${business.state}, India`] : null,
+    business.address ? ["Registered address", business.address] : null,
+  ].filter(Boolean);
+
+  return (
+    <Card style={styles.section}>
+      <T variant="eyebrow">Business details</T>
+      <T variant="h3" style={{ marginTop: 6 }}>A GST registered business</T>
+      <T variant="small" style={{ marginTop: 4, marginBottom: 6 }}>Elitezaar is registered under GST in India.</T>
+      {rows.map(([label, value], index) => <KeyValue key={label} label={label} value={value} last={index === rows.length - 1} />)}
+      <Button title="Verify on the GST portal" variant="outline" icon="open-outline" small onPress={() => Linking.openURL(GST_SEARCH_URL).catch(() => {})} style={{ marginTop: 12 }} />
+    </Card>
   );
 }
 

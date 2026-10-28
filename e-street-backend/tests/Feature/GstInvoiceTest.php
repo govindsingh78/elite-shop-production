@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Invoice;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Setting;
 use App\Models\User;
 use App\Services\Gst;
 use App\Services\Invoices;
@@ -239,5 +240,24 @@ class GstInvoiceTest extends TestCase
             ->assertUnprocessable()->assertJsonValidationErrors('business_address');
         $this->actingAs($this->seller)->putJson('/api/vendor/business', ['legal_name' => 'Loom Studio LLP', 'gstin' => '', 'business_address' => '4 Linking Road', 'business_state' => '27'])
             ->assertOk()->assertJsonPath('business.gstin', null);
+    }
+
+    public function test_shoppers_see_the_business_behind_the_store(): void
+    {
+        $this->getJson('/api/storefront/business')->assertOk()->assertExactJson(['business' => [
+            'legal_name' => 'Elitezaar Retail Pvt Ltd', 'gstin' => '08AABCE1234F1Z5', 'state' => 'Rajasthan', 'address' => '12 MI Road, Jaipur',
+        ]]);
+
+        // Until an admin saves the GST settings, the store shows Elitezaar's own registration.
+        Setting::write('gst.store', '');
+        $this->getJson('/api/storefront/business')->assertOk()->assertExactJson(['business' => [
+            'legal_name' => 'Elitezaar', 'gstin' => '08FBEPS1441B2ZW', 'state' => 'Rajasthan', 'address' => null,
+        ]]);
+
+        // An admin can remove it; then there's no GSTIN to show.
+        $this->actingAs($this->admin)->putJson('/api/admin/gst/settings', [
+            'legal_name' => 'Elitezaar', 'gstin' => '', 'invoice_prefix' => 'EZ', 'default_rate' => 5, 'shipping_rate' => 18,
+        ])->assertOk();
+        $this->getJson('/api/storefront/business')->assertOk()->assertJsonPath('business.gstin', null);
     }
 }

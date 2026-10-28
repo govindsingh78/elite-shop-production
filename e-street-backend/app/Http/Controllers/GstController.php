@@ -16,6 +16,21 @@ class GstController extends Controller
         return response()->json(['settings' => Gst::store(), ...self::choices()], 200);
     }
 
+    /** The business behind the store, for shoppers (site footer, About): its legal name and, when registered, its GSTIN. */
+    public function publicDetails()
+    {
+        $store = Gst::store();
+        $gstin = Gst::validGstin($store['gstin']) ? strtoupper(trim($store['gstin'])) : null;
+        $stateCode = $store['state_code'] ?: ($gstin ? substr($gstin, 0, 2) : null);
+
+        return response()->json(['business' => [
+            'legal_name' => $store['legal_name'],
+            'gstin' => $gstin,
+            'state' => Gst::STATES[$stateCode] ?? null,
+            'address' => filled($store['address']) ? $store['address'] : null,
+        ]], 200)->header('Cache-Control', 'public, max-age=60');
+    }
+
     public function updateSettings(Request $request)
     {
         $validated = $request->validate([

@@ -79,6 +79,7 @@ Route::get('/storefront/categories', [CategoryController::class, 'navigation']);
 // The product page's "Delivery to": whether we deliver to a PIN code, and roughly when.
 Route::get('/storefront/delivery', [DeliveryController::class, 'check'])->middleware('throttle:60,1,delivery-check');
 // Coupons: the offers on a product page or for a bag, and checking a code at checkout.
+Route::get('/storefront/business', [GstController::class, 'publicDetails']);
 Route::get('/storefront/coupons', [CouponController::class, 'index']);
 Route::post('/storefront/coupons/check', [CouponController::class, 'check'])->middleware('throttle:30,1,coupon-check');
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->middleware('throttle:30,1');
