@@ -15,6 +15,6 @@ export const BRAND = {
   // Helpline for customers and sellers.
   supportPhones: [
     { label: "+91 70734 44156", tel: "+917073444156" },
-    { label: "+91 70734 44157", tel: "+917073444157" },
+    { label: "+91 87699 70222", tel: "+918769970222" },
   ],
 };

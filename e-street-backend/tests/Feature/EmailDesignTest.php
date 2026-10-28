@@ -70,7 +70,7 @@ class EmailDesignTest extends TestCase
         $text = $email->getTextBody();
         $this->assertStringContainsString('Your seller account is approved', $text);
         $this->assertStringContainsString('List your first product: https://elitezaar.com/vendor/products/create', $text);
-        $this->assertStringContainsString('Call +91 70734 44156 or +91 70734 44157 · email support@elitezaar.com', $text);
+        $this->assertStringContainsString('Call +91 70734 44156 or +91 87699 70222 · email support@elitezaar.com', $text);
         $this->assertStringNotContainsString('<', $text);
     }
 
