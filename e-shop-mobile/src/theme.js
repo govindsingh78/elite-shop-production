@@ -39,6 +39,7 @@ export const fonts = {
   bodyBold: "Rajdhani_700Bold",
   serif: "InstrumentSerif_400Regular",
   serifItalic: "InstrumentSerif_400Regular_Italic",
+  modern: "BricolageGrotesque_600SemiBold",
 };
 
 export const radius = { sm: 10, md: 14, lg: 20, xl: 28, pill: 999 };

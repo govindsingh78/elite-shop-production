@@ -290,22 +290,31 @@ const Brands = ({ brands }) => {
   );
 };
 
-/* ---------- A note from the founder ---------- */
+/* ---------- A note from the founder: why the store exists, who runs it, and what that means for an order ---------- */
+const FOUNDER_PROMISES = [
+  ["Every listing reviewed", "Our team checks it before it reaches the store.", <><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3Z" /><path d="m9 12 2 2 4-4" /></>],
+  ["Every order tracked", "Follow it all the way to your door.", <><path d="M3 6h11v12H3zM14 10h4l3 3v5h-7z" /><circle cx="7.5" cy="18" r="1.5" /><circle cx="18" cy="18" r="1.5" /></>],
+  ["Real people to talk to", "If anything isn’t right, call or write to us.", <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" />],
+];
+
 const FounderNote = () => (
   <section className="lp-founder lp-reveal" aria-labelledby="founder-note">
     <div className="container">
       <div className="lp-founder-grid">
-        <img src={founderPhoto} alt="Govind Singh, founder of Elitezaar" width="600" height="600" loading="lazy" />
-        <div>
-          <span className="lp-eyebrow">From our founder</span>
-          <h2 id="founder-note">“Shopping online should feel as personal as walking into a good local shop.”</h2>
-          <p>That’s why our team reviews every seller’s listing before it reaches the store, and why you can follow every order to your door. If anything isn’t right, call or write to us.</p>
-          <div className="lp-founder-sign">
-            <span className="ab-signature" aria-hidden="true">Govind Singh</span>
+        <div className="lp-founder-quote">
+          <span className="lp-founder-tag">From our founder</span>
+          <h2 id="founder-note">“Shopping online should feel as personal as walking into <span>a&nbsp;good local shop.</span>”</h2>
+          <div className="lp-founder-by">
+            <img src={founderPhoto} alt="Govind Singh, founder of Elitezaar" width="600" height="600" loading="lazy" />
             <span><strong>Govind Singh</strong><small>Founder, Elitezaar.com</small></span>
             <Link to="/about#founder" className="lp-link">Our story <span aria-hidden="true">→</span></Link>
           </div>
         </div>
+        <ul className="lp-founder-promises">
+          {FOUNDER_PROMISES.map(([title, detail, icon]) => (
+            <li key={title}><Icon>{icon}</Icon><strong>{title}</strong><span>{detail}</span></li>
+          ))}
+        </ul>
       </div>
     </div>
   </section>

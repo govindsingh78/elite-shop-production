@@ -33,6 +33,11 @@ const SHELF_PRODUCTS = 3;
 const HERO_WINDOWS = 3;
 const HERO_COLLECTIONS = 4;
 const BUDGETS = [500, 1000, 2000, 5000];
+const FOUNDER_PROMISES = [
+  ["shield-checkmark-outline", "Every listing reviewed", "Our team checks it before it reaches the store."],
+  ["navigate-outline", "Every order tracked", "Follow it all the way to your door."],
+  ["call-outline", "Real people to talk to", "If anything isn’t right, call or write to us."],
+];
 
 const openCategory = (category) => router.push({ pathname: "/shop", params: { category: category.slug } });
 const openProduct = (product) => () => router.push(`/product/${product.id}`);
@@ -199,6 +204,8 @@ export default function HomeScreen() {
           </View>
         </View>
       ) : null}
+
+      <FounderNote />
 
       {emptyStore ? null : (
         <View style={styles.seller}>
@@ -405,6 +412,40 @@ function OffersBand({ products, season, width, cardWidth }) {
   );
 }
 
+/** Why the store exists, who runs it, and what that means for an order. */
+function FounderNote() {
+  return (
+    <View style={styles.founder}>
+      <View style={styles.founderQuote}>
+        <Text style={styles.founderTag}>From our founder</Text>
+        <Text style={styles.founderLine}>“Shopping online should feel as personal as walking into <Text style={styles.founderGold}>a{"\u00a0"}good local shop.</Text>”</Text>
+        <View style={styles.founderBy}>
+          <View style={styles.founderRing}>
+            <Image source={require("../../../assets/images/founder.jpg")} accessibilityLabel="Govind Singh, founder of Elitezaar" resizeMode="cover" style={styles.founderImage} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.founderName} numberOfLines={1}>Govind Singh</Text>
+            <Text style={styles.founderRole} numberOfLines={1}>Founder, Elitezaar.com</Text>
+          </View>
+        </View>
+        <Pressable accessibilityRole="link" onPress={() => router.push("/about")} hitSlop={8} style={styles.founderLink}>
+          <Text style={styles.founderLinkText}>Our story</Text>
+          <Ionicons name="arrow-forward" size={15} color={CREAM} />
+        </Pressable>
+      </View>
+      {FOUNDER_PROMISES.map(([icon, title, detail]) => (
+        <View key={title} style={styles.promise}>
+          <Ionicons name={icon} size={22} color={BRONZE} />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.promiseTitle}>{title}</Text>
+            <Text style={styles.promiseDetail}>{detail}</Text>
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   topBar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingBottom: 10 },
   topActions: { flexDirection: "row", alignItems: "center", gap: 8 },
@@ -455,6 +496,21 @@ const styles = StyleSheet.create({
   brandsLabel: { marginBottom: 10, color: "#8b938d", fontFamily: fonts.medium, fontSize: 13.5 },
   brandList: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 6, columnGap: 22 },
   brand: { color: colors.ink, fontFamily: fonts.serif, fontSize: 21, lineHeight: 28 },
+  founder: { gap: 10, marginTop: 40, paddingHorizontal: 16 },
+  founderQuote: { alignItems: "flex-start", gap: 16, borderRadius: 20, padding: 22, backgroundColor: colors.ink },
+  founderTag: { overflow: "hidden", borderWidth: 1, borderColor: "rgba(242,194,91,0.45)", borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 4, color: GOLD_SOFT, fontFamily: fonts.medium, fontSize: 12.5 },
+  founderLine: { color: "#fff9ec", fontFamily: fonts.modern, fontSize: 30, lineHeight: 33, letterSpacing: -0.9 },
+  founderGold: { color: GOLD },
+  founderLink: { flexDirection: "row", alignItems: "center", gap: 6, borderBottomWidth: 1, borderBottomColor: CREAM, paddingBottom: 2 },
+  founderLinkText: { color: CREAM, fontFamily: fonts.medium, fontSize: 14 },
+  founderBy: { flexDirection: "row", alignSelf: "stretch", alignItems: "center", gap: 14 },
+  founderRing: { borderWidth: 1, borderColor: "rgba(242,194,91,0.8)", borderRadius: 37, padding: 3 },
+  founderImage: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.white },
+  founderName: { color: "#fff9ec", fontFamily: fonts.modern, fontSize: 17, letterSpacing: -0.2 },
+  founderRole: { color: "rgba(255,243,214,0.68)", fontFamily: fonts.medium, fontSize: 13 },
+  promise: { flexDirection: "row", gap: 12, borderRadius: 18, padding: 15, backgroundColor: TILE },
+  promiseTitle: { color: colors.ink, fontFamily: fonts.modern, fontSize: 16, letterSpacing: -0.2 },
+  promiseDetail: { marginTop: 1, color: "#5a665f", fontFamily: fonts.medium, fontSize: 13.5, lineHeight: 19 },
   seller: { alignItems: "center", gap: 10, marginTop: 40, borderTopWidth: 1, borderTopColor: "#e7e1d7", paddingHorizontal: 24, paddingTop: 30 },
   sellerTitle: { color: colors.ink, fontFamily: fonts.serif, fontSize: 30, lineHeight: 34, textAlign: "center" },
   sellerCopy: { marginBottom: 6, color: "#5a665f", fontFamily: fonts.medium, fontSize: 14.5, lineHeight: 21, textAlign: "center" },

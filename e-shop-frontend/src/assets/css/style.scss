@@ -113,6 +113,7 @@ $lp-paper: #fbf9f5;
 $lp-tile: #f1ece3;
 $lp-bronze: #8f5e2f;
 $lp-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
+$lp-modern: "Bricolage Grotesque", "Outfit", "Segoe UI", sans-serif;
 
 // Outfit reads far better than Rajdhani at small sizes, so everything on the home page uses it, the header and footer too.
 .lp-page, .store-announcement, .store-header, .store-footer, .sp-card { font-family: "Outfit", "Segoe UI", sans-serif; }
@@ -384,21 +385,27 @@ $lp-night: #1c0610;
     a:hover { color: $lp-bronze; }
 }
 
-.lp-founder { margin-top: 72px; padding: 64px 0; color: #efe9dd; background: #17302a;
-    .lp-eyebrow { color: #dcb98a; }
-    h2 { margin: 12px 0 14px; color: #fbf7ee; font-family: $lp-serif; font-size: clamp(1.9rem, 3.2vw, 2.8rem); font-weight: 400; line-height: 1.12; }
-    p { max-width: 620px; margin: 0; color: #bcc7be; line-height: 1.65; }
-    .lp-link { color: #efe9dd; }
-    .lp-link:hover { color: #dcb98a; }
+// The founder's note, in tiles: the quote and who said it, beside what it means for an order.
+.lp-founder { margin-top: 72px; }
+.lp-founder-grid { display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr); gap: 14px; }
+.lp-founder-quote { display: flex; min-width: 0; flex-direction: column; align-items: flex-start; gap: 24px; border-radius: 20px; padding: clamp(24px, 3.2vw, 44px); color: $lp-cream; background: radial-gradient(90% 130% at 100% 0, #27483c, $lp-ink 62%);
+    h2 { margin: 0; color: #fff9ec; font-family: $lp-modern; font-size: clamp(1.85rem, 3.5vw, 3.15rem); font-weight: 600; line-height: 1.08; letter-spacing: -.025em; text-wrap: balance; }
+    h2 span { color: $lp-gold; }
 }
-.lp-founder-grid { display: grid; grid-template-columns: 240px minmax(0, 1fr); align-items: center; gap: 56px; max-width: 980px; margin: 0 auto;
-    > img { width: 100%; height: auto; aspect-ratio: 4 / 5; border-radius: 999px 999px 12px 12px; box-shadow: 0 0 0 5px #17302a, 0 0 0 6px rgba(242, 194, 91, .75); object-fit: cover; object-position: 50% 0; }
+.lp-founder-tag { border: 1px solid rgba(242, 194, 91, .45); border-radius: 999px; padding: 5px 13px; color: $lp-gold-soft; font-size: .84rem; font-weight: 500; }
+.lp-founder-by { display: flex; width: 100%; flex-wrap: wrap; align-items: center; gap: 14px 16px; margin-top: auto;
+    img { width: 76px; height: 76px; flex: none; border-radius: 50%; box-shadow: 0 0 0 3px #16251f, 0 0 0 4px rgba(242, 194, 91, .8); object-fit: cover; object-position: 50% 0; }
+    > span { display: grid; gap: 1px; }
+    strong { color: #fff9ec; font-family: $lp-modern; font-size: 1.14rem; font-weight: 600; letter-spacing: -.01em; }
+    small { color: rgba(255, 243, 214, .68); font-size: .88rem; }
+    .lp-link { margin-left: auto; color: $lp-cream; }
+    .lp-link:hover { color: $lp-gold; }
 }
-.lp-founder-sign { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 22px; margin-top: 20px;
-    > span:nth-child(2) { display: grid; }
-    strong { font-weight: 500; }
-    small { color: #9faca2; }
-    .ab-signature { color: #efe9dd; font-size: 2rem; }
+.lp-founder-promises { display: grid; grid-auto-rows: 1fr; gap: 14px; margin: 0; padding: 0; list-style: none;
+    li { display: grid; min-width: 0; align-content: center; grid-template-columns: 24px minmax(0, 1fr); gap: 2px 14px; border-radius: 20px; padding: 18px 22px; background: $lp-tile; }
+    svg { width: 24px; height: 24px; margin-top: 1px; grid-row: span 2; fill: none; stroke: $lp-bronze; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.6; }
+    strong { color: $lp-ink; font-family: $lp-modern; font-size: 1.08rem; font-weight: 600; letter-spacing: -.01em; }
+    span { color: $lp-body; font-size: .92rem; line-height: 1.4; }
 }
 
 .lp-seller { padding: 64px 0 72px; text-align: center;
@@ -445,8 +452,9 @@ $lp-night: #1c0610;
     .lp-offers { margin-top: 56px; padding: 52px 0; }
     .lp-offers.is-festive { padding-top: 92px; }
     .lp-offers-grid { grid-template-columns: minmax(0, 1fr); }
-    .lp-founder { margin-top: 52px; padding: 48px 0; }
-    .lp-founder-grid { grid-template-columns: 150px minmax(0, 1fr); gap: 32px; }
+    .lp-founder { margin-top: 52px; }
+    .lp-founder-grid { grid-template-columns: minmax(0, 1fr); }
+    .lp-founder-promises { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (max-width: 575.98px) {
@@ -486,8 +494,9 @@ $lp-night: #1c0610;
     .lp-countdown span { min-width: 54px; flex: 1 1 0; }
     .lp-offers-lettering { max-width: 280px; }
     .lp-brands a { font-size: 1.3rem; }
-    .lp-founder-grid { grid-template-columns: minmax(0, 1fr); gap: 20px;
-        > img { width: 104px; }
+    .lp-founder-by img { width: 64px; height: 64px; }
+    .lp-founder-promises { grid-template-columns: minmax(0, 1fr); gap: 10px;
+        li { padding: 15px 16px; }
     }
     .lp-seller { padding: 48px 0 56px; }
 }
