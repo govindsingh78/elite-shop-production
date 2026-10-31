@@ -102,6 +102,11 @@ ul{
             color: $primary-white;
         }
     }
+
+    // A small button stays small whatever its colour, so it matches the small buttons beside it.
+    &.btn-sm.btn-primary, &.btn-sm.btn-secondary{
+        padding: var(--bs-btn-padding-y) var(--bs-btn-padding-x);
+    }
 }
 
 /* ---------- Home page ---------- */
@@ -1600,6 +1605,8 @@ a:hover > .brand-logo .brand-mark { transform: rotate(-6deg) scale(1.04); }
 .admin-dashboard-layout { align-items: flex-start; gap: 28px; }
 // Lets the page shrink beside the sidebar, so a wide table scrolls in its own box instead of running off the screen.
 .admin-dashboard-layout > :not(.admin-sidebar-shell) { min-width: 0; }
+// Actions in a list are the same size, however short their word. The small arrows that reorder a list keep their own size.
+.admin-dashboard-layout .table .btn-sm:not(.btn-light):not(.btn-link) { min-width: 66px; }
 .admin-dashboard-content { min-width: 0; padding: 12px 4px 24px; }
 .admin-dashboard-intro { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin: 8px 0 30px; }
 .admin-dashboard-eyebrow { color: #81918a; font: 700 .68rem/1.4 Arial, sans-serif; letter-spacing: .18em; }

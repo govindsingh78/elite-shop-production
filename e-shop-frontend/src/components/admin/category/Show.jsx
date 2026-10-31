@@ -87,7 +87,16 @@ const Show = () => {
 
               {/* Right Content Area */}
               <div className="container-fluid p-4">
-                <h2 className="mb-4">Category Listing</h2>
+                <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+                  <h2 className="mb-0">Category Listing</h2>
+                  {/* Create Category Button */}
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => navigate("/admin/create-category")} // Navigate to Create Category page
+                  >
+                    Create Category
+                  </button>
+                </div>
                 {waitingRequests > 0 && (
                   <Link to="/admin/category-requests" className="review-callout">
                     <span className="review-callout-text">
@@ -97,18 +106,11 @@ const Show = () => {
                     <span className="review-callout-cta">Review <span aria-hidden="true">→</span></span>
                   </Link>
                 )}
-                {/* Create Category Button */}
-                <button
-                  className="btn btn-primary mb-3 justify-content-end float-end"
-                  onClick={() => navigate("/admin/create-category")} // Navigate to Create Category page
-                >
-                  Create Category
-                </button>
                 {loading ? (
                   <p>Loading categories...</p>
                 ) : (
                   <div className="table-responsive">
-                    <table className="table table-bordered table-hover">
+                    <table className="table table-bordered table-hover align-middle">
                       <thead className="thead-dark">
                         <tr>
                           <th>#</th>
@@ -143,32 +145,32 @@ const Show = () => {
                                   <span className="badge bg-danger">Blocked</span>
                                 )}
                               </td>
-                              <td>
+                              <td className="text-nowrap">
                                 {/* Edit Button */}
                                 <button
-                                  className="btn btn-primary btn-sm m-2"
+                                  className="btn btn-outline-primary btn-sm me-2"
                                   onClick={() =>
                                     navigate(`/admin/edit-category/${category.id}`) // Navigate to Edit Category page with ID
                                   }
                                 >
                                   Edit
                                 </button>
-                                {/* Add Subcategory Button (main categories only) */}
+                                {/* Delete Button */}
+                                <button
+                                  className="btn btn-outline-danger btn-sm me-2"
+                                  onClick={() => handleDelete(category.id)} // Call handleDelete with category ID
+                                >
+                                  Delete
+                                </button>
+                                {/* Add Subcategory Button (main categories only), last so Edit and Delete line up down the list */}
                                 {!category.parent_id && (
                                   <button
-                                    className="btn btn-outline-primary btn-sm m-2"
+                                    className="btn btn-outline-primary btn-sm"
                                     onClick={() => navigate(`/admin/create-category?parent=${category.id}`)}
                                   >
                                     Add subcategory
                                   </button>
                                 )}
-                                {/* Delete Button */}
-                                <button
-                                  className="btn btn-danger btn-sm m-2"
-                                  onClick={() => handleDelete(category.id)} // Call handleDelete with category ID
-                                >
-                                  Delete
-                                </button>
                               </td>
                             </tr>
                           ))

@@ -83,7 +83,16 @@ const ShowBrands = () => {
 
               {/* Right Content Area */}
               <div className="container-fluid p-4">
-                <h2 className="mb-4">Brand Listing</h2>
+                <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+                  <h2 className="mb-0">Brand Listing</h2>
+                  {/* Create Brand Button */}
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => navigate("/admin/create-Brand")} // Navigate to Create Brand page
+                  >
+                    Create Brand
+                  </button>
+                </div>
                 {waitingRequests > 0 && (
                   <Link to="/admin/brand-requests" className="review-callout">
                     <span className="review-callout-text">
@@ -93,18 +102,11 @@ const ShowBrands = () => {
                     <span className="review-callout-cta">Review <span aria-hidden="true">→</span></span>
                   </Link>
                 )}
-                {/* Create Brand Button */}
-                <button
-                  className="btn btn-primary mb-3 justify-content-end float-end"
-                  onClick={() => navigate("/admin/create-Brand")} // Navigate to Create Brand page
-                >
-                  Create Brand
-                </button>
                 {loading ? (
                   <p>Loading Brand...</p>
                 ) : (
                   <div className="table-responsive">
-                    <table className="table table-bordered table-hover">
+                    <table className="table table-bordered table-hover align-middle">
                       <thead className="thead-dark">
                         <tr>
                           <th>#</th>
@@ -126,10 +128,10 @@ const ShowBrands = () => {
                                   <span className="badge bg-danger">Blocked</span>
                                 )}
                               </td>
-                              <td>
+                              <td className="text-nowrap">
                                 {/* Edit Button */}
                                 <button
-                                  className="btn btn-primary btn-sm m-2"
+                                  className="btn btn-outline-primary btn-sm me-2"
                                   onClick={() =>
                                     navigate(`/admin/edit-brand/${brand.id}`) // Navigate to Edit Brand page with ID
                                   }
@@ -138,7 +140,7 @@ const ShowBrands = () => {
                                 </button>
                                 {/* Delete Button */}
                                 <button
-                                  className="btn btn-danger btn-sm m-2"
+                                  className="btn btn-outline-danger btn-sm"
                                   onClick={() => handleDelete(brand.id)} // Call handleDelete with Brand ID
                                 >
                                   Delete
