@@ -1,38 +1,30 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { FlatList, Image, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { LinearGradient } from "expo-linear-gradient";
 import BrandLogo from "@/components/BrandLogo";
-import { DiwaliGreeting, Toran } from "@/components/Diwali";
 import ProductCard from "@/components/ProductCard";
 import StartSelling from "@/components/StartSelling";
-import { Button, Chip, IconButton, Notice, Screen, SectionHeader, T } from "@/components/ui";
+import { IconButton, Notice, Screen } from "@/components/ui";
 import { useCart } from "@/context/CartContext";
 import { api } from "@/lib/api";
 import { categoryBannerUrl, productImageUrl } from "@/lib/config";
 import { diwaliSeason } from "@/lib/festive";
-import { discountOf } from "@/lib/format";
+import { discountOf, formatWholePrice } from "@/lib/format";
 import { useLoad } from "@/lib/useLoad";
 import { voiceAvailable } from "@/lib/voice";
-import { colors, fonts, radius, shadow } from "@/theme";
+import { colors, fonts, radius } from "@/theme";
 
-// The banner photos have text printed on their right half, so each slide shows only the left part.
-// aspect = width / height of the photo; visible = the share of its width the slide may show.
-const HERO_HEIGHT = 380;
-const HERO_SLIDES = [
-  { image: require("../../../assets/images/banner-1.jpg"), aspect: 1954 / 1303, visible: 0.5, eyebrow: "The new edit", title: "Clean lines,\neasy fits" },
-  { image: require("../../../assets/images/banner-2.jpg"), aspect: 1800 / 894, visible: 0.5, eyebrow: "Just landed", title: "Fresh pieces,\nevery week" },
-];
+const BRONZE = "#8f5e2f";
+const TILE = "#f1ece3";
+const SHELF_TONES = ["#efe6d8", "#e2e8e0", "#f0e1d9"];
+const NEW_ARRIVALS = 4;
+const SHELF_PRODUCTS = 3;
+const DEALS = 4;
 
-const heroImageFrame = (slide, slideWidth) => {
-  const width = Math.max(slideWidth / slide.visible, HERO_HEIGHT * slide.aspect);
-  const height = width / slide.aspect;
-  return { position: "absolute", left: 0, top: (HERO_HEIGHT - height) / 2, width, height };
-};
-
-/** The colours for a collection with no banner photo yet. */
-const SHELF_TONES = [["#143028", "#235a4e"], ["#3a2a17", "#6b4a26"], ["#2e1a2b", "#5a2d4e"]];
+const openCategory = (category) => router.push({ pathname: "/shop", params: { category: category.slug } });
+const unique = (products) => [...new Map(products.map((product) => [product.id, product])).values()];
 
 async function loadHome() {
   const [latest, featured, payments, collections] = await Promise.all([
@@ -41,12 +33,6 @@ async function loadHome() {
     api("/storefront/payment-methods").catch(() => ({ cod: true, online: false })),
     api("/storefront/home-categories").catch(() => null),
   ]);
-  // Every main collection, with its banner, piece count and newest products.
-  const categories = collections?.categories || [];
-  const covers = Object.fromEntries(categories.map((category) => [category.id, {
-    total: category.total,
-    image: categoryBannerUrl(category.banner) || productImageUrl(category.products.find((item) => item.image)?.image),
-  }]));
 
   return {
     latest: latest.products?.data || [],
@@ -54,9 +40,32 @@ async function loadHome() {
     brands: latest.brands || [],
     featured: featured?.products?.data || [],
     online: !!payments?.online,
-    categories,
-    covers,
+    // Every main collection, with its banner, piece count and newest products.
+    categories: collections?.categories || [],
   };
+}
+
+/**
+ * What each part of the screen shows. A small catalogue would otherwise show the same few products over and over, so each
+ * part takes products nothing above it has shown, and only falls back to repeats when it has nothing new.
+ */
+function planHome({ latest, featured, categories }) {
+  const shown = new Set();
+  const take = (products, count) => {
+    const ordered = [...products.filter((product) => !shown.has(product.id)), ...products.filter((product) => shown.has(product.id))];
+    ordered.slice(0, count).forEach((product) => shown.add(product.id));
+    return ordered;
+  };
+
+  // One from each collection, so the first thing shoppers see is the whole range. A featured product leads.
+  const everyCollection = categories.flatMap((category) => category.products.slice(0, 1));
+  const hero = take(unique([...featured.slice(0, 1), ...everyCollection, ...featured, ...latest]).filter((product) => product.image), 3).slice(0, 3);
+  const arrivals = take(latest, NEW_ARRIVALS).slice(0, NEW_ARRIVALS);
+  const shelves = categories.filter((category) => category.total > 0).map((category) => ({ category, products: take(category.products, SHELF_PRODUCTS) }));
+  const onOffer = unique([...latest, ...featured, ...categories.flatMap((category) => category.products)])
+    .filter((product) => discountOf(product) > 0).sort((a, b) => discountOf(b) - discountOf(a));
+
+  return { hero, arrivals, shelves, deals: take(onOffer, DEALS).slice(0, DEALS) };
 }
 
 export default function HomeScreen() {
@@ -65,9 +74,8 @@ export default function HomeScreen() {
   const { width } = useWindowDimensions();
   const cardWidth = Math.min(200, (width - 32 - 14) / 2.15);
   const [season] = useState(diwaliSeason);
-
   const emptyStore = !loading && data?.total === 0;
-  const offers = useMemo(() => (data?.latest || []).filter((product) => discountOf(product) > 0).sort((a, b) => discountOf(b) - discountOf(a)), [data]);
+  const plan = useMemo(() => (data ? planHome(data) : null), [data]);
 
   return (
     <Screen safeTop padded={false} refreshing={refreshing} onRefresh={reload}>
@@ -81,291 +89,219 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {season ? <Toran width={width} style={styles.toran} /> : null}
-      <HeroSlider categories={data?.categories || []} season={season} />
+      <Hero products={plan?.hero || []} loading={loading} season={season} width={width} />
+      <TrustRow online={data?.online} />
 
-      <View style={styles.stats}>
-        {[[data?.total, "Pieces"], [data?.categories?.length, "Collections"], [data?.brands?.length, "Brands"]].map(([value, label]) => (
-          <View key={label} style={styles.statItem}>
-            <Text style={styles.statValue}>{loading ? "—" : value ?? 0}</Text>
-            <Text style={styles.statLabel}>{label}</Text>
-          </View>
-        ))}
+      <View style={styles.page}>
+        {error ? <Notice tone="warning" title="We couldn’t load the latest pieces" message={error} style={styles.notice} /> : null}
+        {emptyStore ? <StartSelling style={styles.notice} /> : null}
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.trust}>
-        {[
-          data?.online && ["phone-portrait-outline", "UPI & net banking"],
-          ["cash-outline", "Cash on delivery"],
-          ["navigate-outline", "Live order tracking"],
-          ["cube-outline", "Carefully packed"],
-        ].filter(Boolean).map(([icon, label]) => (
-          <View key={label} style={styles.trustItem}>
-            <View style={styles.trustIcon}><Ionicons name={icon} size={17} color={colors.emerald} /></View>
-            <Text style={styles.trustText}>{label}</Text>
+      <CategoryNav categories={data?.categories || []} />
+      <ProductRail title="Just landed" products={plan?.arrivals || []} width={cardWidth} loading={loading} />
+      {(plan?.shelves || []).map((shelf, index) => <CategoryShelf key={shelf.category.id} {...shelf} index={index} width={cardWidth} />)}
+      <ProductRail title="Best prices right now" products={plan?.deals || []} width={cardWidth} />
+
+      {data?.brands?.length ? (
+        <View style={styles.brands}>
+          <Text style={styles.brandsLabel}>Shop by brand</Text>
+          <View style={styles.brandList}>
+            {data.brands.map((brand) => (
+              <Pressable key={brand.id} accessibilityRole="link" onPress={() => router.push({ pathname: "/shop", params: { brand: String(brand.id) } })}>
+                <Text style={styles.brand}>{brand.name}</Text>
+              </Pressable>
+            ))}
           </View>
-        ))}
-      </ScrollView>
-
-      <View style={styles.section}>
-        {error ? <Notice tone="warning" title="We couldn’t load the latest pieces" message={error} /> : null}
-        {emptyStore ? <StartSelling style={styles.block} /> : null}
-
-        {data?.categories?.length ? (
-          <View style={styles.block}>
-            <SectionHeader eyebrow="Shop by collection" title="Find your edit" actionLabel="All" onAction={() => router.push("/shop")} />
-            <View style={styles.collections}>
-              {data.categories.slice(0, 6).map((category, index) => {
-                const cover = data.covers[category.id];
-                const wide = index === 0 && data.categories.length % 2 === 1;
-                return (
-                  <Pressable key={category.id} onPress={() => router.push({ pathname: "/shop", params: { category: category.slug } })} style={[styles.collection, wide && styles.collectionWide]}>
-                    {cover?.image ? <Image source={{ uri: cover.image }} style={StyleSheet.absoluteFill} resizeMode="cover" /> : (
-                      <View style={[StyleSheet.absoluteFill, styles.collectionFallback]}><Text style={styles.collectionLetter}>{category.name.charAt(0)}</Text></View>
-                    )}
-                    <LinearGradient colors={["rgba(10,31,25,0)", "rgba(10,31,25,0.85)"]} style={StyleSheet.absoluteFill} start={{ x: 0, y: 0.35 }} end={{ x: 0, y: 1 }} />
-                    <View style={styles.collectionCopy}>
-                      <Text style={styles.collectionCount}>{cover ? (cover.total ? `${cover.total} ${cover.total === 1 ? "piece" : "pieces"}` : "Coming soon") : "Collection"}</Text>
-                      <Text style={styles.collectionName}>{category.name}</Text>
-                      <Text style={styles.collectionCta}>Shop now →</Text>
-                    </View>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
-        ) : null}
-
-        <ProductRail eyebrow="Just landed" title="New this week" products={data?.latest?.slice(0, 8) || []} width={cardWidth} loading={loading} />
-        {(data?.categories || []).filter((category) => category.total > 0).map((category, index) => <CategoryShelf key={category.id} category={category} index={index} width={cardWidth} />)}
-        <ProductRail eyebrow="Editor’s picks" title="Chosen by our team" products={data?.featured || []} width={cardWidth} />
-        {offers.length ? (
-          <View style={[styles.block, styles.offers]}>
-            <SectionHeader eyebrow="Limited time" title="Offers you’ll love" />
-            <FlatList horizontal data={offers} keyExtractor={(item) => String(item.id)} showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: 14 }} renderItem={({ item }) => <ProductCard product={item} width={cardWidth} />} />
-          </View>
-        ) : null}
-
-        {data?.brands?.length ? (
-          <View style={styles.block}>
-            <SectionHeader eyebrow="Labels" title="Shop by brand" />
-            <View style={styles.brandList}>
-              {data.brands.map((brand) => (
-                <Chip key={brand.id} label={brand.name} icon="pricetag-outline" onPress={() => router.push({ pathname: "/shop", params: { brand: String(brand.id) } })} />
-              ))}
-            </View>
-          </View>
-        ) : null}
-
-        <View style={[styles.block, styles.how]}>
-          <T variant="eyebrow">How it works</T>
-          <T variant="h2" style={{ marginTop: 4, marginBottom: 14 }}>Shopping, made simple</T>
-          {[
-            ["sparkles-outline", "Pick your pieces", "Browse collections and add what you love to your bag."],
-            ["card-outline", "Pay your way", data?.online ? "UPI, net banking or cash on delivery." : "Cash on delivery, with online payments coming soon."],
-            ["navigate-outline", "Track it live", "Follow every step from packing to your doorstep."],
-          ].map(([icon, title, copy], index) => (
-            <View key={title} style={styles.step}>
-              <Text style={styles.stepNumber}>{String(index + 1).padStart(2, "0")}</Text>
-              <View style={{ flex: 1 }}>
-                <Row icon={icon} title={title} />
-                <T variant="small" style={{ marginTop: 2 }}>{copy}</T>
-              </View>
-            </View>
-          ))}
         </View>
+      ) : null}
 
-        {emptyStore ? null : <LinearGradient colors={["#1f4a3d", "#0a1f19"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.seller}>
-          <Text style={styles.sellerBadge}>FOR SELLERS</Text>
-          <Text style={styles.sellerTitle}>Sell on Elitezaar</Text>
-          <Text style={styles.sellerCopy}>Open your store in under a minute. List products, ship orders and track sales from your phone.</Text>
-          <Button title="Become a seller" variant="gold" icon="storefront-outline" onPress={() => router.push("/vendor-register")} style={{ marginTop: 16 }} />
-          <Pressable onPress={() => router.push({ pathname: "/login", params: { portal: "vendor" } })} style={{ marginTop: 12, alignSelf: "center" }}>
-            <Text style={styles.sellerLink}>Already selling? Sign in to the seller hub</Text>
+      {emptyStore ? null : (
+        <View style={styles.seller}>
+          <Text style={styles.sellerTitle}>Have something worth selling?</Text>
+          <Text style={styles.sellerCopy}>Open your Elitezaar store in under a minute, and run it from your phone.</Text>
+          <Pressable accessibilityRole="link" onPress={() => router.push("/vendor-register")} style={({ pressed }) => [styles.cta, { alignSelf: "center" }, pressed && styles.pressed]}>
+            <Text style={styles.ctaText}>Become a seller</Text>
+            <Ionicons name="arrow-forward" size={16} color={colors.white} />
           </Pressable>
-        </LinearGradient>}
-      </View>
+          <Pressable accessibilityRole="link" onPress={() => router.push({ pathname: "/login", params: { portal: "vendor" } })} hitSlop={8}>
+            <Text style={styles.link}>Already selling? Sign in</Text>
+          </Pressable>
+        </View>
+      )}
     </Screen>
   );
 }
 
-function Row({ icon, title }) {
+/** The words, then the store's real products. */
+function Hero({ products, loading, season, width }) {
+  const height = Math.min(340, (width - 32) * 0.84);
+  const [first, ...rest] = products;
+  const eyebrow = season ? (season.festivalDays ? season.greeting : `The Diwali edit · ${season.countdown}`) : "New this season";
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-      <Ionicons name={icon} size={17} color={colors.tealDark} />
-      <T variant="title">{title}</T>
-    </View>
-  );
-}
-
-function ProductRail({ eyebrow, title, products, width, loading }) {
-  if (loading) {
-    return (
-      <View style={styles.block}>
-        <SectionHeader eyebrow={eyebrow} title={title} />
-        <View style={{ flexDirection: "row", gap: 14 }}>{[0, 1].map((key) => <View key={key} style={[styles.skeleton, { width }]} />)}</View>
-      </View>
-    );
-  }
-  if (!products.length) return null;
-  return (
-    <View style={styles.block}>
-      <SectionHeader eyebrow={eyebrow} title={title} actionLabel="Shop all" onAction={() => router.push("/shop")} />
-      <FlatList horizontal data={products} keyExtractor={(item) => String(item.id)} showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 14 }} renderItem={({ item }) => <ProductCard product={item} width={width} />} />
-    </View>
-  );
-}
-
-/** A collection's banner, leading to all its pieces, with its newest ones under it. A collection with nothing in it has no shelf. */
-function CategoryShelf({ category, index, width }) {
-  const banner = categoryBannerUrl(category.banner);
-  const viewAll = () => router.push({ pathname: "/shop", params: { category: category.slug } });
-  return (
-    <View style={styles.block}>
-      <Pressable onPress={viewAll} accessibilityRole="link" accessibilityLabel={`${category.name}: view all ${category.total}`} style={({ pressed }) => [styles.shelfBanner, pressed && { opacity: 0.92 }]}>
-        {banner ? <Image source={{ uri: banner }} style={StyleSheet.absoluteFill} resizeMode="cover" /> : <LinearGradient colors={SHELF_TONES[index % SHELF_TONES.length]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />}
-        <LinearGradient colors={["rgba(10,31,25,0.72)", "rgba(10,31,25,0.1)"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={StyleSheet.absoluteFill} />
-        <View style={{ flex: 1 }}>
-          <Text style={styles.shelfCount}>{category.total} {category.total === 1 ? "piece" : "pieces"}</Text>
-          <Text style={styles.shelfName} numberOfLines={2}>{category.name}</Text>
-        </View>
-        <View style={styles.shelfCta}>
-          <Text style={styles.shelfCtaText}>View all</Text>
-          <Ionicons name="arrow-forward" size={15} color={colors.ink} />
-        </View>
+    <View style={styles.hero}>
+      <Text style={styles.eyebrow}>{eyebrow}</Text>
+      <Text style={styles.heroTitle}>{season ? "Diwali gifts," : "Good things,"}</Text>
+      <Text style={[styles.heroTitle, styles.heroAccent]}>chosen well.</Text>
+      <Text style={styles.heroCopy}>Thoughtfully picked pieces from independent sellers. Every listing is checked by our team, and every order is tracked to your door.</Text>
+      <Pressable accessibilityRole="link" onPress={() => router.push("/shop")} style={({ pressed }) => [styles.cta, pressed && styles.pressed]}>
+        <Text style={styles.ctaText}>{season ? "Shop the festive edit" : "Shop everything"}</Text>
+        <Ionicons name="arrow-forward" size={16} color={colors.white} />
       </Pressable>
-      <FlatList horizontal data={category.products} keyExtractor={(item) => String(item.id)} showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 14 }} renderItem={({ item }) => <ProductCard product={item} width={width} />} />
+      {loading ? (
+        <View style={[styles.mosaic, { height }]}>
+          <View style={[styles.tile, styles.tileLarge]} />
+          <View style={styles.tileColumn}><View style={styles.tile} /><View style={styles.tile} /></View>
+        </View>
+      ) : first ? (
+        <View style={[styles.mosaic, { height }]}>
+          <Tile product={first} large />
+          {rest.length ? <View style={styles.tileColumn}>{rest.map((product) => <Tile key={product.id} product={product} />)}</View> : null}
+        </View>
+      ) : null}
     </View>
   );
 }
 
-/**
- * Full-width photo slider with a caption per slide; the photo slides link to the first collections.
- * In the Diwali season a "Happy Diwali" card leads it.
- */
-function HeroSlider({ categories, season }) {
-  const { width } = useWindowDimensions();
-  const slideWidth = width - 32;
-  const [active, setActive] = useState(0);
-  const listRef = useRef(null);
-  const slides = useMemo(() => (season ? [{ festive: true }, ...HERO_SLIDES] : HERO_SLIDES), [season]);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActive((current) => {
-        const next = (current + 1) % slides.length;
-        listRef.current?.scrollToOffset({ offset: next * (slideWidth + 12), animated: true });
-        return next;
-      });
-    }, 5500);
-    return () => clearInterval(timer);
-  }, [slideWidth, slides.length]);
-
+function Tile({ product, large }) {
   return (
-    <View>
-      <FlatList
-        ref={listRef}
-        horizontal
-        data={slides}
-        keyExtractor={(_, index) => String(index)}
-        showsHorizontalScrollIndicator={false}
-        snapToInterval={slideWidth + 12}
-        decelerationRate="fast"
-        contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
-        onMomentumScrollEnd={(event) => setActive(Math.round(event.nativeEvent.contentOffset.x / (slideWidth + 12)))}
-        renderItem={({ item, index }) => {
-          if (item.festive) {
-            return (
-              <View style={[styles.hero, { width: slideWidth }]}>
-                <DiwaliGreeting width={slideWidth} height={HERO_HEIGHT} />
-                <LinearGradient colors={["rgba(20,4,10,0)", "rgba(20,4,10,0)", "rgba(20,4,10,0.7)"]} locations={[0, 0.7, 1]} style={StyleSheet.absoluteFill} pointerEvents="none" />
-                <View style={styles.heroCopy}>
-                  <View style={styles.festiveChip}>
-                    <Ionicons name="sparkles" size={13} color="#f6d58e" />
-                    <Text style={styles.festiveChipText}>{season.countdown}</Text>
-                  </View>
-                  <Button title="Shop the festive edit" variant="light" small block={false} iconRight="arrow-forward" onPress={() => router.push("/shop")} />
-                </View>
-              </View>
-            );
-          }
-          const category = categories[HERO_SLIDES.indexOf(item)];
-          return (
-            <View style={[styles.hero, { width: slideWidth }]}>
-              <Image source={item.image} style={heroImageFrame(item, slideWidth)} resizeMode="cover" />
-              <LinearGradient colors={["rgba(8,26,21,0.05)", "rgba(8,26,21,0.85)"]} start={{ x: 0, y: 0.3 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill} />
-              <View style={styles.heroCopy}>
-                <Text style={styles.heroEyebrow}>{String(index + 1).padStart(2, "0")} — {item.eyebrow}</Text>
-                <Text style={styles.heroTitle}>{item.title}</Text>
-                <Button
-                  title={category ? `Shop ${category.name}` : "Shop the collection"}
-                  variant="light"
-                  small
-                  block={false}
-                  iconRight="arrow-forward"
-                  onPress={() => router.push(category ? { pathname: "/shop", params: { category: category.slug } } : "/shop")}
-                />
-              </View>
+    <Pressable accessibilityRole="link" accessibilityLabel={`${product.title}, ${formatWholePrice(product.price)}`} onPress={() => router.push(`/product/${product.id}`)}
+      style={({ pressed }) => [styles.tile, large && styles.tileLarge, pressed && styles.pressed]}>
+      <Image source={{ uri: productImageUrl(product.image, large ? "large" : "small") }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+      <Text style={styles.tilePrice}>{formatWholePrice(product.price)}</Text>
+    </Pressable>
+  );
+}
+
+function TrustRow({ online }) {
+  return (
+    <View style={styles.trust}>
+      {[
+        online && ["phone-portrait-outline", "UPI & net banking"],
+        ["cash-outline", "Cash on delivery"],
+        ["navigate-outline", "Live order tracking"],
+        ["shield-checkmark-outline", "Checked by our team"],
+      ].filter(Boolean).map(([icon, label]) => (
+        <View key={label} style={styles.trustItem}>
+          <Ionicons name={icon} size={16} color={BRONZE} />
+          <Text style={styles.trustText} numberOfLines={1}>{label}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+/** Every collection with something in it, one tap away. */
+function CategoryNav({ categories }) {
+  const live = categories.filter((category) => category.total > 0);
+  if (!live.length) return null;
+  return (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.catnav}>
+      {live.map((category) => {
+        const image = categoryBannerUrl(category.banner) || productImageUrl(category.products.find((product) => product.image)?.image);
+        return (
+          <Pressable key={category.id} accessibilityRole="link" onPress={() => openCategory(category)} style={styles.catnavItem}>
+            <View style={styles.catnavImage}>
+              {image ? <Image source={{ uri: image }} style={StyleSheet.absoluteFill} resizeMode="cover" /> : <Text style={styles.catnavLetter}>{category.name.charAt(0)}</Text>}
             </View>
-          );
-        }}
-      />
-      <View style={styles.heroDots}>
-        {slides.map((slide, index) => <View key={index} style={[styles.heroDot, index === active && styles.heroDotActive]} />)}
+            <Text style={styles.catnavName} numberOfLines={1}>{category.name}</Text>
+          </Pressable>
+        );
+      })}
+    </ScrollView>
+  );
+}
+
+function Rail({ products, width }) {
+  return (
+    <FlatList horizontal data={products} keyExtractor={(item) => String(item.id)} showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.rail} renderItem={({ item }) => <ProductCard product={item} width={width} />} />
+  );
+}
+
+function ProductRail({ title, products, width, loading }) {
+  if (!loading && !products.length) return null;
+  return (
+    <View style={styles.block}>
+      <View style={styles.titleRow}>
+        <Text style={styles.title}>{title}</Text>
+        {loading ? null : (
+          <Pressable accessibilityRole="link" onPress={() => router.push("/shop")} hitSlop={8}><Text style={styles.link}>View all</Text></Pressable>
+        )}
       </View>
+      {loading ? (
+        <View style={[styles.rail, { flexDirection: "row" }]}>{[0, 1].map((key) => <View key={key} style={[styles.skeleton, { width }]} />)}</View>
+      ) : <Rail products={products} width={width} />}
+    </View>
+  );
+}
+
+/** A collection: its banner, leading to all its pieces, with its newest ones under it. A band of colour until it has a banner. */
+function CategoryShelf({ category, products, index, width }) {
+  const banner = categoryBannerUrl(category.banner);
+  const pieces = `${category.total} ${category.total === 1 ? "piece" : "pieces"}`;
+  return (
+    <View style={styles.block}>
+      <Pressable accessibilityRole="link" accessibilityLabel={`${category.name}: view all ${pieces}`} onPress={() => openCategory(category)}
+        style={({ pressed }) => [styles.band, { backgroundColor: SHELF_TONES[index % SHELF_TONES.length] }, banner && styles.bandPhoto, pressed && styles.pressed]}>
+        {banner ? (
+          <>
+            <Image source={{ uri: banner }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+            <LinearGradient colors={["rgba(10,24,19,0)", "rgba(10,24,19,0.68)"]} start={{ x: 0, y: 0.3 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill} />
+          </>
+        ) : null}
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.bandName, banner && styles.onPhoto]} numberOfLines={2}>{category.name}</Text>
+          <Text style={[styles.bandCount, banner && styles.onPhoto]}>{pieces}</Text>
+        </View>
+        <Text style={[styles.link, banner && styles.onPhoto]}>View all</Text>
+      </Pressable>
+      <Rail products={products} width={width} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  topBar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingBottom: 14 },
-  topActions: { flexDirection: "row", gap: 10 },
-  hero: { height: HERO_HEIGHT, justifyContent: "flex-end", overflow: "hidden", borderRadius: radius.xl, backgroundColor: colors.emerald },
-  heroCopy: { padding: 22 },
-  heroEyebrow: { color: "#e7cfa6", fontFamily: fonts.bodyBold, fontSize: 12, letterSpacing: 2.2, textTransform: "uppercase" },
-  heroTitle: { marginTop: 8, marginBottom: 16, color: colors.white, fontFamily: fonts.heading, fontSize: 30, lineHeight: 33, letterSpacing: -0.8 },
-  toran: { marginTop: -10, marginBottom: 2 },
-  festiveChip: { flexDirection: "row", alignItems: "center", alignSelf: "flex-start", gap: 6, marginBottom: 12, borderWidth: 1, borderColor: "rgba(242,194,91,0.45)", borderRadius: radius.pill, paddingHorizontal: 11, paddingVertical: 5, backgroundColor: "rgba(36,5,15,0.55)" },
-  festiveChipText: { color: "#f6d58e", fontFamily: fonts.bodyBold, fontSize: 13, letterSpacing: 0.6 },
-  heroDots: { flexDirection: "row", justifyContent: "center", gap: 6, marginTop: 12 },
-  heroDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.line },
-  heroDotActive: { width: 24, backgroundColor: colors.emerald },
-  stats: { flexDirection: "row", marginHorizontal: 16, marginTop: 18, borderWidth: 1, borderColor: colors.lineSoft, borderRadius: radius.lg, paddingVertical: 14, backgroundColor: colors.white, ...shadow.card },
-  statItem: { flex: 1, alignItems: "center" },
-  statValue: { color: colors.ink, fontFamily: fonts.display, fontSize: 22 },
-  statLabel: { marginTop: 2, color: colors.muted, fontFamily: fonts.bodyBold, fontSize: 11, letterSpacing: 1.4, textTransform: "uppercase" },
-  trust: { gap: 10, paddingHorizontal: 16, paddingVertical: 16 },
-  trustItem: { flexDirection: "row", alignItems: "center", gap: 8, borderWidth: 1, borderColor: colors.lineSoft, borderRadius: radius.pill, paddingVertical: 6, paddingLeft: 6, paddingRight: 14, backgroundColor: colors.white },
-  trustIcon: { width: 30, height: 30, alignItems: "center", justifyContent: "center", borderRadius: 15, backgroundColor: colors.mint },
-  trustText: { color: colors.text, fontFamily: fonts.bodySemi, fontSize: 14 },
-  section: { paddingHorizontal: 16 },
-  block: { marginTop: 22 },
-  shelfBanner: { flexDirection: "row", alignItems: "flex-end", gap: 12, minHeight: 150, overflow: "hidden", marginBottom: 14, borderRadius: radius.lg, padding: 16, backgroundColor: colors.emerald },
-  shelfCount: { color: "#f0dcb9", fontFamily: fonts.bodySemi, fontSize: 13 },
-  shelfName: { marginTop: 2, color: colors.white, fontFamily: fonts.display, fontSize: 26, letterSpacing: -0.5 },
-  shelfCta: { flexDirection: "row", alignItems: "center", gap: 5, borderRadius: radius.pill, paddingHorizontal: 13, paddingVertical: 8, backgroundColor: colors.white },
-  shelfCtaText: { color: colors.ink, fontFamily: fonts.bodyBold, fontSize: 14 },
-  collections: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  collection: { width: "47.9%", height: 190, justifyContent: "flex-end", overflow: "hidden", borderRadius: radius.lg, backgroundColor: colors.emerald },
-  collectionWide: { width: "100%", height: 210 },
-  collectionFallback: { alignItems: "center", justifyContent: "center", backgroundColor: colors.emeraldLight },
-  collectionLetter: { color: "rgba(255,255,255,0.14)", fontFamily: fonts.display, fontSize: 110 },
-  collectionCopy: { padding: 14 },
-  collectionCount: { color: "#d3b894", fontFamily: fonts.bodyBold, fontSize: 11, letterSpacing: 1.4, textTransform: "uppercase" },
-  collectionName: { color: colors.white, fontFamily: fonts.display, fontSize: 22, letterSpacing: -0.4 },
-  collectionCta: { marginTop: 2, color: "#9fd9df", fontFamily: fonts.bodyBold, fontSize: 13 },
-  offers: { marginHorizontal: -16, paddingHorizontal: 16, paddingVertical: 20, backgroundColor: "#fbf1e6" },
-  brandList: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  how: { borderRadius: radius.xl, padding: 20, backgroundColor: colors.white, ...shadow.card },
-  step: { flexDirection: "row", gap: 14, paddingVertical: 10 },
-  stepNumber: { width: 34, color: colors.teal, fontFamily: fonts.display, fontSize: 22 },
-  seller: { marginTop: 24, borderRadius: radius.xl, padding: 22 },
-  sellerBadge: { alignSelf: "flex-start", overflow: "hidden", borderWidth: 1, borderColor: "rgba(224,164,88,0.55)", borderRadius: 30, paddingHorizontal: 10, paddingVertical: 3, color: "#e0a458", fontFamily: fonts.bodyBold, fontSize: 11, letterSpacing: 1.8 },
-  sellerTitle: { marginTop: 12, color: colors.white, fontFamily: fonts.display, fontSize: 26, letterSpacing: -0.6 },
-  sellerCopy: { marginTop: 6, color: "#b8c8be", fontFamily: fonts.body, fontSize: 16, lineHeight: 22 },
-  sellerLink: { color: "#d3b894", fontFamily: fonts.bodySemi, fontSize: 14 },
-  skeleton: { height: 260, borderRadius: radius.lg, backgroundColor: colors.lineSoft },
+  topBar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingBottom: 10 },
+  topActions: { flexDirection: "row", alignItems: "center", gap: 8 },
+  pressed: { opacity: 0.85 },
+  page: { paddingHorizontal: 16 },
+  notice: { marginTop: 16 },
+  hero: { paddingHorizontal: 16, paddingTop: 10 },
+  eyebrow: { marginBottom: 6, color: BRONZE, fontFamily: fonts.medium, fontSize: 13.5 },
+  heroTitle: { color: colors.ink, fontFamily: fonts.serif, fontSize: 48, lineHeight: 50 },
+  heroAccent: { color: BRONZE, fontFamily: fonts.serifItalic },
+  heroCopy: { marginTop: 10, marginBottom: 16, color: "#5a665f", fontFamily: fonts.medium, fontSize: 15, lineHeight: 22 },
+  cta: { flexDirection: "row", alignSelf: "flex-start", alignItems: "center", gap: 10, borderRadius: radius.pill, paddingHorizontal: 22, paddingVertical: 13, backgroundColor: colors.ink },
+  ctaText: { color: colors.white, fontFamily: fonts.semi, fontSize: 15 },
+  mosaic: { flexDirection: "row", gap: 10, marginTop: 18 },
+  tile: { flex: 1, overflow: "hidden", borderRadius: 14, backgroundColor: TILE },
+  tileLarge: { flex: 3 },
+  tileColumn: { flex: 2, gap: 10 },
+  tilePrice: { position: "absolute", bottom: 8, left: 8, overflow: "hidden", borderRadius: 8, paddingHorizontal: 9, paddingVertical: 4, color: colors.ink, backgroundColor: "rgba(255,255,255,0.92)", fontFamily: fonts.semi, fontSize: 13 },
+  trust: { flexDirection: "row", flexWrap: "wrap", rowGap: 10, marginTop: 18, borderTopWidth: 1, borderBottomWidth: 1, borderColor: "#e7e1d7", paddingHorizontal: 16, paddingVertical: 12 },
+  trustItem: { flexDirection: "row", alignItems: "center", gap: 7, width: "50%", paddingRight: 8 },
+  trustText: { flexShrink: 1, color: "#5a665f", fontFamily: fonts.medium, fontSize: 13 },
+  catnav: { flexGrow: 1, justifyContent: "center", gap: 16, paddingHorizontal: 16, paddingTop: 22 },
+  catnavItem: { alignItems: "center", gap: 8, width: 78 },
+  catnavImage: { alignItems: "center", justifyContent: "center", overflow: "hidden", width: 72, height: 72, borderRadius: 36, backgroundColor: TILE },
+  catnavLetter: { color: BRONZE, fontFamily: fonts.serif, fontSize: 30 },
+  catnavName: { color: colors.ink, fontFamily: fonts.medium, fontSize: 13.5 },
+  block: { marginTop: 34 },
+  titleRow: { flexDirection: "row", alignItems: "baseline", justifyContent: "space-between", gap: 12, marginBottom: 14, paddingHorizontal: 16 },
+  title: { flexShrink: 1, color: colors.ink, fontFamily: fonts.serif, fontSize: 32, lineHeight: 36 },
+  link: { color: colors.ink, fontFamily: fonts.medium, fontSize: 14, textDecorationLine: "underline" },
+  rail: { gap: 14, paddingHorizontal: 16 },
+  skeleton: { height: 250, borderRadius: 12, backgroundColor: TILE },
+  band: { flexDirection: "row", alignItems: "flex-end", gap: 12, overflow: "hidden", marginBottom: 14, marginHorizontal: 16, borderRadius: 14, paddingHorizontal: 18, paddingVertical: 15 },
+  bandPhoto: { minHeight: 170 },
+  bandName: { color: colors.ink, fontFamily: fonts.serif, fontSize: 30, lineHeight: 34 },
+  bandCount: { color: "#5a665f", fontFamily: fonts.medium, fontSize: 13 },
+  onPhoto: { color: colors.white },
+  brands: { alignItems: "center", marginTop: 38, paddingHorizontal: 16 },
+  brandsLabel: { marginBottom: 10, color: "#8b938d", fontFamily: fonts.medium, fontSize: 13.5 },
+  brandList: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 6, columnGap: 22 },
+  brand: { color: colors.ink, fontFamily: fonts.serif, fontSize: 21, lineHeight: 28 },
+  seller: { alignItems: "center", gap: 10, marginTop: 40, borderTopWidth: 1, borderTopColor: "#e7e1d7", paddingHorizontal: 24, paddingTop: 30 },
+  sellerTitle: { color: colors.ink, fontFamily: fonts.serif, fontSize: 30, lineHeight: 34, textAlign: "center" },
+  sellerCopy: { marginBottom: 6, color: "#5a665f", fontFamily: fonts.medium, fontSize: 14.5, lineHeight: 21, textAlign: "center" },
 });

@@ -5,6 +5,7 @@ import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { InstrumentSerif_400Regular, InstrumentSerif_400Regular_Italic } from "@expo-google-fonts/instrument-serif";
 import { Outfit_500Medium, Outfit_600SemiBold, Outfit_700Bold, Outfit_800ExtraBold, useFonts } from "@expo-google-fonts/outfit";
 import { Rajdhani_500Medium, Rajdhani_600SemiBold, Rajdhani_700Bold } from "@expo-google-fonts/rajdhani";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
@@ -22,6 +23,7 @@ export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
     Outfit_500Medium, Outfit_600SemiBold, Outfit_700Bold, Outfit_800ExtraBold,
     Rajdhani_500Medium, Rajdhani_600SemiBold, Rajdhani_700Bold,
+    InstrumentSerif_400Regular, InstrumentSerif_400Regular_Italic,
   });
 
   return (

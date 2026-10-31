@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { apiUrl } from "./http";
-import { formatPrice } from "./currency";
+import { formatWholePrice } from "./currency";
 import { useCart } from "../context/CartContext";
 import WishlistButton from "./WishlistButton";
 import { productPath } from "./productPath";
@@ -18,12 +18,13 @@ const StorefrontProductCard = ({ product }) => {
   const discount = compare > price ? Math.round(((compare - price) / compare) * 100) : 0;
   const soldOut = product.qty === 0;
   const lowStock = !soldOut && product.qty != null && product.qty <= LOW_STOCK;
-  // Products sold in sizes are added from their page, once a size is chosen.
+  // Products with a choice of sizes are added from their page; a single size, like "Free Size", needs no choosing.
   const sizes = product.sizes || [];
+  const onlySize = sizes.length === 1 && sizes[0].in_stock ? sizes[0] : null;
   const inStockSizes = sizes.filter((size) => size.in_stock).map((size) => size.name);
 
   const quickAdd = () => {
-    addItem(product, 1);
+    addItem(product, 1, onlySize);
     setAdded(true);
     window.setTimeout(() => setAdded(false), 1800);
     toast.success(<span>{product.title} added to your bag. <Link to="/cart">View bag</Link></span>);
@@ -45,7 +46,7 @@ const StorefrontProductCard = ({ product }) => {
           {soldOut && <span className="sp-badge sp-badge--out">Sold out</span>}
           {lowStock && <span className="sp-badge sp-badge--low">Only {product.qty} left</span>}
         </div>
-        {!soldOut && (sizes.length ? (
+        {!soldOut && (sizes.length && !onlySize ? (
           <Link to={productPath(product)} className="sp-card-quick" aria-label={`Choose a size for ${product.title}`}>
             Choose size <span aria-hidden="true">→</span>
           </Link>
@@ -56,12 +57,9 @@ const StorefrontProductCard = ({ product }) => {
         ))}
       </div>
       <div className="sp-card-body">
-        <div className="sp-card-meta">
-          <span>{product.brand?.name || product.category?.name || "Elitezaar"}</span>
-          {product.brand?.name && product.category?.name && <span>{product.category.name}</span>}
-        </div>
+        <div className="sp-card-meta">{product.brand?.name || product.category?.name || "Elitezaar"}</div>
         <Link to={productPath(product)} className="sp-card-title">{product.title}</Link>
-        {inStockSizes.length > 0 && (
+        {inStockSizes.length > 1 && (
           <p className="sp-card-sizes" aria-label={`Sizes in stock: ${inStockSizes.join(", ")}`}>
             {inStockSizes.slice(0, 5).join(" · ")}{inStockSizes.length > 5 && <span> +{inStockSizes.length - 5}</span>}
           </p>
@@ -72,8 +70,8 @@ const StorefrontProductCard = ({ product }) => {
           </div>
         )}
         <div className="sp-card-price">
-          <strong>{formatPrice(price)}</strong>
-          {discount > 0 && <><s>{formatPrice(compare)}</s><span>{discount}% off</span></>}
+          <strong>{formatWholePrice(price)}</strong>
+          {discount > 0 && <s>{formatWholePrice(compare)}</s>}
         </div>
       </div>
     </article>

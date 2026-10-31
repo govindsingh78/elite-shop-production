@@ -3,6 +3,8 @@ const rupeesShort = new Intl.NumberFormat("en-IN", { style: "currency", currency
 
 export const formatPrice = (amount) => rupees.format(Number(amount) || 0);
 export const formatPriceShort = (amount) => rupeesShort.format(Number(amount) || 0);
+/** For showing prices at a glance: ₹1,299 rather than ₹1,299.00, keeping any paise that matter. */
+export const formatWholePrice = (amount) => formatPrice(amount).replace(/\.00$/, "");
 
 export const discountOf = (product) => {
   const price = Number(product?.price || 0);

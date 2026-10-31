@@ -19,7 +19,7 @@ export default function CategoryBannerPicker({ current, change, onChange, error 
   const preview = change.preview || (change.remove_banner ? null : categoryBannerUrl(current));
 
   const pick = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], allowsEditing: true, aspect: [3, 1], quality: 0.85 });
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], allowsEditing: true, aspect: [4, 3], quality: 0.85 });
     if (result.canceled) return;
     setUploading(true);
     try {
@@ -42,13 +42,13 @@ export default function CategoryBannerPicker({ current, change, onChange, error 
         <Button title={preview ? "Replace photo" : "Choose a photo"} icon="image-outline" variant="outline" small block={false} loading={uploading} onPress={pick} />
         {preview ? <Button title="Remove" variant="ghost" small block={false} onPress={() => onChange(current ? { remove_banner: true } : {})} /> : null}
       </Row>
-      <T variant="small" style={{ marginTop: 6 }}>A wide photo works best. The name sits on the left, so keep the main subject in the centre or on the right. It shows on the home page once the category has live products.</T>
+      <T variant="small" style={{ marginTop: 6 }}>A clear photo with no words on it, at least 1200 pixels wide. It shows tall on computers and wide on phones, so keep the main subject in the centre. It shows on the home page once the category has live products.</T>
       {error ? <T variant="small" color={colors.danger} style={{ marginTop: 4 }}>{error}</T> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  preview: { width: "100%", aspectRatio: 3, borderRadius: radius.md, backgroundColor: colors.lineSoft },
+  preview: { width: "100%", aspectRatio: 4 / 3, borderRadius: radius.md, backgroundColor: colors.lineSoft },
   empty: { alignItems: "center", justifyContent: "center", borderWidth: 1, borderStyle: "dashed", borderColor: colors.line, padding: 12, backgroundColor: colors.paper },
 });

@@ -48,7 +48,7 @@ const CategoryBannerField = ({ current, change, onChange, error }) => {
         </label>
         {preview && <button type="button" className="btn btn-link btn-sm text-danger" onClick={() => onChange(current ? { remove_banner: true } : {})}>Remove</button>}
       </div>
-      <div className="form-text">A wide JPG or PNG, about 1600 × 500 pixels. The name sits on the left, so keep the main subject in the centre or on the right. It shows on the home page once the category has live products.</div>
+      <div className="form-text">A clear photo with no words on it, at least 1200 pixels wide. It shows tall on computers and wide on phones, so keep the main subject in the centre. It shows on the home page once the category has live products.</div>
       {(uploadError || error) && <div className="text-danger small mt-1" role="alert">{uploadError || error}</div>}
     </div>
   );
