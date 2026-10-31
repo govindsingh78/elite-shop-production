@@ -10,7 +10,7 @@ import StartSelling from "@/components/StartSelling";
 import { Button, Chip, IconButton, Notice, Screen, SectionHeader, T } from "@/components/ui";
 import { useCart } from "@/context/CartContext";
 import { api } from "@/lib/api";
-import { productImageUrl } from "@/lib/config";
+import { categoryBannerUrl, productImageUrl } from "@/lib/config";
 import { diwaliSeason } from "@/lib/festive";
 import { discountOf } from "@/lib/format";
 import { useLoad } from "@/lib/useLoad";
@@ -31,18 +31,22 @@ const heroImageFrame = (slide, slideWidth) => {
   return { position: "absolute", left: 0, top: (HERO_HEIGHT - height) / 2, width, height };
 };
 
+/** The colours for a collection with no banner photo yet. */
+const SHELF_TONES = [["#143028", "#235a4e"], ["#3a2a17", "#6b4a26"], ["#2e1a2b", "#5a2d4e"]];
+
 async function loadHome() {
-  const [latest, featured, payments, categories] = await Promise.all([
+  const [latest, featured, payments, collections] = await Promise.all([
     api("/storefront/products"),
     api("/storefront/products", { query: { featured: "yes" } }).catch(() => null),
     api("/storefront/payment-methods").catch(() => ({ cod: true, online: false })),
-    api("/storefront/categories").catch(() => []),
+    api("/storefront/home-categories").catch(() => null),
   ]);
-  // A cover photo and piece count for the first few collections.
-  const covers = Object.fromEntries(await Promise.all((categories || []).slice(0, 6).map((category) =>
-    api("/storefront/products", { query: { category_id: category.id } })
-      .then((data) => [category.id, { total: Number(data.products?.total || 0), image: productImageUrl((data.products?.data || []).find((item) => item.image)?.image) }])
-      .catch(() => [category.id, null]))));
+  // Every main collection, with its banner, piece count and newest products.
+  const categories = collections?.categories || [];
+  const covers = Object.fromEntries(categories.map((category) => [category.id, {
+    total: category.total,
+    image: categoryBannerUrl(category.banner) || productImageUrl(category.products.find((item) => item.image)?.image),
+  }]));
 
   return {
     latest: latest.products?.data || [],
@@ -50,7 +54,7 @@ async function loadHome() {
     brands: latest.brands || [],
     featured: featured?.products?.data || [],
     online: !!payments?.online,
-    categories: categories || [],
+    categories,
     covers,
   };
 }
@@ -133,6 +137,7 @@ export default function HomeScreen() {
         ) : null}
 
         <ProductRail eyebrow="Just landed" title="New this week" products={data?.latest?.slice(0, 8) || []} width={cardWidth} loading={loading} />
+        {(data?.categories || []).filter((category) => category.total > 0).map((category, index) => <CategoryShelf key={category.id} category={category} index={index} width={cardWidth} />)}
         <ProductRail eyebrow="Editor’s picks" title="Chosen by our team" products={data?.featured || []} width={cardWidth} />
         {offers.length ? (
           <View style={[styles.block, styles.offers]}>
@@ -208,6 +213,30 @@ function ProductRail({ eyebrow, title, products, width, loading }) {
     <View style={styles.block}>
       <SectionHeader eyebrow={eyebrow} title={title} actionLabel="Shop all" onAction={() => router.push("/shop")} />
       <FlatList horizontal data={products} keyExtractor={(item) => String(item.id)} showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ gap: 14 }} renderItem={({ item }) => <ProductCard product={item} width={width} />} />
+    </View>
+  );
+}
+
+/** A collection's banner, leading to all its pieces, with its newest ones under it. A collection with nothing in it has no shelf. */
+function CategoryShelf({ category, index, width }) {
+  const banner = categoryBannerUrl(category.banner);
+  const viewAll = () => router.push({ pathname: "/shop", params: { category: category.slug } });
+  return (
+    <View style={styles.block}>
+      <Pressable onPress={viewAll} accessibilityRole="link" accessibilityLabel={`${category.name}: view all ${category.total}`} style={({ pressed }) => [styles.shelfBanner, pressed && { opacity: 0.92 }]}>
+        {banner ? <Image source={{ uri: banner }} style={StyleSheet.absoluteFill} resizeMode="cover" /> : <LinearGradient colors={SHELF_TONES[index % SHELF_TONES.length]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />}
+        <LinearGradient colors={["rgba(10,31,25,0.72)", "rgba(10,31,25,0.1)"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={StyleSheet.absoluteFill} />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.shelfCount}>{category.total} {category.total === 1 ? "piece" : "pieces"}</Text>
+          <Text style={styles.shelfName} numberOfLines={2}>{category.name}</Text>
+        </View>
+        <View style={styles.shelfCta}>
+          <Text style={styles.shelfCtaText}>View all</Text>
+          <Ionicons name="arrow-forward" size={15} color={colors.ink} />
+        </View>
+      </Pressable>
+      <FlatList horizontal data={category.products} keyExtractor={(item) => String(item.id)} showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ gap: 14 }} renderItem={({ item }) => <ProductCard product={item} width={width} />} />
     </View>
   );
@@ -314,6 +343,11 @@ const styles = StyleSheet.create({
   trustText: { color: colors.text, fontFamily: fonts.bodySemi, fontSize: 14 },
   section: { paddingHorizontal: 16 },
   block: { marginTop: 22 },
+  shelfBanner: { flexDirection: "row", alignItems: "flex-end", gap: 12, minHeight: 150, overflow: "hidden", marginBottom: 14, borderRadius: radius.lg, padding: 16, backgroundColor: colors.emerald },
+  shelfCount: { color: "#f0dcb9", fontFamily: fonts.bodySemi, fontSize: 13 },
+  shelfName: { marginTop: 2, color: colors.white, fontFamily: fonts.display, fontSize: 26, letterSpacing: -0.5 },
+  shelfCta: { flexDirection: "row", alignItems: "center", gap: 5, borderRadius: radius.pill, paddingHorizontal: 13, paddingVertical: 8, backgroundColor: colors.white },
+  shelfCtaText: { color: colors.ink, fontFamily: fonts.bodyBold, fontSize: 14 },
   collections: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
   collection: { width: "47.9%", height: 190, justifyContent: "flex-end", overflow: "hidden", borderRadius: radius.lg, backgroundColor: colors.emerald },
   collectionWide: { width: "100%", height: 210 },

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import CategoryBannerPicker from "@/components/CategoryBannerPicker";
 import { Button, Card, EmptyState, ListRow, Loader, Notice, Pill, Row, Screen, Segmented, SelectField, SwitchRow, T, TextField } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
@@ -116,6 +117,7 @@ function EditSheet({ kind, row, parents, onClose, onDelete, onSaved }) {
   const set = (name) => (value) => setValues((current) => ({ ...current, [name]: value }));
   // A main category with subcategories of its own can't become a subcategory (one level deep).
   const keepsTopLevel = isCategory && Number(row.children_count) > 0;
+  const [banner, setBanner] = useState({}); // What saving will change about the banner
   const [errors, setErrors] = useState({});
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -133,6 +135,7 @@ function EditSheet({ kind, row, parents, onClose, onDelete, onSaved }) {
         gst_rate: values.gst_rate === "" ? null : Number(values.gst_rate),
         gst_rate_high: values.gst_rate_high === "" ? null : Number(values.gst_rate_high),
         gst_threshold: values.gst_rate_high === "" || values.gst_threshold === "" ? null : Number(values.gst_threshold),
+        ...(values.parent_id ? {} : { ...(banner.banner_temp_id ? { banner_temp_id: banner.banner_temp_id } : {}), ...(banner.remove_banner ? { remove_banner: true } : {}) }),
       } : {}) };
     try {
       await request(row?.id ? `${config.path}/${row.id}` : config.path, { method: row?.id ? "PUT" : "POST", body });
@@ -164,6 +167,7 @@ function EditSheet({ kind, row, parents, onClose, onDelete, onSaved }) {
           />
         ) : null}
         {keepsTopLevel ? <T variant="small" style={{ marginTop: -4, marginBottom: 12 }}>Has its own subcategories, so it stays a main category.</T> : null}
+        {isCategory && !values.parent_id ? <CategoryBannerPicker current={row.banner} change={banner} onChange={setBanner} error={errors.banner_temp_id} /> : null}
         {isCategory ? (
           <View style={styles.gst}>
             <T variant="label" style={{ marginBottom: 10 }}>GST</T>

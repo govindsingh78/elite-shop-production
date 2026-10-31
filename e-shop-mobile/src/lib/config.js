@@ -7,6 +7,9 @@ export const SITE_URL = API_URL.replace(/\/api$/, "");
 export const productImageUrl = (image, size = "small") =>
   image ? `${SITE_URL}/uploads/products/${size}/${encodeURIComponent(image)}` : null;
 
+/** A category's banner photo, or null if it hasn't got one. */
+export const categoryBannerUrl = (banner) => (banner ? `${SITE_URL}/uploads/categories/${encodeURIComponent(banner)}` : null);
+
 export const BRAND = {
   name: "Elitezaar",
   domain: "elitezaar.com",

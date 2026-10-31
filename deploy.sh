@@ -20,6 +20,10 @@ php artisan route:cache
 php artisan view:cache
 sudo chown -R ubuntu:www-data storage bootstrap/cache
 sudo chmod -R 775 storage bootstrap/cache
+# Category banners: not in git, so this makes the folder and lets PHP write to it.
+sudo mkdir -p public/uploads/categories
+sudo chown -R ubuntu:www-data public/uploads/categories
+sudo chmod -R 775 public/uploads/categories
 sudo systemctl reload php8.5-fpm
 
 # Laravel's scheduler runs Admin › Server & health's checks (alerts about a full disk or new problems, and

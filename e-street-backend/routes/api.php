@@ -78,6 +78,7 @@ Route::middleware('throttle:20,1')->group(function () {
 });
 Route::post('/payments/razorpay/webhook', [PaymentController::class, 'webhook']);
 Route::get('/storefront/categories', [CategoryController::class, 'navigation']);
+Route::get('/storefront/home-categories', [CategoryController::class, 'home']);
 // The product page's "Delivery to": whether we deliver to a PIN code, and roughly when.
 Route::get('/storefront/delivery', [DeliveryController::class, 'check'])->middleware('throttle:60,1,delivery-check');
 // Coupons: the offers on a product page or for a bag, and checking a code at checkout.

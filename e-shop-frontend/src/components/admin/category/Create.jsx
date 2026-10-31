@@ -7,6 +7,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { apiUrl } from "../../common/http";
 import GstFields from "../gst/GstFields";
 import { gstFieldValues, gstPayload } from "../gst/gst";
+import { bannerPayload } from "../../common/categoryBanner";
+import CategoryBannerField from "./CategoryBannerField";
 
 const Create = () => {
   const [searchParams] = useSearchParams();
@@ -17,6 +19,7 @@ const Create = () => {
   const [loading, setLoading] = useState(false); // State for loading
   const [gst, setGst] = useState(gstFieldValues); // HSN code and GST rate for the category's products
   const [gstErrors, setGstErrors] = useState({});
+  const [banner, setBanner] = useState({}); // A new banner to save with the category
 
   // Only main categories can hold subcategories (one level deep).
   useEffect(() => {
@@ -45,6 +48,7 @@ const Create = () => {
           status,
           parent_id: parentId ? Number(parentId) : null,
           ...gstPayload(gst),
+          ...(parentId ? {} : bannerPayload(banner)),
         }),
       });
 
@@ -56,6 +60,7 @@ const Create = () => {
         setName(""); // Clear the form
         setStatus("1"); // Reset status to Active
         setGst(gstFieldValues());
+        setBanner({});
         // The parent stays selected so several subcategories can be added in a row.
         if (!parentId && data.data) setParents((current) => [...current, data.data].sort((a, b) => a.name.localeCompare(b.name)));
       } else {
@@ -132,6 +137,8 @@ const Create = () => {
                 <option value="0">Blocked</option>
               </select>
             </div>
+
+            {!parentId && <CategoryBannerField change={banner} onChange={setBanner} error={gstErrors.banner_temp_id} />}
 
             <GstFields values={gst} onChange={setGst} errors={gstErrors} />
 

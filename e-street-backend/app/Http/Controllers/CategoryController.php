@@ -3,12 +3,18 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use App\Models\Category;
+use App\Models\Product;
+use App\Services\CategoryBanners;
 
 class CategoryController extends Controller
 {
+    /** How many of its newest pieces each collection brings to the home page. */
+    private const HOME_PRODUCTS = 8;
+
     /**
      * Public active categories used by storefront navigation: top-level categories, each with its active subcategories.
      */
@@ -22,6 +28,28 @@ class CategoryController extends Controller
             ...$link($category),
             'children' => ($children->get($category->id) ?? collect())->map($link)->values(),
         ]), 200);
+    }
+
+    /**
+     * The home page's collections, all in one request: each main category with its banner, how many pieces it has
+     * (its subcategories' included) and its newest few. Those with no pieces yet come back with an empty list.
+     */
+    public function home()
+    {
+        $categories = Category::query()->where('status', 1)->orderBy('name')->get(['id', 'name', 'slug', 'parent_id', 'banner']);
+        $children = $categories->whereNotNull('parent_id')->groupBy('parent_id');
+
+        return response()->json(['categories' => $categories->whereNull('parent_id')->values()->map(function (Category $category) use ($children) {
+            $ids = [$category->id, ...($children->get($category->id)?->pluck('id')->all() ?? [])];
+            $products = Product::query()->onStorefront()->whereIn('category_id', $ids);
+
+            return [
+                ...$category->only(['id', 'name', 'slug', 'banner']),
+                'total' => (clone $products)->count(),
+                'products' => $products->with(['category:id,name', 'brand:id,name', 'sizes'])->withRating()
+                    ->orderByDesc('id')->limit(self::HOME_PRODUCTS)->get()->makeHidden('description'),
+            ];
+        })], 200);
     }
 
     /**
@@ -53,7 +81,13 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        $category = Category::create($request->validate($this->rules(), $this->messages()));
+        $validated = $request->validate($this->rules(), $this->messages());
+        $category = DB::transaction(function () use ($validated) {
+            $category = Category::create($validated);
+            $this->applyBanner($category, $validated);
+
+            return $category;
+        });
 
         return response()->json(['message' => 'Category created successfully', 'data' => $category, 'status' => 201], 201);
     }
@@ -98,9 +132,12 @@ class CategoryController extends Controller
             ]);
         }
 
-        $category->update($validated);
+        DB::transaction(function () use ($category, $validated) {
+            $category->update($validated);
+            $this->applyBanner($category, $validated);
+        });
 
-        return response()->json(['message' => 'Category updated successfully'], 200);
+        return response()->json(['message' => 'Category updated successfully', 'data' => $category], 200);
     }
 
     /**
@@ -122,9 +159,19 @@ class CategoryController extends Controller
             return response()->json(['message' => "Move the {$products} in {$category->name} to another category first."], 422);
         }
 
+        CategoryBanners::remove($category);
         $category->delete();
 
         return response()->json(['message' => 'Category deleted successfully'], 200);
+    }
+
+    private function applyBanner(Category $category, array $validated): void
+    {
+        if (!empty($validated['banner_temp_id'])) {
+            CategoryBanners::attach($category, (int) $validated['banner_temp_id']);
+        } elseif (!empty($validated['remove_banner'])) {
+            CategoryBanners::remove($category);
+        }
     }
 
     private function rules(?Category $category = null): array
@@ -144,6 +191,9 @@ class CategoryController extends Controller
             'gst_rate' => ['sometimes', 'nullable', 'numeric', 'min:0', 'max:40'],
             'gst_rate_high' => ['sometimes', 'nullable', 'numeric', 'min:0', 'max:40', 'required_with:gst_threshold'],
             'gst_threshold' => ['sometimes', 'nullable', 'numeric', 'min:1', 'required_with:gst_rate_high'],
+            // A photo already sent to /temp-images, or a request to take the banner off.
+            'banner_temp_id' => ['sometimes', 'nullable', 'integer', 'exists:temp_images,id'],
+            'remove_banner' => ['sometimes', 'boolean'],
         ];
     }
 
@@ -155,6 +205,7 @@ class CategoryController extends Controller
             'hsn_code.regex' => 'An HSN code has 4 to 8 digits, like 6205.',
             'gst_rate_high.required_with' => 'Add the higher rate that applies above the price.',
             'gst_threshold.required_with' => 'Add the price above which the higher rate applies.',
+            'banner_temp_id.exists' => 'That photo couldn’t be found. Please upload it again.',
         ];
     }
 }

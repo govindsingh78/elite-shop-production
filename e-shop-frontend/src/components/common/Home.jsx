@@ -18,6 +18,7 @@ import founderPhoto from "../../assets/images/founder.jpg";
 import { AdminAuthContext } from "../context/AdminAuth";
 import { useSeo } from "./seo";
 import { productPath } from "./productPath";
+import { categoryBannerUrl } from "./categoryBanner";
 import { diwaliSeason } from "./festive";
 import { DiwaliArt, DiyaIcon, DiyaLedge, FestiveLights, Toran } from "./Diwali";
 
@@ -231,6 +232,37 @@ const Collections = ({ categories, covers }) => {
   );
 };
 
+/* ---------- A banner and the newest pieces for each collection ---------- */
+const SHELF_PRODUCTS = 4;
+
+const CategoryShelf = ({ category, index }) => {
+  const banner = categoryBannerUrl(category.banner);
+  const path = `/shop/${category.slug}`;
+  const pieces = `${category.total} ${category.total === 1 ? "piece" : "pieces"}`;
+  return (
+    <section className="lp-section lp-shelf" aria-labelledby={`shelf-${category.id}`}>
+      <div className="container">
+        <Link to={path} className={`lp-shelf-banner${banner ? "" : ` lp-shelf-banner--${index % 3}`}`}>
+          {banner && <img src={banner} alt="" loading="lazy" />}
+          <span className="lp-shelf-copy">
+            <small>{pieces}</small>
+            <h2 id={`shelf-${category.id}`}>{category.name}</h2>
+          </span>
+          <span className="lp-shelf-cta">View all <span aria-hidden="true">→</span></span>
+        </Link>
+        <div className="row g-3 g-lg-4">
+          {category.products.slice(0, SHELF_PRODUCTS).map((product, position) => (
+            <div className="col-6 col-lg-3 sp-grid-item" style={{ "--item-index": position }} key={product.id}><StorefrontProductCard product={product} /></div>
+          ))}
+        </div>
+        {category.total > SHELF_PRODUCTS && (
+          <div className="lp-shelf-more"><Link to={path} className="lp-head-link">View all {category.name} <span aria-hidden="true">→</span></Link></div>
+        )}
+      </div>
+    </section>
+  );
+};
+
 /* ---------- Product grid ---------- */
 const ProductGrid = ({ eyebrow, title, copy, products, link, linkLabel, tone }) => {
   if (!products.length) return null;
@@ -365,7 +397,8 @@ const HomeContent = () => {
   const [latest, setLatest] = useState(null);
   const [featured, setFeatured] = useState([]);
   const [online, setOnline] = useState(false);
-  const [covers, setCovers] = useState({});
+  // Every main collection with its banner, piece count and newest products; one with nothing in it has no shelf.
+  const [collections, setCollections] = useState([]);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -377,19 +410,14 @@ const HomeContent = () => {
       });
     getJson("/storefront/products?featured=yes", controller.signal).then((data) => setFeatured(data.products?.data || [])).catch(() => {});
     getJson("/storefront/payment-methods", controller.signal).then((data) => setOnline(!!data.online)).catch(() => {});
+    getJson("/storefront/home-categories", controller.signal).then((data) => setCollections(data.categories || [])).catch(() => {});
     return () => controller.abort();
   }, []);
 
-  // One small request per collection for its cover image and item count.
-  useEffect(() => {
-    if (!categories.length) return undefined;
-    const controller = new AbortController();
-    Promise.all(categories.slice(0, 6).map((category) => getJson(`/storefront/products?category_id=${category.id}`, controller.signal)
-      .then((data) => [category.id, { total: Number(data.products?.total || 0), image: productImage((data.products?.data || []).find((item) => item.image)) }])
-      .catch(() => null)))
-      .then((entries) => setCovers(Object.fromEntries(entries.filter(Boolean))));
-    return () => controller.abort();
-  }, [categories]);
+  const covers = useMemo(() => Object.fromEntries(collections.map((category) => [category.id, {
+    total: category.total,
+    image: categoryBannerUrl(category.banner) || productImage(category.products.find((item) => item.image)),
+  }])), [collections]);
 
   const latestProducts = useMemo(() => latest?.products?.data || [], [latest]);
   const brands = latest?.brands || [];
@@ -417,6 +445,7 @@ const HomeContent = () => {
       {latest && stats.products === 0 && <section className="lp-section"><div className="container"><StartSelling /></div></section>}
       <Collections categories={categories} covers={covers} />
       <ProductGrid eyebrow="NEW ARRIVALS" title="Just landed" copy="Fresh pieces, added this week." products={latestProducts.slice(0, 8)} link="/shop" linkLabel="View all" />
+      {collections.filter((category) => category.total > 0).map((category, index) => <CategoryShelf key={category.id} category={category} index={index} />)}
       <FounderNote />
       <FeaturedCarousel products={featured} />
       <ProductGrid tone="warm" eyebrow="OFFERS" title="Offers you’ll love" copy="Our best prices right now — while stock lasts." products={deals} link="/shop?sort=price_asc" linkLabel="Shop by price" />

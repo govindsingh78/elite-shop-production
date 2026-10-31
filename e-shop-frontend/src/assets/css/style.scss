@@ -221,6 +221,29 @@ ul{
     &:hover span { transform: translateX(3px); }
 }
 
+// Home: a collection's banner, with its newest pieces under it.
+.lp-shelf-banner {
+    position: relative; z-index: 0; display: flex; overflow: hidden; align-items: flex-end; justify-content: space-between; gap: 16px; min-height: 260px; margin-bottom: 22px; border-radius: 24px; padding: 28px 32px; color: #fff; background: #18372e; text-decoration: none;
+    img { position: absolute; z-index: -2; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .45s ease; }
+    // Keeps the name readable on any photo.
+    &::after { position: absolute; z-index: -1; inset: 0; background: linear-gradient(90deg, rgba(10, 31, 25, .72), rgba(10, 31, 25, .12) 72%); content: ""; }
+    &:hover { color: #fff; }
+    &:hover img { transform: scale(1.03); }
+    &:hover .lp-shelf-cta span { transform: translateX(3px); }
+}
+.lp-shelf-banner--0 { background: radial-gradient(circle at 85% 15%, rgba(67, 195, 209, .4), transparent 45%), linear-gradient(120deg, #143028, #235a4e); }
+.lp-shelf-banner--1 { background: radial-gradient(circle at 85% 15%, rgba(224, 183, 125, .42), transparent 45%), linear-gradient(120deg, #3a2a17, #6b4a26); }
+.lp-shelf-banner--2 { background: radial-gradient(circle at 85% 15%, rgba(190, 120, 160, .4), transparent 45%), linear-gradient(120deg, #2e1a2b, #5a2d4e); }
+.lp-shelf-copy {
+    display: grid; gap: 4px; min-width: 0;
+    small { color: #f0dcb9; font-size: .86rem; font-weight: 600; letter-spacing: .02em; }
+    h2 { margin: 0; color: #fff; font-family: "Outfit", sans-serif; font-size: clamp(1.7rem, 3.4vw, 2.8rem); font-weight: 800; letter-spacing: -.035em; overflow-wrap: anywhere; }
+}
+.lp-shelf-cta { display: inline-flex; flex: none; align-items: center; gap: 6px; border-radius: 30px; padding: 10px 20px; color: #13291f; background: #fff; font-weight: 700;
+    span { transition: transform .15s ease; }
+}
+.lp-shelf-more { display: flex; justify-content: center; margin-top: 22px; }
+
 .lp-collections { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 260px; gap: 18px; }
 .lp-collections--1 { grid-template-columns: 1fr; }
 .lp-collections--2 { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 360px; }
@@ -310,6 +333,8 @@ ul{
     .lp-hero-badge { position: relative; top: auto; left: auto; width: fit-content; margin: 16px 0 0 auto; animation: none; }
     .lp-spotlight { position: relative; top: auto; left: auto; width: 100%; margin-top: 12px; animation: none; }
     .lp-section { padding-top: 52px; }
+    .lp-shelf-banner { min-height: 170px; margin-bottom: 16px; border-radius: 18px; padding: 18px 20px; }
+    .lp-shelf-cta { padding: 8px 14px; font-size: .86rem; }
     .lp-collections, .lp-collections--2, .lp-collections--3, .lp-collections--4 { grid-template-columns: 1fr; grid-auto-rows: 200px; }
     .lp-collections--4 .lp-collection.is-large { grid-column: auto; }
     .lp-steps { grid-template-columns: 1fr; }
@@ -746,6 +771,11 @@ a:hover > .brand-logo .brand-mark { transform: rotate(-6deg) scale(1.04); }
 
 .account-menu-cta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 14px 14px 6px; }
 .account-menu-cta .btn { border-radius: 10px; padding: 8px 10px; font-weight: 700; }
+.category-banner-preview {
+    display: grid; overflow: hidden; place-items: center; aspect-ratio: 16 / 5; max-width: 560px; border: 1px dashed #cfdad3; border-radius: 12px; padding: 12px; color: #78847e; background: #f8faf8; font-size: .88rem; text-align: center;
+    img { width: 100%; height: 100%; object-fit: cover; }
+    &.has-image { border-style: solid; padding: 0; }
+}
 .account-menu-section { margin: 8px 18px 0; color: #81918a; font: 700 .62rem/1.4 Arial, sans-serif; letter-spacing: .16em; text-transform: uppercase; }
 
 @media (max-width: 991.98px) {

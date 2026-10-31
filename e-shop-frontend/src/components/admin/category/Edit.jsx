@@ -7,6 +7,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { apiUrl } from "../../common/http";
 import GstFields from "../gst/GstFields";
 import { gstFieldValues, gstPayload } from "../gst/gst";
+import { bannerPayload } from "../../common/categoryBanner";
+import CategoryBannerField from "./CategoryBannerField";
 
 const Edit = () => {
   const { id } = useParams(); // Get category ID from URL params
@@ -19,6 +21,8 @@ const Edit = () => {
   const [loading, setLoading] = useState(false); // State for loading
   const [gst, setGst] = useState(gstFieldValues); // HSN code and GST rate for the category's products
   const [gstErrors, setGstErrors] = useState({});
+  const [currentBanner, setCurrentBanner] = useState(null); // The banner it has now
+  const [banner, setBanner] = useState({}); // What saving will change about it
 
   // Fetch category details to pre-fill the form
   useEffect(() => {
@@ -41,6 +45,7 @@ const Edit = () => {
           setParentId(data.parent_id ? String(data.parent_id) : ""); // Pre-fill parent
           setHasChildren(Number(data.children_count) > 0);
           setGst(gstFieldValues(data));
+          setCurrentBanner(data.banner);
         } else {
           toast.error(data.message || "Failed to fetch category details.");
         }
@@ -77,6 +82,7 @@ const Edit = () => {
           name,
           status,
           parent_id: parentId ? Number(parentId) : null,
+          ...(parentId ? {} : bannerPayload(banner)),
           ...gstPayload(gst),
         }),
       });
@@ -163,6 +169,8 @@ const Edit = () => {
                 <option value="0">Blocked</option>
               </select>
             </div>
+
+            {!parentId && <CategoryBannerField current={currentBanner} change={banner} onChange={setBanner} error={gstErrors.banner_temp_id} />}
 
             <GstFields values={gst} onChange={setGst} errors={gstErrors} />
 
