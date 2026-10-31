@@ -1,13 +1,14 @@
 import React, { useState } from "react";
-import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
-import { Button, Card, ListRow, Loader, Notice, Pill, Screen, SectionHeader, Segmented, Stat, T } from "@/components/ui";
+import { Button, Card, Chip, ListRow, Loader, Notice, Pill, Screen, SectionHeader, Stat, T } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { confirmAction } from "@/lib/confirm";
 import { timeAgo } from "@/lib/format";
 import { useLoad } from "@/lib/useLoad";
 import { colors, fonts, radius } from "@/theme";
+import BackupsPanel from "./BackupsPanel";
 import { LogPanel, SpeedPanel, StoragePanel, TestEmailCard, formatBytes } from "./ServerTabs";
 
 const SEVERITY = {
@@ -19,21 +20,26 @@ const AUDIENCES = { customer: "shoppers", seller: "sellers", admin: "admins", gu
 const SOURCES = { server: "Server", website: "Website", app: "App" };
 
 const bytes = formatBytes;
-const TABS = [{ value: "overview", label: "Overview" }, { value: "speed", label: "Speed" }, { value: "storage", label: "Storage" }, { value: "log", label: "Log" }];
+const TABS = [{ value: "overview", label: "Overview" }, { value: "speed", label: "Speed" }, { value: "storage", label: "Storage" }, { value: "backups", label: "Backups" }, { value: "log", label: "Log" }];
 
 /**
  * Admin: the server's health at a glance, what needs attention, the latest problems and suggestions; then page and
- * API speed, what fills the disk (with clean-ups), and the raw log — the same as the website's Server & health.
+ * API speed, what fills the disk (with clean-ups), database backups and the raw log — the same as the website's Server & health.
  */
 export default function ServerScreen() {
   const { request } = useAuth();
   const toast = useToast();
   const [tab, setTab] = useState("overview");
   const { data, loading, refreshing, error, reload } = useLoad(() => request("/admin/server"), [request], { refocus: true });
-  const tabs = <Segmented options={TABS} value={tab} onChange={setTab} style={{ marginBottom: 14 }} />;
+  // A row to swipe: five sections don't fit a phone's width side by side.
+  const tabs = (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0, marginBottom: 14 }} contentContainerStyle={{ gap: 8 }}>
+      {TABS.map((item) => <Chip key={item.value} label={item.label} active={tab === item.value} onPress={() => setTab(item.value)} />)}
+    </ScrollView>
+  );
 
   if (tab !== "overview") {
-    return <Screen keyboard>{tabs}{tab === "speed" ? <SpeedPanel /> : tab === "storage" ? <StoragePanel /> : <LogPanel />}</Screen>;
+    return <Screen keyboard>{tabs}{tab === "speed" ? <SpeedPanel /> : tab === "storage" ? <StoragePanel /> : tab === "backups" ? <BackupsPanel /> : <LogPanel />}</Screen>;
   }
   if (loading) return <Loader label="Checking the server…" />;
   if (!data) return <Screen>{tabs}<Notice tone="error" message={error || "Couldn’t check the server."} /></Screen>;

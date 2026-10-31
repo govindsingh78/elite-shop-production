@@ -24,6 +24,14 @@ sudo chmod -R 775 storage bootstrap/cache
 sudo mkdir -p public/uploads/categories
 sudo chown -R ubuntu:www-data public/uploads/categories
 sudo chmod -R 775 public/uploads/categories
+# Database backups hold customers' details: only the app may read them.
+sudo mkdir -p storage/app/private/backups
+sudo chown -R ubuntu:www-data storage/app/private/backups
+sudo chmod -R u=rwX,g=rwX,o= storage/app/private/backups
+# Backups use the MySQL client tools. A failed install mustn't stop a deploy: Server & health says what's missing.
+if ! command -v mysqldump >/dev/null; then
+  sudo apt-get install -y mysql-client || echo "Couldn't install mysql-client, so database backups won't run yet."
+fi
 sudo systemctl reload php8.5-fpm
 
 # Laravel's scheduler runs Admin › Server & health's checks (alerts about a full disk or new problems, and

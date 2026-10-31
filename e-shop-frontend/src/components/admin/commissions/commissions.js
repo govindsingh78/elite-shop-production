@@ -19,6 +19,7 @@ export async function commissionRequest(portal, path, { method = "GET", body } =
     const fieldErrors = Object.fromEntries(Object.entries(data.errors || {}).map(([field, messages]) => [field, [].concat(messages)[0]]));
     const error = new Error(Object.values(fieldErrors)[0] || data.message || "Something went wrong. Please try again.");
     error.fieldErrors = fieldErrors;
+    error.status = response.status;
     throw error;
   }
   return data;

@@ -2,6 +2,7 @@ import React from "react";
 import { useSearchParams } from "react-router-dom";
 import Layout from "../../common/Layout";
 import Sidebar from "../../common/Sidebar";
+import BackupsTab from "./BackupsTab";
 import LogTab from "./LogTab";
 import OverviewTab from "./OverviewTab";
 import ProblemsTab from "./ProblemsTab";
@@ -9,9 +10,9 @@ import SpeedTab from "./SpeedTab";
 import StorageTab from "./StorageTab";
 import { SERVER_TABS } from "./server";
 
-const TABS = { overview: OverviewTab, problems: ProblemsTab, speed: SpeedTab, storage: StorageTab, log: LogTab };
+const TABS = { overview: OverviewTab, problems: ProblemsTab, speed: SpeedTab, storage: StorageTab, backups: BackupsTab, log: LogTab };
 
-/** Admin › Server & health: is the server healthy, what are people running into, what's slow, what fills the disk. */
+/** Admin › Server & health: is the server healthy, what are people running into, what's slow, what fills the disk, and the database's backups. */
 const ServerHealth = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = TABS[searchParams.get("tab")] ? searchParams.get("tab") : "overview";

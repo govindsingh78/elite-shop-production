@@ -8,6 +8,7 @@ export const SERVER_TABS = [
   { key: "problems", label: "Problems" },
   { key: "speed", label: "Speed" },
   { key: "storage", label: "Storage" },
+  { key: "backups", label: "Backups" },
   { key: "log", label: "Log" },
 ];
 

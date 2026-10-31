@@ -42,7 +42,7 @@ const GROW_DISK_STEPS = [
 ];
 const GROW_DISK_COMMANDS = ["lsblk", "sudo growpart /dev/nvme0n1 1   # or /dev/xvda 1 — use the disk name lsblk shows", "sudo resize2fs /dev/root", "df -h /"];
 
-function Command({ command, note }) {
+export function Command({ command, note }) {
   return (
     <View style={{ marginTop: 10 }}>
       {note ? <T variant="small">{note}</T> : null}

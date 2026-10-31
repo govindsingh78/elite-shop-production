@@ -5,6 +5,7 @@ use App\Models\User;
 use App\Services\Security\LoginGuard;
 use App\Services\Security\PhoneOtp;
 use App\Services\Monitoring\Advisor;
+use App\Services\Monitoring\Backups;
 use App\Services\Monitoring\MailCheck;
 use App\Services\Monitoring\ServerHealth;
 use App\Services\Monitoring\Speed;
@@ -73,6 +74,57 @@ Artisan::command('monitor:tidy', function () {
     return 0;
 })->purpose('Remove old photo uploads and old monitoring data');
 
+/* The day's automatic database backup, from the hour chosen in Admin › Server & health › Backups. */
+Artisan::command('backups:auto', function () {
+    /** @var ClosureCommand $this */
+    $backup = Backups::runIfDue();
+    if (!$backup) {
+        $this->info('No backup due.');
+
+        return 0;
+    }
+    $backup['status'] === 'ready' ? $this->info("Backed up to {$backup['id']}.") : $this->error("The backup failed: {$backup['error']}");
+
+    return $backup['status'] === 'ready' ? 0 : 1;
+})->purpose('Take the day\'s automatic database backup, if it is due');
+
+/*
+ * Restores a backup from the server, for when the admin panel can't be reached: a broken database means nobody
+ * can sign in. With no name, it lists what there is. A database too damaged to copy needs --skip-safety-copy.
+ */
+Artisan::command('backups:restore {backup? : The backup\'s name} {--skip-safety-copy : Don\'t copy the current database first}', function (?string $backup = null) {
+    /** @var ClosureCommand $this */
+    $ready = Backups::all()->where('status', 'ready');
+    if (!$backup) {
+        $this->table(['Name', 'Taken', 'Type', 'Size'], $ready->map(fn ($item) => [$item['id'], $item['finished_at'], $item['trigger'], ServerHealth::bytes($item['size'])])->all());
+        $this->line('Restore one with: php artisan backups:restore <name>');
+
+        return 0;
+    }
+    $found = $ready->firstWhere('id', $backup);
+    if (!$found) {
+        $this->error("There's no finished backup called {$backup}.");
+
+        return 1;
+    }
+    $this->warn("This replaces the whole database with {$backup}. Anything added since it was taken is removed.");
+    if ($this->ask('Type RESTORE to continue') !== 'RESTORE') {
+        $this->info('Nothing was changed.');
+
+        return 0;
+    }
+    Backups::beginRestore($found, 'the server');
+    $result = Backups::restore($backup, !$this->option('skip-safety-copy'));
+    if ($result['status'] !== 'done') {
+        $this->error($result['error']);
+
+        return 1;
+    }
+    $this->info("Restored {$backup}." . ($result['safety_copy'] ? " The database as it was is saved as {$result['safety_copy']}." : ''));
+
+    return 0;
+})->purpose('Restore a database backup from the server');
+
 /* Sends a test email, to check the mail settings in .env (e.g. Amazon SES) after changing them. */
 Artisan::command('mail:test {to : Where to send the test email}', function (string $to) {
     /** @var ClosureCommand $this */
@@ -109,3 +161,4 @@ Artisan::command('security:unblock {value : The email or IP address}', function 
 Schedule::command('monitor:check')->everyTenMinutes();
 Schedule::command('sanctum:prune-expired --hours=24')->daily();
 Schedule::command('monitor:tidy')->dailyAt('03:30');
+Schedule::command('backups:auto')->everyFifteenMinutes();

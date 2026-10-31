@@ -98,6 +98,10 @@ class Advisor
                 'From ' . (clone $failedLastHour)->distinct()->count('ip') . ' addresses. Someone may be guessing passwords; accounts and addresses are blocked automatically, and you can block more by hand.', null, [], '/admin/security');
         }
 
+        foreach (Backups::attention() as $item) {
+            $add($item['key'], $item['severity'], $item['title'], $item['detail'], 'backups', $item['commands']);
+        }
+
         $logBytes = array_sum(array_column(ServerHealth::logFiles(), 'size'));
         if ($logBytes > 100 * 1024 * 1024) {
             $add('logs', 'warning', 'Log files are using ' . ServerHealth::bytes($logBytes), 'Old log entries are rarely needed. Clean them up under Storage.', 'storage');

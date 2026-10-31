@@ -23,6 +23,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ShippingMethodController;
 use App\Http\Controllers\SizeController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\Admin\BackupController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\CommissionController;
 use App\Http\Controllers\Admin\SellerController;
@@ -89,6 +90,9 @@ Route::get('/sitemap.xml', [SitemapController::class, 'index'])->middleware('thr
 // The printable invoice, from a signed link (order pages, the app and emails), so no sign-in is needed.
 Route::get('/invoices/{invoice}/print', [InvoiceController::class, 'print'])
     ->name('invoices.print')->middleware(['signed:relative', 'throttle:60,1'])->whereNumber('invoice');
+// A database backup from a 5-minute signed link, made after the admin confirms their password.
+Route::get('/backups/{backup}/download', [BackupController::class, 'download'])
+    ->name('backups.download')->middleware(['signed:relative', 'throttle:10,1,backup-download'])->where('backup', '[a-z0-9-]+');
 // A month's GST report from a 10-minute signed link (the app opens it in the phone's browser).
 Route::get('/invoices/report/{user}', [InvoiceController::class, 'signedReport'])
     ->name('invoices.report')->middleware(['signed:relative', 'throttle:20,1,gst-report'])->whereNumber('user');
@@ -231,6 +235,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('admin/server/cleanup', [ServerController::class, 'cleanup'])->middleware('throttle:60,1,server-cleanup');
         Route::get('admin/server/logs', [ServerController::class, 'logs']);
         Route::post('admin/server/test-email', [ServerController::class, 'testEmail'])->middleware('throttle:5,1,test-email');
+        Route::get('admin/server/backups', [BackupController::class, 'index']);
+        Route::post('admin/server/backups', [BackupController::class, 'store'])->middleware('throttle:6,1,backups');
+        Route::put('admin/server/backups/settings', [BackupController::class, 'updateSettings']);
+        Route::delete('admin/server/backups/{backup}', [BackupController::class, 'destroy'])->where('backup', '[a-z0-9-]+');
+        Route::post('admin/server/backups/{backup}/download-link', [BackupController::class, 'downloadLink'])->middleware('throttle:5,1,backup-confirm')->where('backup', '[a-z0-9-]+');
+        Route::get('admin/server/backups/{backup}/restore-check', [BackupController::class, 'restoreCheck'])->where('backup', '[a-z0-9-]+');
+        Route::post('admin/server/backups/{backup}/restore', [BackupController::class, 'restore'])->middleware('throttle:5,1,backup-confirm')->where('backup', '[a-z0-9-]+');
         Route::get('admin/sellers', [SellerController::class, 'index']);
         Route::get('admin/sellers/{seller}', [SellerController::class, 'show'])->whereNumber('seller');
         Route::patch('admin/sellers/{seller}/status', [SellerController::class, 'updateStatus'])->whereNumber('seller');

@@ -206,14 +206,19 @@ class ServerHealth
                 ['key' => 'temp', 'label' => 'Temporary photo uploads', 'path' => public_path('uploads/temp'), 'cleanup' => 'temp-uploads'],
                 ['key' => 'logs', 'label' => 'Log files', 'path' => storage_path('logs'), 'cleanup' => 'logs'],
                 ['key' => 'cache', 'label' => 'Cache & compiled pages', 'path' => storage_path('framework')],
+                ['key' => 'backups', 'label' => 'Database backups', 'path' => Backups::folder()],
                 ['key' => 'files', 'label' => 'Other stored files', 'path' => storage_path('app')],
                 ['key' => 'website', 'label' => 'Website files', 'path' => $root . '/e-shop-frontend/dist'],
                 ['key' => 'code', 'label' => 'Code libraries (vendor)', 'path' => base_path('vendor')],
                 ['key' => 'git', 'label' => 'Deploy history (git)', 'path' => $root . '/.git'],
             ])->map(fn ($folder) => [...$folder, ...self::folderSize($folder['path']), 'path' => str_replace('\\', '/', $folder['path'])])
-                ->filter(fn ($folder) => $folder['exists'])
-                ->sortByDesc('bytes')
-                ->values();
+                ->filter(fn ($folder) => $folder['exists']);
+            // Backups usually sit inside the stored files, and shouldn't be counted twice.
+            $backups = $folders->firstWhere('key', 'backups');
+            if ($backups && str_starts_with($backups['path'], str_replace('\\', '/', storage_path('app')))) {
+                $folders = $folders->map(fn ($folder) => $folder['key'] === 'files' ? [...$folder, 'bytes' => max(0, $folder['bytes'] - $backups['bytes']), 'files' => max(0, $folder['files'] - $backups['files'])] : $folder);
+            }
+            $folders = $folders->sortByDesc('bytes')->values();
 
             $disk = self::disk();
             $app = (int) $folders->sum('bytes');
