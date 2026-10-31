@@ -51,7 +51,7 @@ const CreateBrands = () => {
     <div className="row">
     <div className="col-md-12">
         
-      <div className="d-flex">
+      <div className="d-flex admin-dashboard-layout">
         {/* Left Navigation Bar */}
         <Sidebar />
 

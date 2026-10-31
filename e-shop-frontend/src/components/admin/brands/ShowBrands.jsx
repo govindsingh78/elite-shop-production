@@ -77,7 +77,7 @@ const ShowBrands = () => {
       <div className="container py-5">
         <div className="row">
           <div className="col-md-12">
-            <div className="d-flex">
+            <div className="d-flex admin-dashboard-layout">
               {/* Left Navigation Bar */}
               <Sidebar />
 
@@ -103,57 +103,59 @@ const ShowBrands = () => {
                 {loading ? (
                   <p>Loading Brand...</p>
                 ) : (
-                  <table className="table table-bordered table-hover">
-                    <thead className="thead-dark">
-                      <tr>
-                        <th>#</th>
-                        <th>Name</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {brand.length > 0 ? (
-                        brand.map((brand, index) => (
-                          <tr key={brand.id}>
-                            <td>{index + 1}</td>
-                            <td>{brand.name}</td>
-                            <td>
-                              {brand.status === 1 ? (
-                                <span className="badge bg-success">Active</span>
-                              ) : (
-                                <span className="badge bg-danger">Blocked</span>
-                              )}
-                            </td>
-                            <td>
-                              {/* Edit Button */}
-                              <button
-                                className="btn btn-primary btn-sm m-2"
-                                onClick={() =>
-                                  navigate(`/admin/edit-brand/${brand.id}`) // Navigate to Edit Brand page with ID
-                                }
-                              >
-                                Edit
-                              </button>
-                              {/* Delete Button */}
-                              <button
-                                className="btn btn-danger btn-sm m-2"
-                                onClick={() => handleDelete(brand.id)} // Call handleDelete with Brand ID
-                              >
-                                Delete
-                              </button>
+                  <div className="table-responsive">
+                    <table className="table table-bordered table-hover">
+                      <thead className="thead-dark">
+                        <tr>
+                          <th>#</th>
+                          <th>Name</th>
+                          <th>Status</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {brand.length > 0 ? (
+                          brand.map((brand, index) => (
+                            <tr key={brand.id}>
+                              <td>{index + 1}</td>
+                              <td>{brand.name}</td>
+                              <td>
+                                {brand.status === 1 ? (
+                                  <span className="badge bg-success">Active</span>
+                                ) : (
+                                  <span className="badge bg-danger">Blocked</span>
+                                )}
+                              </td>
+                              <td>
+                                {/* Edit Button */}
+                                <button
+                                  className="btn btn-primary btn-sm m-2"
+                                  onClick={() =>
+                                    navigate(`/admin/edit-brand/${brand.id}`) // Navigate to Edit Brand page with ID
+                                  }
+                                >
+                                  Edit
+                                </button>
+                                {/* Delete Button */}
+                                <button
+                                  className="btn btn-danger btn-sm m-2"
+                                  onClick={() => handleDelete(brand.id)} // Call handleDelete with Brand ID
+                                >
+                                  Delete
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="4" className="text-center">
+                              No Brand found.
                             </td>
                           </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan="4" className="text-center">
-                            No Brand found.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 )}
               </div>
             </div>

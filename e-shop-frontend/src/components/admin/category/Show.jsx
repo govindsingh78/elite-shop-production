@@ -81,7 +81,7 @@ const Show = () => {
       <div className="container py-5">
         <div className="row">
           <div className="col-md-12">
-            <div className="d-flex">
+            <div className="d-flex admin-dashboard-layout">
               {/* Left Navigation Bar */}
               <Sidebar />
 
@@ -107,79 +107,81 @@ const Show = () => {
                 {loading ? (
                   <p>Loading categories...</p>
                 ) : (
-                  <table className="table table-bordered table-hover">
-                    <thead className="thead-dark">
-                      <tr>
-                        <th>#</th>
-                        <th>Name</th>
-                        <th>Parent</th>
-                        <th>Products</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {categories.length > 0 ? (
-                        categories.map((category, index) => (
-                          <tr key={category.id}>
-                            <td>{index + 1}</td>
-                            <td>
-                              {category.parent_id ? (
-                                <span className="ps-3"><span className="text-muted me-2" aria-hidden="true">↳</span>{category.name}</span>
-                              ) : (
-                                <strong>{category.name}</strong>
-                              )}
-                              {!category.parent_id && category.children_count > 0 && (
-                                <span className="badge bg-light text-dark border ms-2">{category.children_count} sub</span>
-                              )}
-                            </td>
-                            <td>{category.parent_name || <span className="text-muted">—</span>}</td>
-                            <td>{category.products_count ?? 0}</td>
-                            <td>
-                              {category.status === 1 ? (
-                                <span className="badge bg-success">Active</span>
-                              ) : (
-                                <span className="badge bg-danger">Blocked</span>
-                              )}
-                            </td>
-                            <td>
-                              {/* Edit Button */}
-                              <button
-                                className="btn btn-primary btn-sm m-2"
-                                onClick={() =>
-                                  navigate(`/admin/edit-category/${category.id}`) // Navigate to Edit Category page with ID
-                                }
-                              >
-                                Edit
-                              </button>
-                              {/* Add Subcategory Button (main categories only) */}
-                              {!category.parent_id && (
+                  <div className="table-responsive">
+                    <table className="table table-bordered table-hover">
+                      <thead className="thead-dark">
+                        <tr>
+                          <th>#</th>
+                          <th>Name</th>
+                          <th>Parent</th>
+                          <th>Products</th>
+                          <th>Status</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {categories.length > 0 ? (
+                          categories.map((category, index) => (
+                            <tr key={category.id}>
+                              <td>{index + 1}</td>
+                              <td>
+                                {category.parent_id ? (
+                                  <span className="ps-3"><span className="text-muted me-2" aria-hidden="true">↳</span>{category.name}</span>
+                                ) : (
+                                  <strong>{category.name}</strong>
+                                )}
+                                {!category.parent_id && category.children_count > 0 && (
+                                  <span className="badge bg-light text-dark border ms-2">{category.children_count} sub</span>
+                                )}
+                              </td>
+                              <td>{category.parent_name || <span className="text-muted">—</span>}</td>
+                              <td>{category.products_count ?? 0}</td>
+                              <td>
+                                {category.status === 1 ? (
+                                  <span className="badge bg-success">Active</span>
+                                ) : (
+                                  <span className="badge bg-danger">Blocked</span>
+                                )}
+                              </td>
+                              <td>
+                                {/* Edit Button */}
                                 <button
-                                  className="btn btn-outline-primary btn-sm m-2"
-                                  onClick={() => navigate(`/admin/create-category?parent=${category.id}`)}
+                                  className="btn btn-primary btn-sm m-2"
+                                  onClick={() =>
+                                    navigate(`/admin/edit-category/${category.id}`) // Navigate to Edit Category page with ID
+                                  }
                                 >
-                                  Add subcategory
+                                  Edit
                                 </button>
-                              )}
-                              {/* Delete Button */}
-                              <button
-                                className="btn btn-danger btn-sm m-2"
-                                onClick={() => handleDelete(category.id)} // Call handleDelete with category ID
-                              >
-                                Delete
-                              </button>
+                                {/* Add Subcategory Button (main categories only) */}
+                                {!category.parent_id && (
+                                  <button
+                                    className="btn btn-outline-primary btn-sm m-2"
+                                    onClick={() => navigate(`/admin/create-category?parent=${category.id}`)}
+                                  >
+                                    Add subcategory
+                                  </button>
+                                )}
+                                {/* Delete Button */}
+                                <button
+                                  className="btn btn-danger btn-sm m-2"
+                                  onClick={() => handleDelete(category.id)} // Call handleDelete with category ID
+                                >
+                                  Delete
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="6" className="text-center">
+                              No categories found.
                             </td>
                           </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan="6" className="text-center">
-                            No categories found.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 )}
               </div>
             </div>

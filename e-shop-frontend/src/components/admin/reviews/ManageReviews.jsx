@@ -70,7 +70,7 @@ const ManageReviews = () => {
   return (
     <Layout>
       <div className="container py-5">
-        <div className="d-flex">
+        <div className="d-flex admin-dashboard-layout">
           <Sidebar />
           <main className="container-fluid p-4">
             <div className="mb-4">

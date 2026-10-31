@@ -86,7 +86,7 @@ const CreateProduct = ({ portal = "admin" }) => {
 
   return (
     <Layout>
-      <div className="container py-5"><div className="d-flex"><Sidebar variant={config.sidebar} /><main className="container-fluid p-4">
+      <div className="container py-5"><div className="d-flex admin-dashboard-layout"><Sidebar variant={config.sidebar} /><main className="container-fluid p-4">
         <h2 className="mb-4">{portal === "vendor" ? "List a new product" : "Create Product"}</h2>
         {loadingOptions ? <p role="status">Loading categories and brands...</p> : (
           <div className="card shadow-sm"><div className="card-body">

@@ -89,7 +89,7 @@ const OrderDetails = ({ portal = "admin" }) => {
   return (
     <Layout>
       <div className="container py-5">
-        <div className="d-flex">
+        <div className="d-flex admin-dashboard-layout">
           <Sidebar variant={config.sidebar} />
           <main className="container-fluid p-4">
             <button className="btn btn-link px-0 mb-2" onClick={() => navigate(config.ordersPath)}>← Back to orders</button>

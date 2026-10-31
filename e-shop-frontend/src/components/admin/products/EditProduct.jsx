@@ -127,7 +127,7 @@ const EditProduct = ({ portal = "admin" }) => {
 
   return (
     <Layout>
-      <div className="container py-5"><div className="d-flex"><Sidebar variant={config.sidebar} /><main className="container-fluid p-4">
+      <div className="container py-5"><div className="d-flex admin-dashboard-layout"><Sidebar variant={config.sidebar} /><main className="container-fluid p-4">
         <h2 className="mb-4">Edit Product</h2>
         {!loadingData && review && portal === "admin" && (review.vendor_id || review.approval_status !== "approved") && (
           <ReviewPanel product={review} onReviewed={(data) => { toast.success(data.message || "Review saved."); navigate(config.productsPath); }} />

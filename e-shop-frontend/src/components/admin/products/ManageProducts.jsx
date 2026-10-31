@@ -99,7 +99,7 @@ const ManageProducts = ({ portal = "admin" }) => {
   return (
     <Layout>
       <div className="container py-5">
-        <div className="d-flex">
+        <div className="d-flex admin-dashboard-layout">
           <Sidebar variant={config.sidebar} />
           <main className="container-fluid p-4">
             <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">

@@ -1428,6 +1428,8 @@ a:hover > .brand-logo .brand-mark { transform: rotate(-6deg) scale(1.04); }
 }
 
 .admin-dashboard-layout { align-items: flex-start; gap: 28px; }
+// Lets the page shrink beside the sidebar, so a wide table scrolls in its own box instead of running off the screen.
+.admin-dashboard-layout > :not(.admin-sidebar-shell) { min-width: 0; }
 .admin-dashboard-content { min-width: 0; padding: 12px 4px 24px; }
 .admin-dashboard-intro { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin: 8px 0 30px; }
 .admin-dashboard-eyebrow { color: #81918a; font: 700 .68rem/1.4 Arial, sans-serif; letter-spacing: .18em; }
@@ -2011,8 +2013,6 @@ a:hover > .brand-logo .brand-mark { transform: rotate(-6deg) scale(1.04); }
 @keyframes dashboard-shimmer { to { background-position: -200% 0; } }
 
 @media (max-width: 767.98px) {
-    .admin-dashboard-layout { flex-direction: column; }
-    .admin-dashboard-layout > .admin-sidebar-shell { width: 100%; }
     .admin-dashboard-intro { align-items: flex-start; flex-direction: column; }
     .admin-dashboard-tip { align-items: flex-start; flex-wrap: wrap; }
     .admin-dashboard-tip-link { width: 100%; margin: 0 0 0 56px; }
@@ -2060,6 +2060,9 @@ a:hover > .brand-logo .brand-mark { transform: rotate(-6deg) scale(1.04); }
 }
 
 @media (max-width: 991.98px) {
+    // From here down the sidebar is a menu button, so it sits above the page, which gets the full width.
+    .admin-dashboard-layout { flex-direction: column; align-items: stretch; gap: 16px; }
+    .admin-dashboard-layout > :not(.admin-sidebar-shell) { width: 100%; padding-right: 0 !important; padding-left: 0 !important; }
     .admin-sidebar-shell { position: static; width: 100%; min-width: 0; height: auto; min-height: 0; max-height: none; }
     .admin-sidebar-mobile-toggle { display: flex; width: 100%; align-items: center; gap: 11px; border: 1px solid #dfe8e2; border-radius: 13px; padding: 9px 12px; color: #18372e; background: #f8faf8; font-weight: 700; text-align: left; }
     .admin-sidebar { display: none; height: auto; min-height: 0; margin-top: 9px; padding-bottom: 12px; }

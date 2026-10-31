@@ -52,7 +52,7 @@ const SellerBusiness = () => {
 
   return (
     <Layout>
-      <div className="container py-5"><div className="d-flex"><Sidebar variant="vendor" /><main className="container-fluid p-4">
+      <div className="container py-5"><div className="d-flex admin-dashboard-layout"><Sidebar variant="vendor" /><main className="container-fluid p-4">
         <div className="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
           <div>
             <h2 className="mb-1">Business & GST</h2>

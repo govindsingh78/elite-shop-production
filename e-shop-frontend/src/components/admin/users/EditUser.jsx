@@ -72,7 +72,7 @@ const EditUser = () => {
   return (
     <Layout>
       <div className="container py-5">
-        <div className="d-flex">
+        <div className="d-flex admin-dashboard-layout">
           <Sidebar />
           <main className="container-fluid p-4">
             <h2 className="mb-4">Edit User</h2>

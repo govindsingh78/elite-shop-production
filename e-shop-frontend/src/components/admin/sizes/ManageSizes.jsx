@@ -76,7 +76,7 @@ const ManageSizes = () => {
 
   return (
     <Layout>
-      <div className="container py-5"><div className="d-flex"><Sidebar /><main className="container-fluid p-4">
+      <div className="container py-5"><div className="d-flex admin-dashboard-layout"><Sidebar /><main className="container-fluid p-4">
         <div className="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
           <div>
             <h2 className="mb-1">Sizes</h2>

@@ -50,7 +50,7 @@ const InvoiceList = ({ portal = "admin" }) => {
 
   return (
     <Layout>
-      <div className="container py-5"><div className="d-flex"><Sidebar variant={config.sidebar} /><main className="container-fluid p-4">
+      <div className="container py-5"><div className="d-flex admin-dashboard-layout"><Sidebar variant={config.sidebar} /><main className="container-fluid p-4">
         <div className="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
           <div>
             <h2 className="mb-1">{isAdmin ? "GST & invoices" : "Invoices"}</h2>
