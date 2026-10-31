@@ -132,4 +132,21 @@ class ProductSearchTest extends TestCase
         $this->assertSame([], $this->titles($this->getJson('/api/storefront/products?category_slug=women&search=shirt')->assertOk()));
         $this->assertSame([2499, 1899, 1599, 1299], array_map('intval', array_column($this->search('men', ['sort' => 'price_desc'])->json('products.data'), 'price')));
     }
+
+    public function test_price_sorting_keeps_a_steady_order_when_prices_match(): void
+    {
+        $first = $this->product('Twin Tee One', 500, $this->men, $this->levis, 'A tee.');
+        $second = $this->product('Twin Tee Two', 500, $this->men, $this->levis, 'A tee.');
+        $ids = fn (string $sort) => array_values(array_intersect(
+            array_column($this->getJson("/api/storefront/products?sort={$sort}")->assertOk()->json('products.data'), 'id'),
+            [$first->id, $second->id],
+        ));
+
+        $this->assertSame([$first->id, $second->id], $ids('price_asc'));
+        $this->assertSame([$second->id, $first->id], $ids('price_desc'));
+
+        // Cheapest first overall, with no product left out.
+        $prices = array_map('intval', array_column($this->getJson('/api/storefront/products?sort=price_asc')->assertOk()->json('products.data'), 'price'));
+        $this->assertSame([500, 500, 799, 1299, 1599, 1899, 2499, 5000], $prices);
+    }
 }

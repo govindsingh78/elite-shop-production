@@ -42,6 +42,12 @@ class User extends Authenticatable
         return $this->hasMany(CategoryRequest::class, 'seller_id');
     }
 
+    /** Brands a seller asked the store to add. */
+    public function brandRequests()
+    {
+        return $this->hasMany(BrandRequest::class, 'seller_id');
+    }
+
     /** The account roles each sign-in portal accepts. */
     public const PORTAL_ROLES = [
         'admin' => ['admin', 'superadmin'],

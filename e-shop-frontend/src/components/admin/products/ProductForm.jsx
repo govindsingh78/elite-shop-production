@@ -142,6 +142,7 @@ const ProductForm = ({
               {brands.map((brand) => <option key={brand.id} value={brand.id}>{brand.name}</option>)}
             </select>
             {fieldError("brand_id")}
+            {portal === "vendor" && <div className="form-text">Can’t find your brand? <Link to="/vendor/brand-requests">Ask us to add it</Link></div>}
           </div>
         </div>
       </div>

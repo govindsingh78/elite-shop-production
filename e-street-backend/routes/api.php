@@ -14,6 +14,7 @@ use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\PolicyController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\BrandController;
+use App\Http\Controllers\BrandRequestController;
 use App\Http\Controllers\BulkProductController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TempImageController;
@@ -25,6 +26,7 @@ use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\CommissionController;
 use App\Http\Controllers\Admin\SellerController;
+use App\Http\Controllers\Admin\BrandRequestController as AdminBrandRequestController;
 use App\Http\Controllers\Admin\CategoryRequestController as AdminCategoryRequestController;
 use App\Http\Controllers\Admin\DeliveryController as AdminDeliveryController;
 use App\Http\Controllers\Admin\CouponController as AdminCouponController;
@@ -143,6 +145,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('category-requests', [CategoryRequestController::class, 'index']);
         Route::post('category-requests', [CategoryRequestController::class, 'store'])->middleware('throttle:10,1,category-requests');
         Route::delete('category-requests/{categoryRequest}', [CategoryRequestController::class, 'destroy'])->whereNumber('categoryRequest');
+        Route::get('brand-requests', [BrandRequestController::class, 'index']);
+        Route::post('brand-requests', [BrandRequestController::class, 'store'])->middleware('throttle:10,1,brand-requests');
+        Route::delete('brand-requests/{brandRequest}', [BrandRequestController::class, 'destroy'])->whereNumber('brandRequest');
 
         // Listing products and handling orders: approved sellers only.
         Route::middleware(EnsureSellerCanSell::class)->group(function () {
@@ -244,6 +249,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('admin/category-requests', [AdminCategoryRequestController::class, 'index']);
         Route::post('admin/category-requests/{categoryRequest}/approve', [AdminCategoryRequestController::class, 'approve'])->whereNumber('categoryRequest');
         Route::post('admin/category-requests/{categoryRequest}/decline', [AdminCategoryRequestController::class, 'decline'])->whereNumber('categoryRequest');
+        Route::get('admin/brand-requests', [AdminBrandRequestController::class, 'index']);
+        Route::post('admin/brand-requests/{brandRequest}/approve', [AdminBrandRequestController::class, 'approve'])->whereNumber('brandRequest');
+        Route::post('admin/brand-requests/{brandRequest}/decline', [AdminBrandRequestController::class, 'decline'])->whereNumber('brandRequest');
         Route::get('admin/commissions', [CommissionController::class, 'index']);
         Route::put('admin/commissions/settings', [CommissionController::class, 'updateSettings']);
         Route::get('admin/commissions/sellers/{seller}', [CommissionController::class, 'show'])->whereNumber('seller');

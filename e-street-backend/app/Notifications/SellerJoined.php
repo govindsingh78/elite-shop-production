@@ -7,8 +7,11 @@ use App\Models\User;
 /** To the store admins: someone opened a seller account and needs approving. */
 class SellerJoined extends StoreMessage
 {
-    /** @param list<string> $categoryRequests categories they asked for on the sign-up form ("Kids › Footwear") */
-    public function __construct(public User $seller, public array $categoryRequests = [])
+    /**
+     * @param list<string> $categoryRequests categories they asked for on the sign-up form ("Kids › Footwear")
+     * @param list<string> $brandRequests brands they asked for on the sign-up form
+     */
+    public function __construct(public User $seller, public array $categoryRequests = [], public array $brandRequests = [])
     {
     }
 
@@ -27,8 +30,11 @@ class SellerJoined extends StoreMessage
         $asked = $this->categoryRequests
             ? ' They also asked for new categories: ' . implode(', ', $this->categoryRequests) . ' (see Category requests).'
             : '';
+        $askedBrands = $this->brandRequests
+            ? ' They also asked for new brands: ' . implode(', ', $this->brandRequests) . ' (see Brand requests).'
+            : '';
 
-        return "{$this->seller->email} just opened a seller account and is waiting for your approval. They can’t list products until you approve them.{$asked}";
+        return "{$this->seller->email} just opened a seller account and is waiting for your approval. They can’t list products until you approve them.{$asked}{$askedBrands}";
     }
 
     public function webPath(): ?string

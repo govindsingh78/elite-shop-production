@@ -9,10 +9,12 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use App\Models\User;
 use App\Http\Requests\CustomerAddressRequest;
 use App\Models\LoginBlock;
 use App\Notifications\SellerJoined;
+use App\Services\BrandRequests;
 use App\Services\CategoryRequests;
 use App\Services\Messenger;
 use App\Services\Security\LoginGuard;
@@ -161,7 +163,7 @@ class AuthController extends Controller
 
     /**
      * Register a vendor account. New sellers wait for an admin to approve them before they can list products, and
-     * can ask for up to 3 categories the store doesn't have yet.
+     * can ask for up to 3 categories and 3 brands the store doesn't have yet.
      */
     public function registerVendor(Request $request)
     {
@@ -171,19 +173,41 @@ class AuthController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'category_requests' => ['sometimes', 'array', 'max:' . CategoryRequests::AT_SIGN_UP],
             ...CategoryRequests::rules('category_requests.*.'),
+            'brand_requests' => ['sometimes', 'array', 'max:' . BrandRequests::AT_SIGN_UP],
+            ...BrandRequests::rules('brand_requests.*.'),
         ], [
             'category_requests.max' => 'You can ask for up to ' . CategoryRequests::AT_SIGN_UP . ' categories now, and more after you sign in.',
             ...CategoryRequests::messages('category_requests.*.'),
+            'brand_requests.max' => 'You can ask for up to ' . BrandRequests::AT_SIGN_UP . ' brands now, and more after you sign in.',
+            ...BrandRequests::messages('brand_requests.*.'),
         ]);
-        $categoryRequests = CategoryRequests::forSignUp($validated['category_requests'] ?? []);
+        // Both lists are checked, so a seller sees every problem at once.
+        $checked = [];
+        $problems = [];
+        foreach (['category_requests' => CategoryRequests::class, 'brand_requests' => BrandRequests::class] as $field => $requests) {
+            try {
+                $checked[$field] = $requests::forSignUp($validated[$field] ?? []);
+            } catch (ValidationException $exception) {
+                $problems += $exception->errors();
+            }
+        }
+        if ($problems) {
+            throw ValidationException::withMessages($problems);
+        }
+        ['category_requests' => $categoryRequests, 'brand_requests' => $brandRequests] = $checked;
 
         $user = self::createSeller([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-        ], $categoryRequests);
+        ], $categoryRequests, $brandRequests);
 
-        $asked = $categoryRequests ? ' We’ve passed your category requests to our team too.' : '';
+        $asked = match (true) {
+            $categoryRequests && $brandRequests => ' We’ve passed your category and brand requests to our team too.',
+            (bool) $categoryRequests => ' We’ve passed your category requests to our team too.',
+            (bool) $brandRequests => ' We’ve passed your brand requests to our team too.',
+            default => '',
+        };
 
         return response()->json([
             'message' => "Seller account created. Sign in to add your business details; you can list products once our team approves your account.{$asked}",
@@ -193,16 +217,18 @@ class AuthController extends Controller
 
     /**
      * A seller who signed up themselves (with a password or Google): waiting for approval, and the admins are told,
-     * along with any categories they asked for.
+     * along with any categories and brands they asked for.
      *
      * @param list<array{name: string, parent_id: ?int, note: ?string}> $categoryRequests
+     * @param list<array{name: string, note: ?string}> $brandRequests
      */
-    public static function createSeller(array $attributes, array $categoryRequests = []): User
+    public static function createSeller(array $attributes, array $categoryRequests = [], array $brandRequests = []): User
     {
-        return DB::transaction(function () use ($attributes, $categoryRequests) {
+        return DB::transaction(function () use ($attributes, $categoryRequests, $brandRequests) {
             $user = User::forceCreate([...$attributes, 'role' => 'seller', 'seller_status' => User::SELLER_PENDING, 'seller_status_at' => now()]);
             $requests = collect($categoryRequests)->map(fn (array $item) => CategoryRequests::record($user, $item['name'], $item['parent_id'], $item['note']));
-            Messenger::send(User::storeAdmins(), new SellerJoined($user, $requests->map->label()->all()));
+            $brands = collect($brandRequests)->map(fn (array $item) => BrandRequests::record($user, $item['name'], $item['note'])->name);
+            Messenger::send(User::storeAdmins(), new SellerJoined($user, $requests->map->label()->all(), $brands->all()));
 
             return $user;
         });

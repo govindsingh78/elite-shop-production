@@ -198,6 +198,11 @@ const SellerCard = ({ seller, onChanged }) => {
           Asked for {seller.pending_category_requests} new {seller.pending_category_requests === 1 ? "category" : "categories"} →
         </Link>
       )}
+      {seller.pending_brand_requests > 0 && (
+        <Link to="/admin/brand-requests" className="seller-card-link me-3">
+          Asked for {seller.pending_brand_requests} new {seller.pending_brand_requests === 1 ? "brand" : "brands"} →
+        </Link>
+      )}
       {(status === "approved" || status === "deactivated") && <Link to={`/admin/commissions/${seller.id}`} className="seller-card-link">Commission & payouts →</Link>}
     </li>
   );

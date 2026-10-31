@@ -231,6 +231,11 @@ export default function ProductFormScreen({ portal: portalKey }) {
             </Pressable>
           ) : null}
           <SelectField label="Brand" value={values.brand_id} options={toOptions(options.brands)} onChange={(value) => change("brand_id", value)} error={errors.brand_id} />
+          {isVendor ? (
+            <Pressable onPress={() => router.push("/vendor/brand-requests")} hitSlop={6} style={{ marginTop: -6, marginBottom: 12 }}>
+              <T variant="small">Can’t find your brand? <T variant="strong" color={colors.tealDark} style={{ fontSize: 14 }}>Ask us to add it</T></T>
+            </Pressable>
+          ) : null}
         </Card>
 
         <Card style={styles.card}>

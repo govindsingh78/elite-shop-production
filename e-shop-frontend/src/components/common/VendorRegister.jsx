@@ -6,11 +6,14 @@ import { useStorefrontCategories } from "./useStorefrontCategories";
 import CustomerAuthShell from "../customer/CustomerAuthShell";
 import { CategoryRequestFields } from "../categoryRequests/CategoryRequestBits";
 import { AT_SIGN_UP, emptyRequest, requestPayload } from "../categoryRequests/categoryRequests";
+import { BrandRequestFields } from "../brandRequests/BrandRequestFields";
+import { BRANDS_AT_SIGN_UP, brandRequestPayload, emptyBrandRequest } from "../brandRequests/brandRequests";
 
 const VendorRegister = () => {
   const [form, setForm] = useState({ name: "", email: "", password: "", password_confirmation: "" });
   // Categories the store doesn't have yet, for our team to add (rows left blank aren't sent).
   const [requests, setRequests] = useState([]);
+  const [brandRequests, setBrandRequests] = useState([]);
   const { categories } = useStorefrontCategories();
   const [errors, setErrors] = useState({});
   const [error, setError] = useState("");
@@ -35,24 +38,27 @@ const VendorRegister = () => {
     setErrors({});
     // Errors come back by position among the requests sent ("category_requests.0.name"): map them to their rows.
     const sent = requests.map((request, row) => ({ request, row })).filter(({ request }) => request.name.trim());
+    const sentBrands = brandRequests.map((request, row) => ({ request, row })).filter(({ request }) => request.name.trim());
     try {
       const response = await fetch(`${apiUrl}/vendor/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ ...form, category_requests: sent.map(({ request }) => requestPayload(request)) }),
+        body: JSON.stringify({ ...form, category_requests: sent.map(({ request }) => requestPayload(request)), brand_requests: sentBrands.map(({ request }) => brandRequestPayload(request)) }),
       });
       const data = await response.json();
       if (response.status === 422) {
         setErrors(Object.fromEntries(Object.entries(data.errors || {}).map(([field, messages]) => {
-          const [, position, part] = field.match(/^category_requests\.(\d+)\.(\w+)$/) || [];
-          return [position !== undefined ? `request.${sent[position]?.row}.${part}` : field, messages[0]];
+          const [, kind, position, part] = field.match(/^(category|brand)_requests\.(\d+)\.(\w+)$/) || [];
+          if (position === undefined) return [field, messages[0]];
+          return [kind === "brand" ? `brandRequest.${sentBrands[position]?.row}.${part}` : `request.${sent[position]?.row}.${part}`, messages[0]];
         })));
         setError("Please check the highlighted fields.");
         return;
       }
       if (response.status === 429) throw new Error("Too many attempts. Please wait a minute and try again.");
       if (!response.ok) throw new Error(data.message || "Unable to create your seller account.");
-      const asked = sent.length ? " We’ve passed your category requests to our team, and we’ll let you know when they’re added." : "";
+      const kinds = [sent.length && "category", sentBrands.length && "brand"].filter(Boolean).join(" and ");
+      const asked = kinds ? ` We’ve passed your ${kinds} requests to our team, and we’ll let you know when they’re added.` : "";
       navigate("/vendor/login", { replace: true, state: { message: `Your seller account is created. Sign in to add your business details — you can list products once our team approves your account.${asked}` } });
     } catch (requestError) {
       setError(requestError instanceof TypeError ? "Cannot reach the API server. Make sure the backend is running." : requestError.message);
@@ -122,6 +128,32 @@ const VendorRegister = () => {
             />
           ))}
           {errors.category_requests && <div className="text-danger small mt-2">{errors.category_requests}</div>}
+        </section>
+        <section className="category-ask" aria-labelledby="brand-ask-title">
+          <div className="category-ask-head">
+            <div>
+              <h2 id="brand-ask-title">Can’t find your brand?</h2>
+              <p>Ask us to add a brand you sell, or your own label. Optional — you can also ask later from your seller hub.</p>
+            </div>
+            {brandRequests.length < BRANDS_AT_SIGN_UP && (
+              <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => setBrandRequests((current) => [...current, emptyBrandRequest()])}>＋ Ask for a brand</button>
+            )}
+          </div>
+          {brandRequests.map((request, row) => (
+            <BrandRequestFields
+              // Rows are only added at the end and removed in place, so their position is a stable enough key here.
+              key={row}
+              id={`signup-brand-request-${row}`}
+              value={request}
+              errors={{ name: errors[`brandRequest.${row}.name`], note: errors[`brandRequest.${row}.note`] }}
+              onChange={(next) => {
+                setBrandRequests((current) => current.map((item, index) => (index === row ? next : item)));
+                setErrors((current) => ({ ...current, [`brandRequest.${row}.name`]: undefined, [`brandRequest.${row}.note`]: undefined }));
+              }}
+              onRemove={() => { setBrandRequests((current) => current.filter((_, index) => index !== row)); setErrors({}); }}
+            />
+          ))}
+          {errors.brand_requests && <div className="text-danger small mt-2">{errors.brand_requests}</div>}
         </section>
         <p className="vendor-terms">By creating an account, you agree to our <a href={TERMS_PATH} target="_blank" rel="noreferrer">Terms &amp; Conditions</a>, including listing genuine products and shipping orders on time, and our <a href={PRIVACY_PATH} target="_blank" rel="noreferrer">Privacy Policy</a>.</p>
         <button type="submit" className="btn btn-primary btn-lg w-100 customer-submit" disabled={loading}>{loading ? "Creating your seller account…" : "Create seller account"}</button>

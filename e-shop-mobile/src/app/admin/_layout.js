@@ -14,6 +14,7 @@ export default function AdminLayout() {
       <Stack.Screen name="security" options={{ title: "Security" }} />
       <Stack.Screen name="sellers" options={{ title: "Sellers" }} />
       <Stack.Screen name="category-requests" options={{ title: "Category requests" }} />
+      <Stack.Screen name="brand-requests" options={{ title: "Brand requests" }} />
       <Stack.Screen name="reviews" options={{ title: "Reviews" }} />
       <Stack.Screen name="invoices" options={{ title: "GST & invoices" }} />
       <Stack.Screen name="gst" options={{ title: "GST settings" }} />

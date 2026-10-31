@@ -87,11 +87,11 @@ class ProductController extends Controller
             ->first();
 
         $products = $priced((clone $filteredProducts)->withRating())
-            ->when($request->input('sort') === 'price_asc', fn ($query) => $query->orderBy('price'))
             ->when($request->input('sort') === 'price_desc', fn ($query) => $query->orderByDesc('price'))
             // Searching without choosing an order: best matches first.
             ->when(!$request->filled('sort'), fn ($query) => ProductSearch::orderByRelevance($query, $terms))
-            ->orderByDesc('id')
+            // Price and id sorted the same way round, which an index can do without sorting every product.
+            ->when($request->input('sort') === 'price_asc', fn ($query) => $query->orderBy('price')->orderBy('id'), fn ($query) => $query->orderByDesc('id'))
             ->paginate(12);
 
         $brands = \App\Models\Brand::query()

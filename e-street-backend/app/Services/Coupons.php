@@ -53,7 +53,8 @@ class Coupons
         $email = strtolower(trim((string) ($customer?->email ?? $email)));
         $theirs = fn () => Order::query()->where('status', '!=', 'cancelled')
             ->where(fn ($query) => $query->when($customer, fn ($inner) => $inner->where('user_id', $customer->id))
-                ->when($email !== '', fn ($inner) => $inner->orWhereRaw('LOWER(customer_email) = ?', [$email])));
+                // No LOWER() here: it would stop the index being used, and the database already ignores case.
+                ->when($email !== '', fn ($inner) => $inner->orWhere('customer_email', $email)));
         if ($customer || $email !== '') {
             if ($coupon->per_customer_limit !== null && $theirs()->where('coupon_id', $coupon->id)->count() >= $coupon->per_customer_limit) {
                 $fail($coupon->per_customer_limit === 1 ? 'You’ve already used this code.' : "You’ve used this code {$coupon->per_customer_limit} times, the most allowed.");

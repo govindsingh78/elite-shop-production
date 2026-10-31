@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\BrandRequest;
 use App\Models\CategoryRequest;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -123,6 +124,7 @@ class SellerController extends Controller
             // Approved and switched on: in the store while the seller is active.
             'products as listed_products_count' => fn ($query) => $query->where('status', 1)->where('approval_status', Product::APPROVED),
             'categoryRequests as pending_category_requests' => fn ($query) => $query->where('status', CategoryRequest::PENDING),
+            'brandRequests as pending_brand_requests' => fn ($query) => $query->where('status', BrandRequest::PENDING),
         ]);
     }
 
@@ -158,7 +160,7 @@ class SellerController extends Controller
             ...$seller->only([
                 'id', 'name', 'email', 'phone', 'created_at', 'seller_status', 'seller_status_note', 'seller_status_at',
                 'legal_name', 'gstin', 'business_address', 'business_state', 'products_count', 'listed_products_count',
-                'pending_category_requests',
+                'pending_category_requests', 'pending_brand_requests',
             ]),
             'business_state_name' => Gst::STATES[$seller->business_state] ?? null,
             'open_orders' => $openOrders->get($seller->id, 0),

@@ -57,6 +57,11 @@ export default function SellersScreen() {
                   <T variant="small" color={colors.warning} style={{ fontFamily: fonts.bodyBold }}>Asked for {seller.pending_category_requests} new {seller.pending_category_requests === 1 ? "category" : "categories"} →</T>
                 </Pressable>
               ) : null}
+              {seller.pending_brand_requests > 0 ? (
+                <Pressable onPress={() => router.push("/admin/brand-requests")} hitSlop={6}>
+                  <T variant="small" color={colors.warning} style={{ fontFamily: fonts.bodyBold }}>Asked for {seller.pending_brand_requests} new {seller.pending_brand_requests === 1 ? "brand" : "brands"} →</T>
+                </Pressable>
+              ) : null}
               <View style={{ marginTop: 6, alignSelf: "flex-start" }}><SellerStatusPill status={seller.seller_status} /></View>
             </View>
             <Ionicons name="chevron-forward" size={18} color={colors.faint} />
