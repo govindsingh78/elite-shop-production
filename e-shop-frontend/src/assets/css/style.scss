@@ -749,7 +749,10 @@ a:hover > .brand-logo .brand-mark { transform: rotate(-6deg) scale(1.04); }
 .account-menu-section { margin: 8px 18px 0; color: #81918a; font: 700 .62rem/1.4 Arial, sans-serif; letter-spacing: .16em; text-transform: uppercase; }
 
 @media (max-width: 991.98px) {
-    .account-menu-panel { width: min(318px, calc(100vw - 32px)); }
+    // The Account button is near the left edge here, so the panel hangs from the start of the buttons' row, not from the button.
+    .store-header-actions .account-menu { position: static; }
+    .account-menu-panel { width: min(318px, calc(100vw - 32px)); max-height: calc(100dvh - 225px); overflow-y: auto; }
+    .account-menu-panel.dropdown-menu[data-bs-popper] { right: auto; left: 0; }
 }
 
 .store-footer {
@@ -853,12 +856,12 @@ a:hover > .brand-logo .brand-mark { transform: rotate(-6deg) scale(1.04); }
 
 .admin-sidebar-shell {
     position: sticky;
-    top: 24px;
+    top: var(--sidebar-top, 24px);
     display: flex;
     width: 258px;
     min-width: 258px;
-    height: calc(100vh - 48px);
-    min-height: 650px;
+    height: calc(100vh - var(--sidebar-top, 24px) - 16px);
+    min-height: 420px;
     max-height: 850px;
     flex-direction: column;
 }
@@ -903,6 +906,8 @@ a:hover > .brand-logo .brand-mark { transform: rotate(-6deg) scale(1.04); }
 }
 
 
+// The links scroll here when they don't all fit; the brand above and the profile below stay put.
+.admin-sidebar-menu { position: relative; z-index: 1; display: flex; min-height: 0; flex: 1; flex-direction: column; margin: 0 -9px; overflow-y: auto; overscroll-behavior: contain; padding: 0 9px; scrollbar-color: rgba(226, 235, 230, .28) transparent; scrollbar-width: thin; }
 .admin-sidebar-brand-copy, .admin-sidebar-profile-copy { display: flex; min-width: 0; flex-direction: column; }
 .admin-sidebar-brand-copy strong { font-size: 1rem; letter-spacing: .015em; }
 .admin-sidebar-brand-copy small { margin-top: 4px; color: #98b0a2; font: 700 .55rem/1 Arial, sans-serif; letter-spacing: .16em; }
@@ -2027,7 +2032,9 @@ a:hover > .brand-logo .brand-mark { transform: rotate(-6deg) scale(1.04); }
         a.store-subnav-all { display: none; }
     }
     .store-nav-item:hover .store-subnav, .store-nav-item:focus-within .store-subnav { transform: none; }
-    .store-header-actions { justify-content: flex-start; margin: 8px 0 0; padding: 0; }
+    // First in the open menu, so the account panel opens on screen however long the category list is.
+    .store-navbar .navbar-collapse.show, .store-navbar .navbar-collapse.collapsing { display: flex; flex-direction: column; align-items: stretch; }
+    .store-header-actions { position: relative; order: -1; justify-content: flex-start; margin: 0 0 10px; padding: 0; }
 }
 
 @media (max-width: 575.98px) {
@@ -2057,6 +2064,7 @@ a:hover > .brand-logo .brand-mark { transform: rotate(-6deg) scale(1.04); }
     .admin-sidebar-mobile-toggle { display: flex; width: 100%; align-items: center; gap: 11px; border: 1px solid #dfe8e2; border-radius: 13px; padding: 9px 12px; color: #18372e; background: #f8faf8; font-weight: 700; text-align: left; }
     .admin-sidebar { display: none; height: auto; min-height: 0; margin-top: 9px; padding-bottom: 12px; }
     .admin-sidebar.is-open { display: flex; }
+    .admin-sidebar-menu { margin: 0; overflow: visible; padding: 0; }
     .admin-sidebar-spacer { display: none; }
     .admin-sidebar-profile { margin-top: 12px; }
 }

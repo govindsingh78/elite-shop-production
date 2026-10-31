@@ -1,5 +1,5 @@
-import React, { useContext, useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { AdminAuthContext } from "../context/AdminAuth";
 import { BrandMark } from "./BrandLogo";
 import { SUPPORT_PHONES } from "./support";
@@ -54,12 +54,36 @@ const NavIcon =({ children }) => <svg className="admin-sidebar-icon" viewBox="0 
 const Sidebar = ({ variant = "admin" }) => {
   const { user, logout } = useContext(AdminAuthContext);
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const shellRef = useRef(null);
+  const menuRef = useRef(null);
   const config = variants[variant] || variants.admin;
   const links = config.links;
   const profile = user?.user || user;
   const name = profile?.name || config.fallbackName;
   const role = config.role;
+
+  // The site header stays on screen and its height changes when its menu wraps, so the sidebar sits just below it.
+  useEffect(() => {
+    const header = document.querySelector(".store-header");
+    const shell = shellRef.current;
+    if (!header || !shell) return undefined;
+    const measure = () => shell.style.setProperty("--sidebar-top", `${Math.round(header.getBoundingClientRect().height) + 16}px`);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, []);
+
+  // Each page has its own sidebar, so a link further down the menu would otherwise be scrolled out of view.
+  useEffect(() => {
+    const menu = menuRef.current;
+    const active = menu?.querySelector(".admin-sidebar-link.is-active");
+    if (!active) return;
+    const top = active.getBoundingClientRect().top - menu.getBoundingClientRect().top;
+    if (top < 0 || top + active.offsetHeight > menu.clientHeight) menu.scrollTop += top - (menu.clientHeight - active.offsetHeight) / 2;
+  }, [pathname]);
 
   const signOut = () => {
     logout();
@@ -67,7 +91,7 @@ const Sidebar = ({ variant = "admin" }) => {
   };
 
   return (
-    <div className="admin-sidebar-shell">
+    <div className="admin-sidebar-shell" ref={shellRef}>
       <button className="admin-sidebar-mobile-toggle" type="button" aria-expanded={mobileOpen} onClick={() => setMobileOpen((open) => !open)}>
         <BrandMark size={34} />
         <span>{config.menu}</span>
@@ -79,47 +103,49 @@ const Sidebar = ({ variant = "admin" }) => {
           <span className="admin-sidebar-brand-copy"><strong>Elitezaar</strong><small>{role}</small></span>
         </Link>
 
-        <div className="admin-sidebar-section-label">WORKSPACE</div>
-        <nav className="admin-sidebar-nav">
-          {links.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to.endsWith("dashboard") || item.to === "/shop"}
-              onClick={() => setMobileOpen(false)}
-              className={({ isActive }) => `admin-sidebar-link${isActive ? " is-active" : ""}`}
-            >
-              <NavIcon>{item.icon}</NavIcon>
-              <span>{item.label}</span>
-              <span className="admin-sidebar-link-arrow" aria-hidden="true">↗</span>
-            </NavLink>
-          ))}
-        </nav>
-
-        {config.passwordPath && <>
-          <div className="admin-sidebar-section-label admin-sidebar-preferences-label">PREFERENCES</div>
+        <div className="admin-sidebar-menu" ref={menuRef}>
+          <div className="admin-sidebar-section-label">WORKSPACE</div>
           <nav className="admin-sidebar-nav">
-            <NavLink to={config.passwordPath} onClick={() => setMobileOpen(false)} className={({ isActive }) => `admin-sidebar-link${isActive ? " is-active" : ""}`}>
-              <NavIcon><><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 1 1 8 0v3M12 14v3" /></></NavIcon>
-              <span>Password &amp; sign-in</span>
-              <span className="admin-sidebar-link-arrow" aria-hidden="true">↗</span>
-            </NavLink>
-          </nav>
-        </>}
-
-        <div className="admin-sidebar-spacer" />
-        {config.helpTitle && (
-          <div className="admin-sidebar-help">
-            <strong>{config.helpTitle}</strong>
-            <small>{config.helpCopy}</small>
-            {SUPPORT_PHONES.map((phone) => (
-              <a key={phone.tel} href={`tel:${phone.tel}`}>
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" /></svg>
-                {phone.label}
-              </a>
+            {links.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to.endsWith("dashboard") || item.to === "/shop"}
+                onClick={() => setMobileOpen(false)}
+                className={({ isActive }) => `admin-sidebar-link${isActive ? " is-active" : ""}`}
+              >
+                <NavIcon>{item.icon}</NavIcon>
+                <span>{item.label}</span>
+                <span className="admin-sidebar-link-arrow" aria-hidden="true">↗</span>
+              </NavLink>
             ))}
-          </div>
-        )}
+          </nav>
+
+          {config.passwordPath && <>
+            <div className="admin-sidebar-section-label admin-sidebar-preferences-label">PREFERENCES</div>
+            <nav className="admin-sidebar-nav">
+              <NavLink to={config.passwordPath} onClick={() => setMobileOpen(false)} className={({ isActive }) => `admin-sidebar-link${isActive ? " is-active" : ""}`}>
+                <NavIcon><><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 1 1 8 0v3M12 14v3" /></></NavIcon>
+                <span>Password &amp; sign-in</span>
+                <span className="admin-sidebar-link-arrow" aria-hidden="true">↗</span>
+              </NavLink>
+            </nav>
+          </>}
+
+          <div className="admin-sidebar-spacer" />
+          {config.helpTitle && (
+            <div className="admin-sidebar-help">
+              <strong>{config.helpTitle}</strong>
+              <small>{config.helpCopy}</small>
+              {SUPPORT_PHONES.map((phone) => (
+                <a key={phone.tel} href={`tel:${phone.tel}`}>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" /></svg>
+                  {phone.label}
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
         <div className="admin-sidebar-profile">
           <span className="admin-sidebar-avatar">{name.trim().charAt(0).toUpperCase()}</span>
           <span className="admin-sidebar-profile-copy"><strong>{name}</strong><small>{profile?.email || config.fallbackEmail}</small></span>
