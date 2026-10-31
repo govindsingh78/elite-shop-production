@@ -1,5 +1,5 @@
 import React from "react";
-import { DIWALI_COLORS as C, DIYA, LANTERN, greetingScene, toran } from "./festive";
+import { DIWALI_COLORS as C, DIYA, LANTERN, greetingScene, mandala, nightSky, rangoli, toran } from "./festive";
 import { HAPPY_DIWALI, SHUBH_DEEPAVALI } from "./diwaliLettering";
 
 // Drawn once: the shapes never change while the page is open.
@@ -7,6 +7,9 @@ const TORAN = toran({ width: 2400 });
 // The phone layout drops the greeting below the slider's counter and lifts the diyas above the caption.
 const SCENES = { wide: greetingScene({ height: 750, textTop: 128, groundY: 512 }), compact: greetingScene({ height: 750, textTop: 150, groundY: 446 }) };
 const LEDGE = Array.from({ length: 16 }, (_, index) => 75 + index * 150);
+const SKY = nightSky();
+const HALO = mandala(0, 0, 250);
+const RANGOLI = rangoli(236);
 // Soft festival lights drifting up behind the banner: [left %, top %, size px, delay s, duration s].
 const LIGHTS = [[3, 93, 14, 0, 9], [14, 30, 8, 2.4, 11], [27, 92, 18, 1.2, 10], [38, 46, 10, 4, 12], [47, 76, 12, 0.6, 9], [55, 22, 9, 3.1, 13],
   [63, 64, 16, 5, 10], [72, 38, 11, 1.8, 12], [81, 80, 15, 3.6, 9], [89, 28, 9, 0.9, 11], [95, 58, 13, 2.7, 10], [33, 14, 7, 6, 14]];
@@ -92,6 +95,50 @@ export const FestiveLights = () => (
       <span key={`${left}-${top}`} style={{ left: `${left}%`, top: `${top}%`, width: size, height: size, animationDelay: `${delay}s`, animationDuration: `${duration}s` }} />
     ))}
   </div>
+);
+
+/** Fireworks, twinkling stars and paper lanterns behind the home banner. */
+export const FestiveSky = () => (
+  <svg className="dw-sky" viewBox={`0 0 ${SKY.width} ${SKY.height}`} preserveAspectRatio="xMidYMin slice" aria-hidden="true" focusable="false">
+    <defs><LightDefs id="dw-sky" /></defs>
+    {SKY.bursts.map((item, index) => (
+      <g key={index} className="dw-burst" style={{ animationDelay: `${index * 1.4}s` }}>
+        <path d={item.rays} stroke={item.color} strokeWidth="2.4" strokeLinecap="round" />
+        <path d={item.dots} fill={item.color} />
+      </g>
+    ))}
+    {SKY.sparkles.map((d, index) => <path key={index} className="dw-twinkle" d={d} fill={C.goldLight} style={{ animationDelay: `${index * 0.9}s` }} />)}
+    <g className="dw-sky-lanterns">{SKY.lanterns.map((item, index) => <Lantern key={item.x} id="dw-sky" {...item} delay={index * -2.2} />)}</g>
+  </svg>
+);
+
+/** Fine gold line-work that turns slowly behind the windows. */
+export const Mandala = ({ className }) => (
+  <svg className={className} viewBox="-260 -260 520 520" aria-hidden="true" focusable="false">
+    <g className="dw-mandala" fill="none" stroke="currentColor" strokeWidth="1.2">
+      <path d={HALO.rings} />
+      <path d={HALO.petals} />
+      <path d={HALO.dots} fill="currentColor" stroke="none" />
+    </g>
+  </svg>
+);
+
+/** A round rangoli seen from above. */
+export const Rangoli = ({ className }) => (
+  <svg className={className} viewBox="-264 -264 528 528" aria-hidden="true" focusable="false">
+    {RANGOLI.map((shape, index) => <path key={index} d={shape.d} fill={shape.fill} opacity={shape.opacity} />)}
+  </svg>
+);
+
+/** "शुभ दीपावली, Happy Diwali" in gold lettering. */
+export const DiwaliLettering = ({ className }) => (
+  <svg className={className} viewBox="0 0 520 178" role="img" aria-label="शुभ दीपावली, Happy Diwali">
+    <defs><linearGradient id="dw-letters" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={C.goldLight} /><stop offset=".55" stopColor={C.gold} /><stop offset="1" stopColor={C.goldDeep} /></linearGradient></defs>
+    <g fill="url(#dw-letters)">
+      <path d={SHUBH_DEEPAVALI.d} transform={`translate(${260 - SHUBH_DEEPAVALI.width * 0.25} 0) scale(.5)`} />
+      <path d={HAPPY_DIWALI.d} transform={`translate(${260 - HAPPY_DIWALI.width / 2} 66)`} />
+    </g>
+  </svg>
 );
 
 /** Small lit diya for labels such as the announcement bar. */

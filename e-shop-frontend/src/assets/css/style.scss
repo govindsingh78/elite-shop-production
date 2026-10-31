@@ -117,7 +117,7 @@ $lp-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
 // Outfit reads far better than Rajdhani at small sizes, so everything on the home page uses it, the header and footer too.
 .lp-page, .store-announcement, .store-header, .store-footer, .sp-card { font-family: "Outfit", "Segoe UI", sans-serif; }
 
-.lp-page { overflow: hidden; color: $lp-ink; background: $lp-paper; }
+.lp-page { overflow: clip; color: $lp-ink; background: $lp-paper; }
 .lp-eyebrow { display: inline-flex; align-items: center; gap: 8px; color: $lp-bronze; font-size: .86rem; font-weight: 500; letter-spacing: .02em;
     .dw-icon { width: 15px; height: 16px; margin-top: -3px; }
 }
@@ -132,54 +132,128 @@ $lp-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
     &:hover span { transform: translateX(3px); }
 }
 
-.lp-hero { padding: 36px 0 32px; }
-.lp-hero-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: center; gap: 56px; }
-.lp-hero-grid.is-words-only { grid-template-columns: minmax(0, 720px); justify-content: center; padding: 48px 0; text-align: center;
-    .lp-hero-copy p { margin-inline: auto; }
-}
-.lp-hero-copy {
-    h1 { margin: 14px 0 18px; color: $lp-ink; font-family: $lp-serif; font-size: clamp(3.1rem, 6vw, 5.6rem); font-weight: 400; line-height: 1; letter-spacing: -.015em; }
-    h1 em { display: block; color: $lp-bronze; }
-    p { max-width: 430px; margin: 0 0 28px; color: $lp-body; font-size: 1.08rem; font-weight: 400; line-height: 1.6; }
-}
-.lp-mosaic { display: grid; grid-template-rows: 1fr 1fr; grid-template-columns: 3fr 2fr; gap: 12px; height: clamp(440px, 66vh, 620px); }
-.lp-mosaic--2 { grid-template-rows: 1fr; grid-template-columns: 1fr 1fr; }
-.lp-mosaic--1 { grid-template-rows: 1fr; grid-template-columns: 1fr; }
-.lp-tile {
-    position: relative; display: block; overflow: hidden; min-width: 0; border-radius: 14px; color: $lp-ink; background: $lp-tile; text-decoration: none;
-    img { display: block; width: 100%; height: 100%; object-fit: cover; mix-blend-mode: multiply; transition: transform .6s cubic-bezier(.2, .7, .2, 1); }
-    &:hover { color: $lp-ink; }
-    &:hover img { transform: scale(1.03); }
-}
-.lp-tile.is-large { grid-row: span 2; }
-.lp-mosaic--2 .lp-tile.is-large, .lp-mosaic--1 .lp-tile.is-large { grid-row: auto; }
-.lp-tile--loading { animation: lp-loading 1.3s ease-in-out infinite alternate; }
-@keyframes lp-loading { to { opacity: .55; } }
-.lp-tile-tag {
-    position: absolute; right: 10px; bottom: 10px; left: 10px; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; border-radius: 10px; padding: 9px 12px; background: rgba(255, 255, 255, .92); font-size: .86rem;
-    > span { overflow: hidden; min-width: 0; color: $lp-body; text-overflow: ellipsis; white-space: nowrap; }
-    b { flex: none; font-weight: 600; }
+$lp-cream: #fff3d6;
+$lp-gold: #f2c25b;
+$lp-gold-soft: #f6d58e;
+$lp-night: #1c0610;
+
+.lp-cta--gold { color: #2a0a18; background: linear-gradient(135deg, #ffe6a8, $lp-gold 55%, #dc9a38); box-shadow: 0 10px 30px rgba(242, 194, 91, .26); font-weight: 600;
+    &:hover { color: #2a0a18; background: linear-gradient(135deg, #fff1c9, #ffd166 55%, #e8a84a); }
 }
 
-.lp-trust {
-    border-top: 1px solid $lp-line; border-bottom: 1px solid $lp-line;
-    ul { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; margin: 0; padding: 14px 0; list-style: none; }
-    li { display: flex; align-items: center; gap: 9px; color: $lp-body; font-size: .92rem; }
-    svg { width: 19px; height: 19px; flex: none; fill: none; stroke: $lp-bronze; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.6; }
+/* The banner: a night sky, with the store's products in lit arched windows */
+.lp-hero { position: relative; isolation: isolate; overflow: hidden; color: $lp-cream; background: $lp-night; --glow-x: 68%; --glow-y: 42%;
+    .lp-eyebrow { color: $lp-gold-soft; }
+    // A warm light that follows the pointer, like a lamp carried through the room.
+    &::after { position: absolute; z-index: 0; inset: 0; background: radial-gradient(420px circle at var(--glow-x) var(--glow-y), rgba(255, 196, 104, .16), rgba(255, 196, 104, 0) 70%); content: ""; pointer-events: none; }
 }
+.lp-hero-defs { position: absolute; }
+.lp-sky { position: absolute; z-index: -1; inset: 0; overflow: hidden; }
+.lp-sky-tone { position: absolute; inset: 0; opacity: 0; transition: opacity 1.1s ease; }
+.lp-sky-tone.is-on { opacity: 1; }
+.lp-sky-tone--maroon { background: radial-gradient(90% 130% at 74% 42%, #8a1b47 0%, #4f0d29 44%, $lp-night 100%); }
+.lp-sky-tone--forest { background: radial-gradient(90% 130% at 74% 42%, #23695a 0%, #123a30 46%, #06140f 100%); }
+.lp-sky-tone--aubergine { background: radial-gradient(90% 130% at 74% 42%, #5a2f86 0%, #2d1652 46%, #0f0820 100%); }
+.lp-sky-tone--terracotta { background: radial-gradient(90% 130% at 74% 42%, #9c4318 0%, #5a220c 46%, #1e0b04 100%); }
+.dw-sky { position: absolute; inset: 0; width: 100%; height: 100%; }
+.lp-hero .dw-ledge { bottom: 2px; height: 76px; }
+
+.lp-hero-swiper, .lp-slide-wrap { position: relative; z-index: 1; height: clamp(600px, calc(100vh - 158px), 780px); }
+.lp-hero-swiper .swiper-slide { height: 100%; }
+.lp-slide-wrap { width: 100%; }
+.lp-slide { display: grid; height: 100%; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: center; gap: clamp(28px, 4.5vw, 84px); padding-top: 86px; padding-bottom: 124px; }
+.lp-slide.is-words-only { grid-template-columns: minmax(0, 720px); justify-content: center; text-align: center;
+    .lp-slide-copy p { margin-inline: auto; }
+}
+.lp-slide-copy { min-width: 0;
+    h1, h2 { margin: 14px 0 16px; color: $lp-cream; font-family: $lp-serif; font-size: clamp(3.1rem, 6vw, 5.8rem); font-weight: 400; line-height: 1; letter-spacing: -.015em; overflow-wrap: anywhere; }
+    em { display: block; color: $lp-gold; }
+    p { max-width: 430px; margin: 0 0 26px; color: rgba(255, 243, 214, .76); font-size: 1.08rem; line-height: 1.6; }
+}
+
+.lp-windows { position: relative; display: grid; height: 100%; min-height: 0; grid-template-columns: minmax(0, 1fr) minmax(0, 1.34fr) minmax(0, 1fr); gap: clamp(14px, 2.2vw, 34px); }
+.lp-windows--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.lp-windows--1 { width: min(100%, 340px); justify-self: center; grid-template-columns: minmax(0, 1fr); }
+.lp-windows-halo { position: absolute; top: 50%; left: 50%; width: min(118%, 720px); aspect-ratio: 1; color: rgba(242, 194, 91, .22); pointer-events: none; transform: translate(-50%, -50%); }
+.lp-window { position: relative; display: flex; min-width: 0; min-height: 0; flex-direction: column; margin-top: clamp(30px, 8%, 72px); color: $lp-cream; text-decoration: none;
+    &.is-large { margin-top: 0; }
+    &:hover { color: $lp-cream; }
+    &:hover .lp-window-frame { transform: translateY(-6px); }
+}
+.lp-windows--1 .lp-window, .lp-windows--2 .lp-window { margin-top: 0; }
+.lp-window-frame { position: relative; display: block; min-height: 0; flex: 1 1 auto; transition: transform .45s cubic-bezier(.2, .7, .2, 1);
+    // Light spilling out of the window into the night.
+    &::before { position: absolute; inset: -9% -16%; background: radial-gradient(closest-side, rgba(255, 186, 84, .3), rgba(255, 186, 84, 0)); content: ""; }
+}
+.lp-window-glass { position: absolute; inset: 0; display: block; overflow: hidden; background: radial-gradient(120% 90% at 50% 64%, #fffaf0 0%, #ffedc6 48%, #f4cc8c 100%); clip-path: url(#lp-arch);
+    img { display: block; width: 100%; height: 100%; object-fit: cover; mix-blend-mode: multiply; }
+}
+// Lifting the near-whites keeps a photo's white background from showing as a faint box.
+.lp-window.is-whole .lp-window-photo { padding: 20% 2% 6%; filter: brightness(1.07); object-fit: contain; object-position: 50% 78%; }
+.lp-window-line { position: absolute; top: -7px; left: -7px; width: calc(100% + 14px); height: calc(100% + 14px); overflow: visible; pointer-events: none;
+    path { fill: none; stroke: $lp-gold; stroke-opacity: .85; stroke-width: 1.4; vector-effect: non-scaling-stroke; }
+}
+.lp-window-label { display: flex; flex: none; align-items: baseline; justify-content: space-between; gap: 12px; margin-top: 16px; font-size: .9rem;
+    > span { overflow: hidden; min-width: 0; color: rgba(255, 243, 214, .8); text-overflow: ellipsis; white-space: nowrap; }
+    b { flex: none; color: $lp-gold; font-weight: 600; }
+}
+.lp-window--loading .lp-window-glass { animation: lp-loading 1.3s ease-in-out infinite alternate; }
+@keyframes lp-loading { to { opacity: .55; } }
+
+// Each slide arrives: the windows rise in turn, and what's in them settles slowly.
+.swiper-slide-active .lp-window { animation: lp-rise .95s cubic-bezier(.2, .7, .2, 1) both; animation-delay: calc(var(--i) * 110ms); }
+.swiper-slide-active .lp-window-photo { animation: lp-settle 8s ease-out both; }
+.lp-hero.has-moved .swiper-slide-active .lp-slide-copy > * { animation: lp-rise .8s cubic-bezier(.2, .7, .2, 1) both; }
+.lp-hero.has-moved .swiper-slide-active .lp-slide-copy > :nth-child(2) { animation-delay: 70ms; }
+.lp-hero.has-moved .swiper-slide-active .lp-slide-copy > :nth-child(3) { animation-delay: 140ms; }
+.lp-hero.has-moved .swiper-slide-active .lp-slide-copy > :nth-child(4) { animation-delay: 210ms; }
+@keyframes lp-rise { from { opacity: 0; transform: translateY(26px); } }
+@keyframes lp-settle { from { transform: scale(1.07); } }
+
+.lp-hero-controls { position: absolute; z-index: 2; right: 0; bottom: 70px; left: 0; display: flex; align-items: center; justify-content: space-between; gap: 24px; pointer-events: none;
+    > * { pointer-events: auto; }
+}
+.lp-hero-tabs { display: flex; min-width: 0; flex: 1 1 auto; gap: 8px; max-width: 760px; margin: 0; padding: 0; list-style: none; --lp-progress: 0;
+    li { min-width: 0; flex: 1 1 0; }
+    button { display: block; width: 100%; border: 0; padding: 8px 0 0; color: rgba(255, 243, 214, .62); background: none; font-size: .86rem; text-align: left; cursor: pointer; transition: color .2s ease; }
+    button:hover, .is-active button { color: $lp-cream; }
+    button > span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    i { position: relative; display: block; overflow: hidden; height: 2px; margin-top: 7px; background: rgba(255, 243, 214, .22); }
+    i::after { position: absolute; inset: 0; background: $lp-gold; content: ""; transform: scaleX(0); transform-origin: left; }
+    .is-done i::after { transform: none; }
+    .is-active i::after { transform: scaleX(var(--lp-progress)); }
+    &.is-still .is-active i::after { transform: none; }
+}
+.lp-hero-buttons { display: flex; flex: none; gap: 8px;
+    button { display: grid; width: 42px; height: 42px; place-items: center; border: 1px solid rgba(255, 243, 214, .3); border-radius: 50%; color: $lp-cream; background: rgba(0, 0, 0, .18); cursor: pointer; transition: background-color .2s ease, border-color .2s ease, color .2s ease; }
+    button:hover { border-color: $lp-gold; color: #2a0a18; background: $lp-gold; }
+    svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; }
+}
+
+/* The moving ribbon of reasons to shop here */
+.lp-ribbon { position: relative; z-index: 1; overflow: hidden; color: #2a0a18; background: linear-gradient(90deg, #f6d58e, $lp-gold 50%, #f6d58e);
+    ul { display: flex; flex: none; margin: 0; padding: 0; list-style: none; }
+    li { display: flex; flex: none; align-items: center; gap: 9px; padding: 11px 34px; font-size: .92rem; font-weight: 500; white-space: nowrap; }
+    svg { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.6; }
+}
+.lp-ribbon-track { display: flex; width: max-content; animation: lp-ribbon 60s linear infinite;
+    &:hover { animation-play-state: paused; }
+}
+@keyframes lp-ribbon { to { transform: translateX(-25%); } }
 
 .lp-error { display: flex; align-items: center; gap: 10px; margin-top: 28px; border: 1px solid #f0e2c8; border-radius: 12px; padding: 14px 18px; color: #5b3d17; background: #fdf6e8; }
 
 .lp-catnav {
-    padding-top: 36px;
-    ul { display: flex; justify-content: safe center; gap: 36px; margin: 0; padding: 0; overflow-x: auto; list-style: none; scrollbar-width: none; }
+    padding-top: 44px;
+    ul { display: flex; justify-content: safe center; gap: clamp(20px, 4vw, 56px); margin: 0; padding: 0; overflow-x: auto; list-style: none; scrollbar-width: none; }
     ul::-webkit-scrollbar { display: none; }
-    a { display: grid; justify-items: center; gap: 10px; width: 112px; color: $lp-ink; font-size: .98rem; font-weight: 500; text-align: center; text-decoration: none; }
+    a { display: grid; justify-items: center; gap: 10px; width: 118px; color: $lp-ink; font-size: 1rem; font-weight: 500; text-align: center; text-decoration: none; }
     a:hover { color: $lp-bronze; }
+    a:hover .lp-catnav-image { box-shadow: 0 0 0 1px $lp-paper, 0 0 0 2px $lp-bronze; }
     a:hover img { transform: scale(1.06); }
 }
 .lp-catnav-image {
-    display: grid; overflow: hidden; width: 96px; height: 96px; place-items: center; border-radius: 50%; color: $lp-bronze; background: $lp-tile; font-family: $lp-serif; font-size: 2.2rem;
+    display: grid; overflow: hidden; width: 100px; height: 124px; place-items: center; border-radius: 50px 50px 10px 10px; color: $lp-bronze; background: $lp-tile; font-family: $lp-serif; font-size: 2.2rem; transition: box-shadow .25s ease;
     img { width: 100%; height: 100%; object-fit: cover; mix-blend-mode: multiply; transition: transform .4s ease; }
 }
 
@@ -208,32 +282,64 @@ $lp-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
     display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 26px;
     h2 { margin: 0; color: $lp-ink; font-family: $lp-serif; font-size: clamp(2.1rem, 3.6vw, 3rem); font-weight: 400; line-height: 1.05; }
 }
-.lp-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px 20px; }
+
+// Sliders of products. Every card is as tall as the tallest, and the arrows sit on the photos.
+.lp-slider { position: relative; min-width: 0;
+    .swiper-slide { height: auto; }
+}
+.lp-slider-arrow { position: absolute; z-index: 2; top: 34%; display: grid; width: 44px; height: 44px; place-items: center; border: 1px solid $lp-line; border-radius: 50%; color: $lp-ink; background: #fff; box-shadow: 0 8px 22px rgba(22, 37, 31, .14); cursor: pointer; transition: opacity .2s ease, color .2s ease, background-color .2s ease;
+    &.is-prev { left: -14px; }
+    &.is-next { right: -14px; }
+    &:hover { border-color: $lp-ink; color: #fff; background: $lp-ink; }
+    &:disabled { opacity: 0; pointer-events: none; }
+    svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; }
+}
+@media (hover: none) {
+    .lp-slider-arrow { display: none; }
+}
+
+// Gifts by budget: each is a small lit window on a dark tile.
+.lp-budgets ul { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; margin: 0; padding: 0; list-style: none; }
+.lp-budgets a { position: relative; display: flex; overflow: hidden; min-height: 196px; align-items: flex-end; justify-content: space-between; gap: 10px; border-radius: 14px; padding: 18px 0 0 22px; color: $lp-cream; background: radial-gradient(120% 130% at 86% 90%, #7d1840, #3a0a20 62%, #240612); text-decoration: none; transition: transform .3s ease;
+    &:hover { color: $lp-cream; transform: translateY(-3px); }
+    &:hover img { transform: scale(1.05); }
+}
+.lp-budgets li:nth-child(2) a { background: radial-gradient(120% 130% at 86% 90%, #23695a, #123a30 62%, #0a211b); }
+.lp-budgets li:nth-child(3) a { background: radial-gradient(120% 130% at 86% 90%, #5a2f86, #2d1652 62%, #170b2c); }
+.lp-budgets li:nth-child(4) a { background: radial-gradient(120% 130% at 86% 90%, #9c4318, #5a220c 62%, #301206); }
+.lp-budget-copy { display: grid; padding-bottom: 20px;
+    small { color: $lp-gold-soft; font-size: .92rem; }
+    strong { font-family: $lp-serif; font-size: clamp(2.2rem, 3.2vw, 3rem); font-weight: 400; line-height: 1; }
+}
+.lp-budget-arch { position: relative; display: block; overflow: hidden; width: 46%; max-width: 150px; flex: none; align-self: flex-end; aspect-ratio: 3 / 4; margin-right: 18px; border-radius: 999px 999px 0 0; background: radial-gradient(120% 90% at 50% 64%, #fffaf0 0%, #ffedc6 55%, #f4cc8c 100%); box-shadow: 0 0 0 1px rgba(242, 194, 91, .7), 0 0 32px rgba(255, 186, 84, .3);
+    img { display: block; width: 100%; height: 100%; object-fit: cover; mix-blend-mode: multiply; transition: transform .5s ease; }
+}
 
 // A collection: as wide as one product, so the banner and the row line up with the grid above.
 .lp-shelf-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
 .lp-shelf.is-flipped .lp-shelf-panel { order: 2; }
-.lp-shelf-rail { display: grid; grid-column: span 3; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
-.lp-shelf-item:nth-child(n + 4) { display: none; }
+.lp-shelf-rail { grid-column: span 3; min-width: 0; }
 .lp-shelf-panel {
-    position: relative; display: flex; overflow: hidden; min-height: 320px; align-items: flex-end; border-radius: 14px; padding: 22px; color: $lp-ink; text-decoration: none;
-    &:hover { color: $lp-ink; }
+    position: relative; display: flex; overflow: hidden; min-height: 340px; align-items: flex-end; border-radius: 14px; padding: 22px; color: $lp-cream; text-decoration: none;
+    &:hover { color: $lp-cream; }
     &:hover .lp-shelf-cta span { transform: translateX(3px); }
     &:hover img { transform: scale(1.03); }
 }
-// With no photo to show, the collection's initial fills the panel.
-.lp-shelf-panel:not(.has-photo):not(.has-feature)::before { position: absolute; top: -.08em; right: .08em; color: rgba(22, 37, 31, .07); font-family: $lp-serif; font-size: clamp(11rem, 19vw, 17rem); font-style: italic; line-height: 1; content: attr(data-initial); }
-.lp-shelf-panel--0 { background: #efe6d8; }
-.lp-shelf-panel--1 { background: #e2e8e0; }
-.lp-shelf-panel--2 { background: #f0e1d9; }
-.lp-shelf-feature { position: absolute; top: 0; left: 0; width: 100%; height: calc(100% - 148px); object-fit: cover; mix-blend-mode: multiply; transition: transform .5s ease; }
+// With no photo to show, gold line-work turns slowly in the panel.
+.lp-shelf-mandala { position: absolute; top: 22px; left: 50%; width: 82%; aspect-ratio: 1; color: rgba(242, 194, 91, .42); transform: translateX(-50%); }
+.lp-shelf-panel--0 { background: radial-gradient(120% 90% at 50% 26%, #7d1840, #3a0a20 70%, #240612); }
+.lp-shelf-panel--1 { background: radial-gradient(120% 90% at 50% 26%, #23695a, #123a30 70%, #0a211b); }
+.lp-shelf-panel--2 { background: radial-gradient(120% 90% at 50% 26%, #5a2f86, #2d1652 70%, #170b2c); }
+.lp-shelf-feature { position: absolute; top: 26px; right: 16%; bottom: 150px; left: 16%; overflow: hidden; border-radius: 999px 999px 10px 10px; background: radial-gradient(120% 90% at 50% 64%, #fffaf0 0%, #ffedc6 55%, #f4cc8c 100%); box-shadow: 0 0 0 1px rgba(242, 194, 91, .7), 0 0 44px rgba(255, 186, 84, .28);
+    img { width: 100%; height: 100%; object-fit: cover; mix-blend-mode: multiply; transition: transform .5s ease; }
+}
 .lp-shelf-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
 .lp-shelf-copy {
     position: relative; display: grid; gap: 2px; min-width: 0;
-    h2 { margin: 0; font-family: $lp-serif; font-size: clamp(2rem, 2.8vw, 2.6rem); font-weight: 400; line-height: 1.05; overflow-wrap: anywhere; }
+    h2 { margin: 0; color: inherit; font-family: $lp-serif; font-size: clamp(2rem, 2.8vw, 2.6rem); font-weight: 400; line-height: 1.05; overflow-wrap: anywhere; }
     small { color: inherit; font-size: .9rem; opacity: .72; }
 }
-.lp-shelf-cta { display: inline-flex; align-items: center; gap: 6px; width: fit-content; margin-top: 12px; border-bottom: 1px solid currentColor; padding-bottom: 2px; font-size: .95rem; font-weight: 500;
+.lp-shelf-cta { display: inline-flex; align-items: center; gap: 6px; width: fit-content; margin-top: 12px; border-bottom: 1px solid currentColor; padding-bottom: 2px; color: $lp-gold-soft; font-size: .95rem; font-weight: 500;
     span { transition: transform .2s ease; }
 }
 .lp-shelf-panel.has-photo { color: #fff;
@@ -242,6 +348,33 @@ $lp-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
     &::after { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(10, 24, 19, .68), rgba(10, 24, 19, 0) 58%); content: ""; }
     .lp-shelf-copy { z-index: 1; }
 }
+
+// The festival's own band: the greeting, the days left and the best prices. Deep green the rest of the year.
+.lp-offers { position: relative; isolation: isolate; overflow: hidden; margin-top: 76px; padding: 72px 0; color: $lp-cream; background: radial-gradient(70% 120% at 22% 40%, #23695a, #123a30 56%, #06140f);
+    &.is-festive { padding-top: 112px; background: radial-gradient(70% 120% at 22% 40%, #8a1b47, #4f0d29 56%, $lp-night); }
+    h2 { margin: 0 0 10px; color: $lp-cream; font-family: $lp-serif; font-size: clamp(2.4rem, 4vw, 3.4rem); font-weight: 400; line-height: 1.05; }
+    .sp-card-title, .sp-card-price strong { color: $lp-cream; }
+    .sp-card-title:hover { color: $lp-gold; }
+    .sp-card-meta { color: $lp-gold-soft; }
+    .sp-card-price s { color: rgba(255, 243, 214, .55); }
+    .sp-card-rating, .sp-card-rating strong, .sp-card-sizes { color: rgba(255, 243, 214, .75); }
+}
+.lp-offers-rangoli { position: absolute; z-index: -1; width: clamp(280px, 30vw, 460px); aspect-ratio: 1; opacity: .16; animation: dw-spin 180s linear infinite;
+    &.is-left { bottom: -30%; left: -14%; }
+    &.is-right { top: -14%; right: -12%; }
+}
+.lp-offers-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 3fr); align-items: center; gap: clamp(24px, 4vw, 56px); }
+.lp-offers.is-words-only .lp-offers-grid { grid-template-columns: minmax(0, 520px); justify-content: center; text-align: center; }
+.lp-offers-copy p { margin: 0 0 20px; color: rgba(255, 243, 214, .78); font-size: 1.05rem; line-height: 1.5; }
+.lp-offers-lettering { display: block; width: 100%; max-width: 320px; height: auto; margin: 0 0 14px; }
+.lp-offers.is-words-only .lp-offers-lettering { margin-inline: auto; }
+.lp-offers-rail { min-width: 0; }
+.lp-countdown { display: flex; gap: 8px; margin: 0 0 24px;
+    span { display: grid; min-width: 58px; justify-items: center; gap: 2px; border: 1px solid rgba(242, 194, 91, .42); border-radius: 10px; padding: 8px 6px 7px; background: rgba(0, 0, 0, .2); }
+    b { font-family: $lp-serif; font-size: 1.7rem; font-variant-numeric: tabular-nums; font-weight: 400; line-height: 1; }
+    small { color: $lp-gold-soft; font-size: .72rem; }
+}
+.lp-offers.is-words-only .lp-countdown { justify-content: center; }
 
 .lp-brands {
     text-align: center;
@@ -259,7 +392,7 @@ $lp-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
     .lp-link:hover { color: #dcb98a; }
 }
 .lp-founder-grid { display: grid; grid-template-columns: 240px minmax(0, 1fr); align-items: center; gap: 56px; max-width: 980px; margin: 0 auto;
-    > img { width: 100%; height: auto; aspect-ratio: 1; border-radius: 14px; object-fit: cover; }
+    > img { width: 100%; height: auto; aspect-ratio: 4 / 5; border-radius: 999px 999px 12px 12px; box-shadow: 0 0 0 5px #17302a, 0 0 0 6px rgba(242, 194, 91, .75); object-fit: cover; object-position: 50% 0; }
 }
 .lp-founder-sign { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 22px; margin-top: 20px;
     > span:nth-child(2) { display: grid; }
@@ -274,13 +407,30 @@ $lp-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
 }
 .lp-seller-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 14px 26px; }
 
+// Sections ease in as they scroll into view, where the browser can do it without any script.
+@supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+        .lp-reveal { animation: lp-rise linear both; animation-range: entry 0% entry 26%; animation-timeline: view(); }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .lp-ribbon-track { width: auto; flex-wrap: wrap; justify-content: center; animation: none; }
+    .lp-ribbon-track ul:not(:first-child) { display: none; }
+    .lp-ribbon ul { flex-wrap: wrap; justify-content: center; }
+    .lp-window, .lp-window-photo, .lp-hero .lp-slide-copy > *, .lp-offers-rangoli, .lp-window--loading .lp-window-glass { animation: none !important; }
+}
+
 @media (max-width: 991.98px) {
-    .lp-hero { padding: 24px 0 24px; }
     .lp-page .lp-section { padding-top: 52px; }
-    .lp-hero-grid { grid-template-columns: minmax(0, 1fr); gap: 24px; }
-    .lp-hero-copy p { max-width: 560px; }
-    .lp-mosaic { height: clamp(320px, 62vw, 520px); }
-    .lp-grid { gap: 26px 14px; }
+    .lp-hero-swiper, .lp-slide-wrap { height: auto; }
+    .dw-sky-lanterns { display: none; }
+    .lp-hero-swiper .swiper-slide { height: auto; }
+    .lp-hero-swiper .lp-slide-wrap { height: 100%; }
+    .lp-slide { height: auto; grid-template-columns: minmax(0, 1fr); gap: 26px; padding-top: 84px; padding-bottom: 128px; }
+    .lp-slide-copy p { max-width: 560px; }
+    .lp-windows { height: clamp(320px, 56vw, 500px); }
+    .lp-budgets ul { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
     .lp-shelf-grid { grid-template-columns: minmax(0, 1fr); gap: 14px; }
     .lp-shelf.is-flipped .lp-shelf-panel { order: 0; }
     .lp-shelf-rail { grid-column: auto; }
@@ -292,8 +442,11 @@ $lp-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
         small { grid-row: 2; }
     }
     .lp-shelf-cta { grid-row: 1 / span 2; grid-column: 2; margin: 0 0 3px; }
+    .lp-offers { margin-top: 56px; padding: 52px 0; }
+    .lp-offers.is-festive { padding-top: 92px; }
+    .lp-offers-grid { grid-template-columns: minmax(0, 1fr); }
     .lp-founder { margin-top: 52px; padding: 48px 0; }
-    .lp-founder-grid { grid-template-columns: 140px minmax(0, 1fr); gap: 28px; }
+    .lp-founder-grid { grid-template-columns: 150px minmax(0, 1fr); gap: 32px; }
 }
 
 @media (max-width: 575.98px) {
@@ -302,29 +455,39 @@ $lp-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
 }
 
 @media (max-width: 767.98px) {
-    .lp-hero-copy {
-        h1 { margin: 10px 0 12px; font-size: clamp(2.7rem, 12.5vw, 3.4rem); }
-        p { margin-bottom: 20px; font-size: 1rem; }
+    .lp-slide { gap: 20px; padding-top: 74px; padding-bottom: 112px; }
+    .lp-slide-copy {
+        h1, h2 { margin: 10px 0 14px; font-size: clamp(2.7rem, 12.5vw, 3.4rem); }
+        p { display: none; }
     }
-    .lp-tile-tag { right: auto; padding: 5px 9px; border-radius: 8px;
+    .lp-windows { height: clamp(250px, 66vw, 400px); gap: 12px; }
+    .lp-window { margin-top: 26px; }
+    .lp-window-label { justify-content: center; margin-top: 10px; font-size: .86rem;
         > span { display: none; }
     }
-    .lp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    // Up to eight pieces to swipe through, the last one peeking in.
-    .lp-shelf-rail { display: flex; margin: 0 calc(var(--bs-gutter-x, 1.5rem) * -.5); overflow-x: auto; padding: 0 calc(var(--bs-gutter-x, 1.5rem) * .5) 4px; gap: 14px; scroll-padding-left: calc(var(--bs-gutter-x, 1.5rem) * .5); scroll-snap-type: x proximity; scrollbar-width: none; }
-    .lp-shelf-rail::-webkit-scrollbar { display: none; }
-    .lp-shelf-item { flex: 0 0 44%; min-width: 0; scroll-snap-align: start; }
-    .lp-shelf-item:nth-child(n + 4) { display: block; }
+    .lp-hero-controls { bottom: 64px; }
+    .lp-hero-tabs { gap: 5px; max-width: none;
+        button { padding: 10px 0; }
+        button > span { display: none; }
+        i { height: 3px; margin: 0; border-radius: 2px; }
+    }
+    .lp-hero-buttons { display: none; }
     .lp-title { margin-bottom: 18px; }
-    .lp-trust ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 12px 0; }
-    .lp-trust li { font-size: .86rem; }
-    .lp-catnav { padding-top: 26px; }
-    .lp-catnav ul { gap: 16px; }
-    .lp-catnav a { width: 78px; font-size: .86rem; }
-    .lp-catnav-image { width: 72px; height: 72px; }
+    .lp-ribbon li { padding: 9px 22px; font-size: .86rem; }
+    .lp-catnav { padding-top: 30px; }
+    .lp-catnav ul { gap: 14px; }
+    .lp-catnav a { width: 84px; font-size: .88rem; }
+    .lp-catnav-image { width: 76px; height: 94px; }
+    .lp-budgets a { min-height: 146px; gap: 6px; padding: 14px 0 0 12px; }
+    .lp-budget-copy { min-width: 0; padding-bottom: 14px;
+        strong { font-size: clamp(1.44rem, 7.2vw, 1.95rem); }
+    }
+    .lp-budget-arch { width: 34%; margin-right: 8px; }
+    .lp-countdown span { min-width: 54px; flex: 1 1 0; }
+    .lp-offers-lettering { max-width: 280px; }
     .lp-brands a { font-size: 1.3rem; }
     .lp-founder-grid { grid-template-columns: minmax(0, 1fr); gap: 20px;
-        > img { width: 96px; border-radius: 50%; }
+        > img { width: 104px; }
     }
     .lp-seller { padding: 48px 0 56px; }
 }
@@ -358,7 +521,6 @@ $lp-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
     .dw-lights span { opacity: .6; animation: none; }
 }
 @media (max-width: 575.98px) {
-    .lp-hero.is-diwali { padding: 80px 0 104px; }
     .dw-toran { height: 66px; }
     .dw-ledge { height: 86px; }
 }

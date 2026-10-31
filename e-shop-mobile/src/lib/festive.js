@@ -24,6 +24,7 @@ export function diwaliSeason(now = new Date()) {
   const daysToGo = Math.round((localDate(DIWALI_DAY) - today) / 86400000);
   return {
     year: localDate(DIWALI_DAY).getFullYear(),
+    diwaliAt: localDate(DIWALI_DAY).getTime(),
     daysToGo,
     greeting: FESTIVAL_DAYS[isoDate(today)] || "Happy Diwali",
     // Before Dhanteras the banner leads with the festive edit; from Dhanteras on it wishes shoppers well.
@@ -172,6 +173,26 @@ export function burst(cx, cy, r, rays = 14) {
   return {
     rays: ring(rays, (angle) => `M${point(cx, cy, r * 0.32, angle)}L${point(cx, cy, r * 0.8, angle)}`),
     dots: ring(rays, (angle) => dot(...polar(cx, cy, r * 0.93, angle), Math.max(1.6, r * 0.045))),
+  };
+}
+
+/* ---------- The night sky behind the home banner ---------- */
+/** Fireworks, twinkles and paper lanterns, kept clear of the words and the windows. */
+export function nightSky() {
+  return {
+    width: 1600,
+    height: 720,
+    bursts: [
+      { ...burst(965, 170, 50), color: DIWALI_COLORS.gold },
+      { ...burst(1540, 430, 46, 12), color: "#ff9fc0" },
+      { ...burst(330, 96, 34, 12), color: "#9fe6dd" },
+    ],
+    sparkles: [
+      [sparkle(120, 150, 7), sparkle(560, 240, 6), sparkle(1490, 180, 7), sparkle(860, 110, 5)].join(""),
+      [sparkle(450, 130, 6), sparkle(620, 470, 5), sparkle(1570, 290, 5), sparkle(40, 400, 5)].join(""),
+      [sparkle(250, 190, 4), sparkle(680, 330, 4), sparkle(1450, 90, 5), sparkle(60, 240, 4)].join(""),
+    ],
+    lanterns: [{ x: 640, drop: 70, scale: 0.6 }, { x: 1556, drop: 84, scale: 0.66 }],
   };
 }
 

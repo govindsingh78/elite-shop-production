@@ -10,7 +10,7 @@ import WishlistButton from "@/components/WishlistButton";
 import { colors, fonts } from "@/theme";
 
 /** Storefront product tile with a wishlist heart and a quick "add to bag" button. */
-export default function ProductCard({ product, width }) {
+export default function ProductCard({ product, width, onDark }) {
   const { addItem } = useCart();
   const toast = useToast();
   const image = productImageUrl(product.image);
@@ -48,8 +48,8 @@ export default function ProductCard({ product, width }) {
         </Pressable>
       </View>
       <View style={styles.meta}>
-        <Text style={styles.brand} numberOfLines={1}>{product.brand?.name || product.category?.name || "Elitezaar"}</Text>
-        <Text style={styles.title} numberOfLines={2}>{product.title}</Text>
+        <Text style={[styles.brand, onDark && styles.brandOnDark]} numberOfLines={1}>{product.brand?.name || product.category?.name || "Elitezaar"}</Text>
+        <Text style={[styles.title, onDark && styles.onDark]} numberOfLines={2}>{product.title}</Text>
         {inStockSizes.length > 1 ? (
           <Text style={styles.sizes} numberOfLines={1}>{inStockSizes.slice(0, 4).join(" · ")}{inStockSizes.length > 4 ? ` +${inStockSizes.length - 4}` : ""}</Text>
         ) : null}
@@ -61,8 +61,8 @@ export default function ProductCard({ product, width }) {
           </View>
         ) : null}
         <View style={styles.priceRow}>
-          <Text style={styles.price}>{formatWholePrice(product.price)}</Text>
-          {discount > 0 ? <Text style={styles.compare}>{formatWholePrice(product.compare_price)}</Text> : null}
+          <Text style={[styles.price, onDark && styles.onDark]}>{formatWholePrice(product.price)}</Text>
+          {discount > 0 ? <Text style={[styles.compare, onDark && styles.compareOnDark]}>{formatWholePrice(product.compare_price)}</Text> : null}
         </View>
       </View>
     </Pressable>
@@ -72,7 +72,7 @@ export default function ProductCard({ product, width }) {
 const styles = StyleSheet.create({
   card: { flex: 1 },
   media: { aspectRatio: 0.8, overflow: "hidden", borderRadius: 12, backgroundColor: "#f1ece3" },
-  image: { width: "100%", height: "100%" },
+  image: { width: "100%", height: "100%", mixBlendMode: "multiply" },
   fallback: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.emeraldLight },
   fallbackText: { color: "rgba(255,255,255,0.25)", fontFamily: fonts.display, fontSize: 64 },
   badges: { position: "absolute", top: 10, left: 10, gap: 6, alignItems: "flex-start" },
@@ -91,4 +91,7 @@ const styles = StyleSheet.create({
   priceRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "baseline", gap: 6, marginTop: 4 },
   price: { color: colors.ink, fontFamily: fonts.semi, fontSize: 15 },
   compare: { color: "#8b938d", fontFamily: fonts.medium, fontSize: 12.5, textDecorationLine: "line-through" },
+  onDark: { color: "#fff3d6" },
+  brandOnDark: { color: "#f6d58e" },
+  compareOnDark: { color: "rgba(255,243,214,0.55)" },
 });

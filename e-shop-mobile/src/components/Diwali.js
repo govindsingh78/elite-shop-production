@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { AccessibilityInfo, Animated, Easing, Platform, StyleSheet, Text, View } from "react-native";
 import Svg, { Defs, Ellipse, G, LinearGradient, Path, RadialGradient, Rect, Stop } from "react-native-svg";
-import { DIWALI_COLORS as C, DIYA, LANTERN, greetingScene, toran } from "@/lib/festive";
+import { DIWALI_COLORS as C, DIYA, LANTERN, burst, greetingScene, sparkle, toran } from "@/lib/festive";
 import { HAPPY_DIWALI, SHUBH_DEEPAVALI } from "@/lib/diwaliLettering";
 import { fonts } from "@/theme";
 
@@ -12,6 +12,9 @@ const TORAN = toran({ width: 1600, spacing: 200, dip: 30 });
 const FLICKER = { rest: 1, steps: [[0.35, 140], [0.85, 220], [0.15, 160], [1, 260], [0.55, 200], [1, 180]] };
 const TWINKLE = { rest: 1, steps: [[0, 1400], [1, 1400]] };
 const SWING = { rest: 0.5, steps: [[1, 1300], [0, 2600], [0.5, 1300]] };
+const RISE = { rest: 0, steps: [[1, 9000], [0, 0]] };
+// Points of light drifting up behind the banner: [left %, top %, size, when it starts in the loop].
+const EMBERS = [[6, 74, 5, 0], [17, 34, 3, 0.3], [28, 86, 6, 0.12], [41, 52, 4, 0.42], [52, 78, 5, 0.06], [63, 28, 3, 0.36], [74, 66, 5, 0.2], [86, 42, 4, 0.48], [94, 80, 5, 0.26]];
 
 /** A looping 0–1 value; it stays at rest when the phone asks for reduced motion. */
 function useLoop({ rest, steps }) {
@@ -67,6 +70,97 @@ export function Toran({ width, height = 50, style }) {
         <Path d={TORAN.knots} fill="#d62839" />
       </Svg>
     </View>
+  );
+}
+
+/** A row of lit diyas, flames flickering, along the foot of the banner. */
+export function DiyaRow({ width, height = 58 }) {
+  const count = Math.max(5, Math.round(width / 76));
+  const flicker = useLoop(FLICKER);
+  // As many drawing units tall as the row is on screen, so the lamps spread across the full width.
+  const unitHeight = (count * 100 * height) / width;
+  const diyas = Array.from({ length: count }, (_, index) => ({ x: 50 + index * 100, y: unitHeight - 30, scale: 0.72 }));
+  const layer = { width, height, viewBox: `0 0 ${count * 100} ${unitHeight}` };
+  return (
+    <View style={{ width, height }} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      <Svg {...layer} style={StyleSheet.absoluteFill}>
+        <Defs><LightDefs /></Defs>
+        {diyas.map((diya) => (
+          <G key={diya.x} transform={at(diya)}>
+            <Path d={DIYA.foot} fill="#7a2a0e" />
+            <Path d={DIYA.bowl} fill="url(#clay)" />
+            <Path d={DIYA.band} fill="none" stroke={C.gold} strokeWidth={2.2} strokeLinecap="round" />
+            <Path d={DIYA.dots} fill={C.goldLight} />
+            <Path d={DIYA.rim} fill="url(#gold)" />
+            <Path d={DIYA.oil} fill="#3d1606" />
+            <Path d={DIYA.wick} stroke="#2a1205" strokeWidth={2.2} strokeLinecap="round" />
+          </G>
+        ))}
+      </Svg>
+      <Animated.View style={[StyleSheet.absoluteFill, { opacity: flicker.interpolate({ inputRange: [0, 1], outputRange: [0.78, 1] }) }]}>
+        <Svg {...layer}>
+          <Defs><LightDefs /></Defs>
+          {diyas.map((diya) => (
+            <G key={diya.x} transform={at(diya)}>
+              <Ellipse cx={0} cy={-26} rx={54} ry={54} fill="url(#glow)" />
+              <Path d={DIYA.flame} fill="url(#flame)" />
+              <Path d={DIYA.core} fill="#fffbe8" opacity={0.85} />
+            </G>
+          ))}
+        </Svg>
+      </Animated.View>
+    </View>
+  );
+}
+
+/** Warm points of light drifting up behind the banner. */
+export function Embers() {
+  const rise = useLoop(RISE);
+  return (
+    <View style={StyleSheet.absoluteFill} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      {EMBERS.map(([left, top, size, start]) => (
+        <Animated.View key={left} style={{
+          position: "absolute", left: `${left}%`, top: `${top}%`, width: size, height: size, borderRadius: size / 2, backgroundColor: "#ffd27a",
+          opacity: rise.interpolate({ inputRange: [start, start + 0.2, start + 0.5], outputRange: [0, 0.6, 0], extrapolate: "clamp" }),
+          transform: [{ translateY: rise.interpolate({ inputRange: [start, start + 0.5], outputRange: [20, -60], extrapolate: "clamp" }) }],
+        }} />
+      ))}
+    </View>
+  );
+}
+
+/** Stars and a firework twinkling beside the banner's words. */
+export function SkySparkles({ width }) {
+  const twinkle = useLoop(TWINKLE);
+  const scale = width / 400;
+  const firework = useMemo(() => burst(326, 292, 28, 12), []);
+  const stars = useMemo(() => [sparkle(292, 128, 5), sparkle(382, 330, 5), sparkle(30, 96, 4), sparkle(258, 322, 4), sparkle(384, 150, 4)].join(""), []);
+  return (
+    <Animated.View style={[StyleSheet.absoluteFill, { opacity: twinkle.interpolate({ inputRange: [0, 1], outputRange: [0.25, 1] }) }]} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      <Svg width={width} height={520 * scale} viewBox="0 0 400 520">
+        <Path d={firework.rays} stroke={C.gold} strokeOpacity={0.6} strokeWidth={1.6} strokeLinecap="round" />
+        <Path d={firework.dots} fill={C.gold} opacity={0.6} />
+        <Path d={stars} fill={C.goldLight} />
+      </Svg>
+    </Animated.View>
+  );
+}
+
+/** One paper lantern hanging from the garland, in the free corner beside the banner's words. */
+export function HangingLantern({ width }) {
+  const swing = useLoop(SWING);
+  const k = width / 400;
+  return <SwingingLantern lantern={{ x: 362, drop: 40, scale: 0.42 }} k={k} offsetY={0} swing={swing} />;
+}
+
+/** "शुभ दीपावली, Happy Diwali" in gold lettering. */
+export function DiwaliLettering({ width }) {
+  return (
+    <Svg width={width} height={width * (178 / 520)} viewBox="0 0 520 178" accessibilityLabel="शुभ दीपावली, Happy Diwali">
+      <Defs><LinearGradient id="letters" x1="0" y1="0" x2="0" y2="1"><Stop offset="0" stopColor={C.goldLight} /><Stop offset="0.55" stopColor={C.gold} /><Stop offset="1" stopColor={C.goldDeep} /></LinearGradient></Defs>
+      <Path d={SHUBH_DEEPAVALI.d} transform={`translate(${260 - SHUBH_DEEPAVALI.width * 0.25} 0) scale(0.5)`} fill="url(#letters)" />
+      <Path d={HAPPY_DIWALI.d} transform={`translate(${260 - HAPPY_DIWALI.width / 2} 66)`} fill="url(#letters)" />
+    </Svg>
   );
 }
 

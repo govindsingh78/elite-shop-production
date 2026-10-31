@@ -26,8 +26,8 @@ export default function ShopScreen() {
   const [brand, setBrand] = useState(params.brand || "");
   const [search, setSearch] = useState(params.q || "");
   const [searchDraft, setSearchDraft] = useState(params.q || "");
-  const [sort, setSort] = useState("newest");
-  const [price, setPrice] = useState({ min: "", max: "" });
+  const [sort, setSort] = useState(params.sort || "newest");
+  const [price, setPrice] = useState({ min: "", max: params.max_price || "" });
   const [meta, setMeta] = useState({ total: null, brands: [], range: { min: 0, max: 0 }, category: null, search: null });
   // Whether the current search was spoken, and a request from the home screen's mic to start listening.
   const [spoken, setSpoken] = useState(false);
@@ -35,10 +35,13 @@ export default function ShopScreen() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
 
-  // Links from the home screen (collections, brands) arrive as new params on this tab.
-  const [seenParams, setSeenParams] = useState({ category: params.category, brand: params.brand, q: params.q, voice: params.voice });
-  if (params.category !== seenParams.category || params.brand !== seenParams.brand || params.q !== seenParams.q || params.voice !== seenParams.voice) {
-    setSeenParams({ category: params.category, brand: params.brand, q: params.q, voice: params.voice });
+  // Links from the home screen (collections, brands, budgets) arrive as new params on this tab.
+  const [seenParams, setSeenParams] = useState({ category: params.category, brand: params.brand, q: params.q, voice: params.voice, max_price: params.max_price, sort: params.sort });
+  if (params.category !== seenParams.category || params.brand !== seenParams.brand || params.q !== seenParams.q || params.voice !== seenParams.voice || params.max_price !== seenParams.max_price || params.sort !== seenParams.sort) {
+    setSeenParams({ category: params.category, brand: params.brand, q: params.q, voice: params.voice, max_price: params.max_price, sort: params.sort });
+    // Each link is a fresh look at the store, so a budget or sort from the last one doesn't carry over.
+    setPrice({ min: "", max: params.max_price || "" });
+    setSort(params.sort || "newest");
     if (params.voice !== undefined) setListenRequest(params.voice);
     if (params.category !== undefined) setCategory(params.category);
     if (params.brand !== undefined) setBrand(params.brand);
